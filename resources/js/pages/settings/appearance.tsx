@@ -1,22 +1,15 @@
-import { Head } from '@inertiajs/react';
-
 import AppearanceTabs from '@/components/appearance-tabs';
-import HeadingSmall from '@/components/heading-small';
-
-import AppLayout from '@/layouts/app-layout';
-import SettingsLayout from '@/layouts/settings/layout';
+import SettingsLayout, { SettingsCard } from '@/layouts/settings/layout';
+import { Head } from '@inertiajs/react';
 
 export default function Appearance() {
     return (
-        <AppLayout>
-            <Head title="Pengaturan tampilan" />
+        <SettingsLayout title="Tampilan" description="Pilih tema yang paling enak di mata kamu.">
+            <Head title="Tampilan" />
 
-            <SettingsLayout>
-                <div className="space-y-6">
-                    <HeadingSmall title="Pengaturan tampilan" description="Atur tampilan terang atau gelap" />
-                    <AppearanceTabs />
-                </div>
-            </SettingsLayout>
-        </AppLayout>
+            <SettingsCard title="Tema aplikasi" description="Ikut pengaturan HP kamu, atau kunci ke terang / gelap.">
+                <AppearanceTabs />
+            </SettingsCard>
+        </SettingsLayout>
     );
 }

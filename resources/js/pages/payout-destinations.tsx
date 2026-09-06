@@ -1,14 +1,13 @@
 import InputError from '@/components/input-error';
 import { ConfirmDialog } from '@/components/patungan/confirm-dialog';
 import { EmptyState } from '@/components/patungan/empty-state';
-import { PayoutCard, type PayoutDestinationItem } from '@/components/patungan/payout-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import PatunganLayout from '@/layouts/patungan-layout';
 import { cn } from '@/lib/utils';
 import { Head, router, useForm } from '@inertiajs/react';
-import { Landmark } from 'lucide-react';
+import { Landmark, Shield, Star, Trash2, Wallet } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 
 interface Channel {
@@ -16,13 +15,23 @@ interface Channel {
     label: string;
 }
 
-interface DestinationsProps {
-    channels: Record<string, Channel[]>;
-    destinations: PayoutDestinationItem[];
+interface Destination {
+    id: number;
+    type: string;
+    label: string;
+    account_holder: string;
+    is_default: boolean;
 }
 
+interface DestinationsProps {
+    channels: Record<string, Channel[]>;
+    destinations: Destination[];
+}
+
+const typeLabels: Record<string, string> = { BANK: 'Bank', EWALLET: 'E-wallet' };
+
 export default function PayoutDestinations({ channels, destinations }: DestinationsProps) {
-    const [removing, setRemoving] = useState<number | null>(null);
+    const [removing, setRemoving] = useState<Destination | null>(null);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         type: 'BANK',
@@ -32,6 +41,7 @@ export default function PayoutDestinations({ channels, destinations }: Destinati
     });
 
     const options = channels[data.type] ?? [];
+    const isBank = data.type === 'BANK';
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
@@ -39,57 +49,105 @@ export default function PayoutDestinations({ channels, destinations }: Destinati
     };
 
     return (
-        <PatunganLayout title="Rekening tujuan" back={route('payout.index')}>
+        <PatunganLayout
+            title="Rekening tujuan"
+            back={route('payout.index')}
+            hero={
+                <div>
+                    <h1 className="text-brand-deep-foreground text-lg font-bold tracking-tight sm:text-xl">Rekening tujuan</h1>
+                    <p className="text-brand-deep-muted mt-1 text-xs leading-relaxed">
+                        Ke mana saldo kamu dikirim saat dicairkan. Nomor rekening cuma disimpan di server dan selalu ditampilkan tersamar.
+                    </p>
+                </div>
+            }
+        >
             <Head title="Rekening tujuan" />
 
-            <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Rekening tujuan</h1>
-            <p className="text-muted-foreground mt-0.5 text-xs">Ke mana saldo kamu dikirim saat dicairkan.</p>
-
             {destinations.length === 0 ? (
-                <EmptyState className="mt-5" icon={Landmark} title="Belum ada rekening." description="Tambahkan satu di bawah." />
+                <EmptyState icon={Landmark} title="Belum ada rekening" description="Tambahkan satu lewat form di bawah." />
             ) : (
-                <ul className="mt-5 space-y-2">
+                <ul className="space-y-2">
                     {destinations.map((destination) => (
-                        <li key={destination.id}>
-                            <PayoutCard
-                                destination={destination}
-                                onMakeDefault={(id) => router.post(route('payout.destination.default', id), {}, { preserveScroll: true })}
-                                onRemove={setRemoving}
-                            />
+                        <li
+                            key={destination.id}
+                            className={cn(
+                                'bg-card flex items-center gap-3 rounded-2xl border p-3.5',
+                                destination.is_default ? 'border-primary/40' : 'border-border',
+                            )}
+                        >
+                            <span className="bg-brand-soft text-primary flex size-10 shrink-0 items-center justify-center rounded-xl">
+                                {destination.type === 'BANK' ? <Landmark className="size-[18px]" /> : <Wallet className="size-[18px]" />}
+                            </span>
+
+                            <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-semibold">{destination.label}</p>
+                                <p className="text-muted-foreground truncate text-[11px]">{destination.account_holder}</p>
+                            </div>
+
+                            {destination.is_default ? (
+                                <span className="chip bg-brand-soft text-primary shrink-0">
+                                    <Star className="size-3" />
+                                    Utama
+                                </span>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => router.post(route('payout.destination.default', destination.id), {}, { preserveScroll: true })}
+                                    className="text-primary shrink-0 text-[11px] font-semibold"
+                                >
+                                    Jadikan utama
+                                </button>
+                            )}
+
+                            <button
+                                type="button"
+                                aria-label={`Hapus ${destination.label}`}
+                                onClick={() => setRemoving(destination)}
+                                className="text-muted-foreground hover:text-destructive shrink-0 rounded-lg p-1.5 transition"
+                            >
+                                <Trash2 className="size-4" />
+                            </button>
                         </li>
                     ))}
                 </ul>
             )}
 
-            <form onSubmit={submit} className="border-border bg-card mt-6 rounded-2xl border p-4">
-                <h2 className="font-bold tracking-tight">Tambah rekening</h2>
+            <form onSubmit={submit} className="border-border bg-card mt-4 rounded-2xl border p-4">
+                <h2 className="text-sm font-bold tracking-tight">Tambah rekening</h2>
+                <p className="text-muted-foreground mt-0.5 text-[11px]">Pastikan nama pemilik sama persis dengan yang terdaftar.</p>
 
-                <div className="mt-4 grid grid-cols-2 gap-2">
-                    {Object.keys(channels).map((type) => (
-                        <button
-                            key={type}
-                            type="button"
-                            onClick={() => {
-                                setData('type', type);
-                                setData('provider_code', channels[type][0]?.code ?? '');
-                            }}
-                            className={cn(
-                                'rounded-xl border px-4 py-2.5 text-sm font-semibold transition',
-                                data.type === type ? 'border-primary bg-brand-soft text-primary' : 'border-border text-muted-foreground',
-                            )}
-                        >
-                            {type === 'BANK' ? 'Bank' : 'E-wallet'}
-                        </button>
-                    ))}
+                <div className="mt-3.5 grid grid-cols-2 gap-2">
+                    {Object.keys(channels).map((type) => {
+                        const active = data.type === type;
+
+                        return (
+                            <button
+                                key={type}
+                                type="button"
+                                aria-pressed={active}
+                                onClick={() => {
+                                    setData('type', type);
+                                    setData('provider_code', channels[type][0]?.code ?? '');
+                                }}
+                                className={cn(
+                                    'flex h-10 items-center justify-center gap-1.5 rounded-xl border text-xs font-semibold transition',
+                                    active ? 'border-primary bg-brand-soft text-primary' : 'border-border text-muted-foreground',
+                                )}
+                            >
+                                {type === 'BANK' ? <Landmark className="size-3.5" /> : <Wallet className="size-3.5" />}
+                                {typeLabels[type] ?? type}
+                            </button>
+                        );
+                    })}
                 </div>
 
-                <div className="mt-4">
-                    <Label htmlFor="provider_code">{data.type === 'BANK' ? 'Bank' : 'E-wallet'}</Label>
+                <div className="mt-3.5">
+                    <Label htmlFor="provider_code">{isBank ? 'Pilih bank' : 'Pilih e-wallet'}</Label>
                     <select
                         id="provider_code"
                         value={data.provider_code}
                         onChange={(event) => setData('provider_code', event.target.value)}
-                        className="border-input bg-background mt-1.5 h-11 w-full rounded-xl border px-3 text-sm font-medium"
+                        className="border-input bg-background focus-visible:ring-ring mt-1.5 h-11 w-full rounded-xl border px-3 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
                     >
                         {options.map((channel) => (
                             <option key={channel.code} value={channel.code}>
@@ -100,11 +158,13 @@ export default function PayoutDestinations({ channels, destinations }: Destinati
                     <InputError message={errors.provider_code} className="mt-1.5" />
                 </div>
 
-                <div className="mt-4">
-                    <Label htmlFor="account_number">{data.type === 'BANK' ? 'Nomor rekening' : 'Nomor HP terdaftar'}</Label>
+                <div className="mt-3.5">
+                    <Label htmlFor="account_number">{isBank ? 'Nomor rekening' : 'Nomor HP terdaftar'}</Label>
                     <Input
                         id="account_number"
                         inputMode="numeric"
+                        autoComplete="off"
+                        placeholder={isBank ? '1234567890' : '08123456789'}
                         value={data.account_number}
                         onChange={(event) => setData('account_number', event.target.value.replace(/\D/g, ''))}
                         className="mt-1.5 h-11 rounded-xl tabular-nums"
@@ -112,10 +172,11 @@ export default function PayoutDestinations({ channels, destinations }: Destinati
                     <InputError message={errors.account_number} className="mt-1.5" />
                 </div>
 
-                <div className="mt-4">
+                <div className="mt-3.5">
                     <Label htmlFor="account_holder">Nama pemilik</Label>
                     <Input
                         id="account_holder"
+                        placeholder="Sesuai buku tabungan"
                         value={data.account_holder}
                         onChange={(event) => setData('account_holder', event.target.value)}
                         className="mt-1.5 h-11 rounded-xl"
@@ -123,7 +184,12 @@ export default function PayoutDestinations({ channels, destinations }: Destinati
                     <InputError message={errors.account_holder} className="mt-1.5" />
                 </div>
 
-                <Button type="submit" className="mt-5 h-11 w-full rounded-xl font-semibold" disabled={processing}>
+                <p className="bg-surface text-muted-foreground mt-3.5 flex items-start gap-2 rounded-xl px-3 py-2.5 text-[11px] leading-relaxed">
+                    <Shield className="text-primary mt-0.5 size-3.5 shrink-0" />
+                    Nomor rekening tidak pernah dikirim balik ke browser. Di mana pun ditampilkan, formatnya jadi seperti BCA ******8291.
+                </p>
+
+                <Button type="submit" className="mt-4 h-11 w-full rounded-xl text-sm font-semibold" disabled={processing}>
                     {processing ? 'Menyimpan...' : 'Simpan rekening'}
                 </Button>
             </form>
@@ -131,13 +197,13 @@ export default function PayoutDestinations({ channels, destinations }: Destinati
             <ConfirmDialog
                 open={removing !== null}
                 onOpenChange={(open) => !open && setRemoving(null)}
-                title="Hapus rekening ini?"
-                description="Rekening akan dihapus dari daftar tujuan pencairan."
+                title={`Hapus ${removing?.label ?? ''}?`}
+                description="Rekening ini dihapus dari daftar tujuan pencairan. Riwayat pencairan yang sudah jalan tidak terpengaruh."
                 confirmLabel="Hapus"
                 destructive
                 onConfirm={() => {
-                    if (removing === null) return;
-                    router.delete(route('payout.destination.destroy', removing), { preserveScroll: true, onFinish: () => setRemoving(null) });
+                    if (!removing) return;
+                    router.delete(route('payout.destination.destroy', removing.id), { preserveScroll: true, onFinish: () => setRemoving(null) });
                 }}
             />
         </PatunganLayout>

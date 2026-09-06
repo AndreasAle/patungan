@@ -20,7 +20,7 @@ export function BalanceHero({ name, balance, unreadCount }: BalanceHeroProps) {
     return (
         <div>
             <div className="flex items-center gap-3">
-                <AppLogoIcon className="size-8 shrink-0" />
+                <AppLogoIcon className="size-8 shrink-0" plate />
 
                 <div className="min-w-0 flex-1">
                     <p className="text-brand-deep-muted text-[11px]">Selamat datang,</p>

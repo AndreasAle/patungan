@@ -38,7 +38,7 @@ export function DeadlinePicker({ value, onChange, id = 'expires_at' }: DeadlineP
                         key={preset.label}
                         type="button"
                         onClick={() => setPreset(preset.hours)}
-                        className="border-border text-muted-foreground hover:border-primary/40 hover:text-foreground rounded-full border px-3.5 py-1.5 text-sm font-semibold transition"
+                        className="border-border text-muted-foreground hover:border-primary/40 hover:text-foreground h-8 rounded-full border px-3 text-[11px] font-semibold transition"
                     >
                         {preset.label}
                     </button>
@@ -47,7 +47,7 @@ export function DeadlinePicker({ value, onChange, id = 'expires_at' }: DeadlineP
                     type="button"
                     onClick={() => onChange('')}
                     className={cn(
-                        'rounded-full border px-3.5 py-1.5 text-sm font-semibold transition',
+                        'h-8 rounded-full border px-3 text-[11px] font-semibold transition',
                         value === ''
                             ? 'border-primary bg-brand-soft text-primary'
                             : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground',

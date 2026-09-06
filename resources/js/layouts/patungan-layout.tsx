@@ -127,7 +127,7 @@ export default function PatunganLayout({ children, title, back, action, hero }: 
                                 <ChevronLeft className="size-5" />
                             </Link>
                         ) : (
-                            <AppLogoIcon className="size-7 lg:hidden" />
+                            <AppLogoIcon className="size-7 lg:hidden" plate />
                         )}
                         <span className="text-brand-deep-foreground min-w-0 flex-1 truncate text-base font-semibold lg:hidden">
                             {title ?? 'Patungan'}
@@ -137,10 +137,7 @@ export default function PatunganLayout({ children, title, back, action, hero }: 
                 )}
 
                 <main
-                    className={cn(
-                        'relative z-10 mx-auto w-full max-w-4xl px-4 pb-24 lg:px-8 lg:pb-12',
-                        hero ? '-mt-12 lg:-mt-14' : 'pt-4 lg:pt-5',
-                    )}
+                    className={cn('relative z-10 mx-auto w-full max-w-4xl px-4 pb-24 lg:px-8 lg:pb-12', hero ? '-mt-12 lg:-mt-14' : 'pt-4 lg:pt-5')}
                 >
                     {children}
                 </main>

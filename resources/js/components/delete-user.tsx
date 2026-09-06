@@ -7,8 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-import HeadingSmall from '@/components/heading-small';
-
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 export default function DeleteUser() {
@@ -32,24 +30,22 @@ export default function DeleteUser() {
     };
 
     return (
-        <div className="space-y-6">
-            <HeadingSmall title="Hapus akun" description="Menghapus akun beserta seluruh datanya" />
-            <div className="space-y-4 rounded-lg border border-red-100 bg-red-50 p-4 dark:border-red-200/10 dark:bg-red-700/10">
-                <div className="relative space-y-0.5 text-red-600 dark:text-red-100">
-                    <p className="font-medium">Hati-hati</p>
-                    <p className="text-sm">Tindakan ini tidak bisa dibatalkan.</p>
-                </div>
+        <section className="border-destructive/25 bg-card rounded-2xl border p-4">
+            <h2 className="text-destructive text-sm font-bold tracking-tight">Hapus akun</h2>
+            <p className="text-muted-foreground mt-0.5 text-[11px] leading-relaxed">
+                Semua patungan, transaksi, dan riwayat kamu ikut terhapus permanen. Tidak bisa dibatalkan.
+            </p>
 
+            <div className="mt-3.5">
                 <Dialog>
                     <DialogTrigger asChild>
-                        <Button variant="destructive">Hapus akun</Button>
+                        <Button variant="destructive" className="h-11 rounded-xl text-sm font-semibold">
+                            Hapus akun
+                        </Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogTitle>Yakin mau hapus akun kamu?</DialogTitle>
-                        <DialogDescription>
-                            Once your account is deleted, all of its resources and data will also be permanently deleted. Please enter your password
-                            to confirm you would like to permanently delete your account.
-                        </DialogDescription>
+                        <DialogDescription>Semua data kamu terhapus permanen. Masukkan password untuk konfirmasi.</DialogDescription>
                         <form className="space-y-6" onSubmit={deleteUser}>
                             <div className="grid gap-2">
                                 <Label htmlFor="password" className="sr-only">
@@ -85,6 +81,6 @@ export default function DeleteUser() {
                     </DialogContent>
                 </Dialog>
             </div>
-        </div>
+        </section>
     );
 }

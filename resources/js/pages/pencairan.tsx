@@ -1,7 +1,5 @@
 import InputError from '@/components/input-error';
-import { DashboardStat } from '@/components/patungan/dashboard-stat';
 import { EmptyState } from '@/components/patungan/empty-state';
-import { MoneyText } from '@/components/patungan/money-text';
 import { RupiahInput } from '@/components/patungan/rupiah-input';
 import { StatusBadge } from '@/components/patungan/status-badge';
 import { Button } from '@/components/ui/button';
@@ -11,7 +9,7 @@ import { formatDateTime, rupiah } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import type { Balance } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Landmark } from 'lucide-react';
+import { ArrowDownToLine, Check, Info, Landmark, Plus } from 'lucide-react';
 import type { FormEvent } from 'react';
 
 interface Destination {
@@ -52,111 +50,156 @@ export default function Pencairan({ balance, destinations, settlements, payout }
         post(route('payout.store'), { preserveScroll: true, onSuccess: () => reset('amount') });
     };
 
+    const tooMuch = data.amount > balance.available;
+    const belowMinimum = data.amount > 0 && data.amount < payout.min_amount;
+
     return (
-        <PatunganLayout title="Pencairan">
+        <PatunganLayout
+            title="Pencairan"
+            hero={
+                <div>
+                    <p className="text-brand-deep-muted text-[11px]">Saldo tersedia</p>
+                    <p className="text-brand-deep-foreground mt-1 text-[30px] leading-none font-bold tracking-tight sm:text-4xl">
+                        {rupiah(balance.available)}
+                    </p>
+
+                    <dl className="mt-4 grid grid-cols-2 gap-2">
+                        <div className="rounded-2xl bg-white/10 px-3 py-2.5">
+                            <dt className="text-brand-deep-muted text-[10px]">Saldo pending</dt>
+                            <dd className="text-brand-deep-foreground mt-0.5 truncate text-sm font-bold tabular-nums">{rupiah(balance.pending)}</dd>
+                        </div>
+                        <div className="rounded-2xl bg-white/10 px-3 py-2.5">
+                            <dt className="text-brand-deep-muted text-[10px]">Sudah dicairkan</dt>
+                            <dd className="text-brand-deep-foreground mt-0.5 truncate text-sm font-bold tabular-nums">{rupiah(balance.paid_out)}</dd>
+                        </div>
+                    </dl>
+                </div>
+            }
+        >
             <Head title="Pencairan" />
 
-            <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Pencairan</h1>
-            <p className="text-muted-foreground mt-0.5 text-xs">Tarik saldo kamu ke rekening atau e-wallet.</p>
+            {destinations.length === 0 ? (
+                <EmptyState
+                    icon={Landmark}
+                    title="Belum ada rekening tujuan"
+                    description="Tambahkan rekening atau e-wallet dulu sebelum menarik dana."
+                    action={
+                        <Button asChild className="h-10 rounded-xl text-sm font-semibold">
+                            <Link href={route('payout.destinations')}>
+                                <Plus className="size-4" />
+                                Tambah rekening
+                            </Link>
+                        </Button>
+                    }
+                />
+            ) : (
+                <form onSubmit={submit} className="border-border bg-card rounded-2xl border p-4">
+                    <h2 className="text-sm font-bold tracking-tight">Tarik dana</h2>
+                    <p className="text-muted-foreground mt-0.5 text-[11px]">Pilih tujuan, isi jumlahnya, selesai.</p>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                <DashboardStat label="Saldo tersedia" amount={balance.available} emphasis />
-                <DashboardStat label="Saldo pending" amount={balance.pending} />
-                <DashboardStat label="Sudah dicairkan" amount={balance.paid_out} />
-            </div>
+                    <ul className="mt-3.5 space-y-2">
+                        {destinations.map((destination) => {
+                            const active = data.payout_destination_id === destination.id;
+
+                            return (
+                                <li key={destination.id}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setData('payout_destination_id', destination.id)}
+                                        aria-pressed={active}
+                                        className={cn(
+                                            'flex w-full items-center gap-3 rounded-xl border p-3 text-left transition',
+                                            active ? 'border-primary bg-brand-soft' : 'border-border hover:border-primary/40',
+                                        )}
+                                    >
+                                        <span
+                                            className={cn(
+                                                'flex size-9 shrink-0 items-center justify-center rounded-xl',
+                                                active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground',
+                                            )}
+                                        >
+                                            <Landmark className="size-4" />
+                                        </span>
+                                        <span className="min-w-0 flex-1">
+                                            <span className="block truncate text-sm font-semibold">{destination.label}</span>
+                                            <span className="text-muted-foreground block truncate text-[11px]">{destination.account_holder}</span>
+                                        </span>
+                                        {active && (
+                                            <span className="bg-primary text-primary-foreground flex size-5 shrink-0 items-center justify-center rounded-full">
+                                                <Check className="size-3" strokeWidth={3} />
+                                            </span>
+                                        )}
+                                    </button>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                    <InputError message={errors.payout_destination_id} className="mt-2" />
+
+                    <div className="border-border mt-4 border-t pt-4">
+                        <Label htmlFor="amount">Jumlah pencairan</Label>
+                        <RupiahInput id="amount" value={data.amount} onChange={(value) => setData('amount', value)} className="mt-1.5" />
+
+                        <div className="mt-2 flex items-center justify-between gap-3 text-[11px]">
+                            <span className={cn('text-muted-foreground', belowMinimum && 'text-warning font-medium')}>
+                                Minimal {rupiah(payout.min_amount)}
+                            </span>
+                            <button
+                                type="button"
+                                className="text-primary font-semibold"
+                                onClick={() => setData('amount', balance.available)}
+                                disabled={balance.available <= 0}
+                            >
+                                Tarik semua
+                            </button>
+                        </div>
+
+                        {tooMuch && <p className="text-destructive mt-1.5 text-[11px] font-medium">Melebihi saldo tersedia.</p>}
+                        <InputError message={errors.amount} className="mt-1.5" />
+                    </div>
+
+                    <Button
+                        type="submit"
+                        className="mt-4 h-11 w-full rounded-xl text-sm font-semibold"
+                        disabled={processing || data.amount <= 0 || tooMuch || belowMinimum}
+                    >
+                        <ArrowDownToLine className="size-4" />
+                        {processing ? 'Mengirim...' : 'Tarik dana'}
+                    </Button>
+                </form>
+            )}
 
             {!payout.automated && (
-                <p className="bg-warning-soft text-warning mt-4 rounded-xl px-4 py-3 text-sm">
-                    Pencairan diproses manual oleh tim Patungan. Permintaan kamu masuk antrean dan diverifikasi sebelum dana dikirim.
+                <p className="bg-warning-soft text-warning mt-3 flex items-start gap-2 rounded-2xl px-3.5 py-3 text-[11px] leading-relaxed">
+                    <Info className="mt-0.5 size-3.5 shrink-0" />
+                    Pencairan diverifikasi dan ditransfer manual oleh tim Patungan. Saldo langsung dipotong saat kamu minta, dan dikembalikan otomatis
+                    kalau transfernya gagal.
                 </p>
             )}
 
-            <section className="mt-8">
-                <div className="flex items-center justify-between">
-                    <h2 className="font-bold tracking-tight">Rekening tujuan</h2>
-                    <Link href={route('payout.destinations')} className="text-primary text-sm font-semibold">
-                        Kelola
+            <section className="mt-6">
+                <div className="flex items-baseline justify-between">
+                    <h2 className="text-base font-bold tracking-tight">Riwayat pencairan</h2>
+                    <Link href={route('payout.destinations')} className="text-primary text-xs font-semibold">
+                        Kelola rekening
                     </Link>
                 </div>
 
-                {destinations.length === 0 ? (
-                    <EmptyState
-                        className="mt-3"
-                        icon={Landmark}
-                        title="Belum ada rekening tujuan."
-                        description="Tambahkan rekening dulu sebelum menarik dana."
-                        action={
-                            <Button asChild className="h-11 rounded-xl font-semibold">
-                                <Link href={route('payout.destinations')}>Tambah rekening</Link>
-                            </Button>
-                        }
-                    />
-                ) : (
-                    <form onSubmit={submit} className="border-border bg-card mt-3 rounded-2xl border p-4">
-                        <div className="space-y-2">
-                            {destinations.map((destination) => (
-                                <button
-                                    key={destination.id}
-                                    type="button"
-                                    onClick={() => setData('payout_destination_id', destination.id)}
-                                    className={cn(
-                                        'flex w-full items-center gap-3 rounded-xl border p-3 text-left transition',
-                                        data.payout_destination_id === destination.id
-                                            ? 'border-primary bg-brand-soft'
-                                            : 'border-border hover:border-primary/40',
-                                    )}
-                                >
-                                    <Landmark className="text-primary size-4" />
-                                    <span className="min-w-0 flex-1">
-                                        <span className="block truncate font-semibold">{destination.label}</span>
-                                        <span className="text-muted-foreground block truncate text-sm">{destination.account_holder}</span>
-                                    </span>
-                                </button>
-                            ))}
-                        </div>
-                        <InputError message={errors.payout_destination_id} className="mt-2" />
-
-                        <div className="mt-4">
-                            <Label htmlFor="amount">Jumlah pencairan</Label>
-                            <RupiahInput id="amount" value={data.amount} onChange={(value) => setData('amount', value)} className="mt-1.5" />
-                            <div className="text-muted-foreground mt-1.5 flex items-center justify-between text-xs">
-                                <span>Minimal {rupiah(payout.min_amount)}</span>
-                                <button type="button" className="text-primary font-semibold" onClick={() => setData('amount', balance.available)}>
-                                    Tarik semua
-                                </button>
-                            </div>
-                            <InputError message={errors.amount} className="mt-1.5" />
-                        </div>
-
-                        <Button
-                            type="submit"
-                            className="mt-4 h-11 w-full rounded-xl font-semibold"
-                            disabled={processing || data.amount <= 0 || data.amount > balance.available}
-                        >
-                            {processing ? 'Mengirim...' : 'Tarik dana'}
-                        </Button>
-                    </form>
-                )}
-            </section>
-
-            <section className="mt-8">
-                <h2 className="font-bold tracking-tight">Riwayat pencairan</h2>
-
                 {settlements.length === 0 ? (
-                    <p className="bg-muted text-muted-foreground mt-3 rounded-xl px-4 py-3 text-sm">Belum ada pencairan.</p>
+                    <p className="bg-surface text-muted-foreground mt-2.5 rounded-2xl px-4 py-3 text-xs">Belum ada pencairan.</p>
                 ) : (
-                    <ul className="mt-3 space-y-2">
+                    <ul className="mt-2.5 space-y-2">
                         {settlements.map((settlement) => (
-                            <li key={settlement.uuid} className="border-border bg-card rounded-2xl border px-4 py-3">
+                            <li key={settlement.uuid} className="border-border bg-card rounded-2xl border px-3.5 py-3">
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="min-w-0">
-                                        <MoneyText amount={settlement.net_amount} />
-                                        <p className="text-muted-foreground mt-0.5 truncate text-sm">{settlement.destination}</p>
-                                        <p className="text-muted-foreground mt-0.5 text-xs">{formatDateTime(settlement.requested_at)}</p>
+                                        <p className="text-sm font-bold tabular-nums">{rupiah(settlement.net_amount)}</p>
+                                        <p className="text-muted-foreground mt-0.5 truncate text-[11px]">{settlement.destination}</p>
+                                        <p className="text-muted-foreground mt-0.5 text-[11px]">{formatDateTime(settlement.requested_at)}</p>
                                     </div>
                                     <StatusBadge status={settlement.status} label={settlement.status_label} />
                                 </div>
-                                {settlement.failure_reason && <p className="text-destructive mt-2 text-sm">{settlement.failure_reason}</p>}
+                                {settlement.failure_reason && <p className="text-destructive mt-2 text-[11px]">{settlement.failure_reason}</p>}
                             </li>
                         ))}
                     </ul>

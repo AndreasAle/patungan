@@ -1,11 +1,9 @@
 import InputError from '@/components/input-error';
-import AppLayout from '@/layouts/app-layout';
-import SettingsLayout from '@/layouts/settings/layout';
+import SettingsLayout, { SettingsCard } from '@/layouts/settings/layout';
 import { Transition } from '@headlessui/react';
 import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler, useRef } from 'react';
 
-import HeadingSmall from '@/components/heading-small';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,80 +39,78 @@ export default function Password() {
     };
 
     return (
-        <AppLayout>
+        <SettingsLayout title="Password" description="Amankan akun kamu dengan password yang kuat.">
             <Head title="Password" />
 
-            <SettingsLayout>
-                <div className="space-y-6">
-                    <HeadingSmall title="Ganti password" description="Pakai password yang panjang dan acak biar akun kamu aman" />
+            <SettingsCard title="Ganti password" description="Pakai password panjang dan acak, jangan yang dipakai di aplikasi lain.">
+                <form onSubmit={updatePassword} className="space-y-3.5">
+                    <div>
+                        <Label htmlFor="current_password">Password sekarang</Label>
 
-                    <form onSubmit={updatePassword} className="space-y-6">
-                        <div className="grid gap-2">
-                            <Label htmlFor="current_password">Password sekarang</Label>
+                        <Input
+                            id="current_password"
+                            ref={currentPasswordInput}
+                            value={data.current_password}
+                            onChange={(e) => setData('current_password', e.target.value)}
+                            type="password"
+                            className="mt-1.5 h-11 rounded-xl"
+                            autoComplete="current-password"
+                            placeholder="Password sekarang"
+                        />
 
-                            <Input
-                                id="current_password"
-                                ref={currentPasswordInput}
-                                value={data.current_password}
-                                onChange={(e) => setData('current_password', e.target.value)}
-                                type="password"
-                                className="mt-1 block w-full"
-                                autoComplete="current-password"
-                                placeholder="Password sekarang"
-                            />
+                        <InputError className="mt-1.5" message={errors.current_password} />
+                    </div>
 
-                            <InputError message={errors.current_password} />
-                        </div>
+                    <div>
+                        <Label htmlFor="password">Password baru</Label>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="password">Password baru</Label>
+                        <Input
+                            id="password"
+                            ref={passwordInput}
+                            value={data.password}
+                            onChange={(e) => setData('password', e.target.value)}
+                            type="password"
+                            className="mt-1.5 h-11 rounded-xl"
+                            autoComplete="new-password"
+                            placeholder="Password baru"
+                        />
 
-                            <Input
-                                id="password"
-                                ref={passwordInput}
-                                value={data.password}
-                                onChange={(e) => setData('password', e.target.value)}
-                                type="password"
-                                className="mt-1 block w-full"
-                                autoComplete="new-password"
-                                placeholder="Password baru"
-                            />
+                        <InputError className="mt-1.5" message={errors.password} />
+                    </div>
 
-                            <InputError message={errors.password} />
-                        </div>
+                    <div>
+                        <Label htmlFor="password_confirmation">Ulangi password</Label>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="password_confirmation">Ulangi password</Label>
+                        <Input
+                            id="password_confirmation"
+                            value={data.password_confirmation}
+                            onChange={(e) => setData('password_confirmation', e.target.value)}
+                            type="password"
+                            className="mt-1.5 h-11 rounded-xl"
+                            autoComplete="new-password"
+                            placeholder="Ulangi password"
+                        />
 
-                            <Input
-                                id="password_confirmation"
-                                value={data.password_confirmation}
-                                onChange={(e) => setData('password_confirmation', e.target.value)}
-                                type="password"
-                                className="mt-1 block w-full"
-                                autoComplete="new-password"
-                                placeholder="Ulangi password"
-                            />
+                        <InputError className="mt-1.5" message={errors.password_confirmation} />
+                    </div>
 
-                            <InputError message={errors.password_confirmation} />
-                        </div>
+                    <div className="flex items-center gap-4">
+                        <Button className="h-11 rounded-xl px-5 text-sm font-semibold" disabled={processing}>
+                            {processing ? 'Menyimpan...' : 'Simpan password'}
+                        </Button>
 
-                        <div className="flex items-center gap-4">
-                            <Button disabled={processing}>Simpan password</Button>
-
-                            <Transition
-                                show={recentlySuccessful}
-                                enter="transition ease-in-out"
-                                enterFrom="opacity-0"
-                                leave="transition ease-in-out"
-                                leaveTo="opacity-0"
-                            >
-                                <p className="text-sm text-neutral-600">Tersimpan</p>
-                            </Transition>
-                        </div>
-                    </form>
-                </div>
-            </SettingsLayout>
-        </AppLayout>
+                        <Transition
+                            show={recentlySuccessful}
+                            enter="transition ease-in-out"
+                            enterFrom="opacity-0"
+                            leave="transition ease-in-out"
+                            leaveTo="opacity-0"
+                        >
+                            <p className="text-success text-xs font-medium">Tersimpan</p>
+                        </Transition>
+                    </div>
+                </form>
+            </SettingsCard>
+        </SettingsLayout>
     );
 }
