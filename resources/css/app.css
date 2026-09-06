@@ -252,6 +252,33 @@
         z-index: -1;
     }
 
+    /* Horizontal card rails: no visible scrollbar, snap to each card. */
+    .rail {
+        display: flex;
+        gap: 0.75rem;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        scroll-padding-left: 1rem;
+    }
+
+    .rail::-webkit-scrollbar {
+        display: none;
+    }
+
+    .rail > * {
+        scroll-snap-align: start;
+        flex: 0 0 auto;
+    }
+
+    /* Display type for the landing page: tight, confident, not airy. */
+    .display {
+        letter-spacing: -0.035em;
+        line-height: 1.02;
+        font-weight: 800;
+    }
+
     /* Small pill used for counts and labels throughout the app. */
     .chip {
         display: inline-flex;

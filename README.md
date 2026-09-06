@@ -214,6 +214,15 @@ sticky, hero, strip metode pembayaran, cara kerja, angka, fitur, keunggulan,
 preview dashboard, use case, biaya, FAQ, CTA, dan footer dengan wordmark
 besar.
 
+Tata letaknya editorial dan asimetris: judul rata kiri dengan label bergaris,
+bukan tumpukan blok rata tengah. Kartu fitur, detail, dan use case disusun jadi
+satu baris yang digeser ke samping (`.rail`) dengan kartu berikutnya sedikit
+mengintip, plus tombol panah di layar lebar.
+
+Foto brand ada di `public/images/brand/`. Aslinya PNG ~2 MB per file; sudah
+diperkecil dan dikonversi ke WebP, total 14 MB jadi sekitar 700 KB. Hero memakai
+cutout transparan di atas bidang warna, bukan kartu mockup.
+
 Dua hal sengaja tidak mengikuti template aslinya, karena akan jadi klaim
 palsu di produk yang dipakai orang sungguhan:
 
