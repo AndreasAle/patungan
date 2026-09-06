@@ -1,6 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
-import { FormEventHandler } from 'react';
+import { useMemo, type FormEventHandler } from 'react';
 
 import InputError from '@/components/input-error';
 import { GoogleButton } from '@/components/patungan/google-button';
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
+import { suggestEmail } from '@/lib/email-hint';
 
 interface RegisterForm {
     [key: string]: string | boolean;
@@ -25,6 +26,9 @@ export default function Register() {
         password: '',
         password_confirmation: '',
     });
+
+    // A typo like gmial.com is a real domain, so only the user can tell us.
+    const suggestion = useMemo(() => suggestEmail(data.email), [data.email]);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -74,6 +78,16 @@ export default function Register() {
                             className="h-11 rounded-xl"
                         />
                         <InputError message={errors.email} />
+
+                        {suggestion && !errors.email && (
+                            <p className="text-muted-foreground text-[11px]">
+                                Maksud kamu{' '}
+                                <button type="button" onClick={() => setData('email', suggestion)} className="text-primary font-semibold underline">
+                                    {suggestion}
+                                </button>
+                                ?
+                            </p>
+                        )}
                     </div>
 
                     <div className="grid gap-1.5">

@@ -81,8 +81,9 @@ Driver `sandbox` menolak dijalankan di luar `local`/`testing`.
 ## Perintah
 
 ```bash
-php artisan test        # 110 test
+php artisan test        # 118 test
 php artisan payments:expire   # dijadwalkan tiap menit
+php artisan mail:test <email> # cek pengaturan SMTP
 npm run build
 ./vendor/bin/pint
 ```
@@ -205,6 +206,46 @@ huruf P) hidup sebagai SVG di `app-logo-icon.tsx` dan `public/favicon.svg`.
 Halaman `/profil` adalah beranda akun: avatar inisial, statistik patungan,
 kartu saldo mengambang, lalu daftar menu untuk uang dan akun. Seluruh copy
 aplikasi berbahasa Indonesia — termasuk halaman auth dan pengaturan bawaan.
+
+## Email harus benar-benar bisa dihubungi
+
+Tiga lapis, karena uang orang lain ada di sini dan penyelenggara harus bisa
+dihubungi lagi kalau ada masalah:
+
+1. **Domainnya harus nyata.** Sebelum akun dibuat, sistem mengecek apakah
+   domain email punya MX (atau minimal A) record. Domain karangan seperti
+   `asdkjhasd.xyz` langsung ditolak.
+2. **Email sekali pakai ditolak.** Daftar domainnya ada di
+   `config/patungan.php`, termasuk subdomainnya.
+3. **Link verifikasi.** Ini satu-satunya bukti nyata bahwa inbox-nya aktif.
+   Akun baru tidak bisa membuka dashboard atau membuat patungan sampai
+   linknya diklik.
+
+Batasnya jujur: cek DNS **tidak** menangkap typo dari domain yang benar-benar
+terdaftar. `gmial.com` misalnya milik typo-squatter, jadi lolos DNS. Untuk itu
+form pendaftaran memberi saran ejaan ("Maksud kamu andreas@gmail.com?"), dan
+link verifikasi yang tidak pernah sampai jadi penjaga terakhirnya.
+
+Akun yang masuk lewat Google tidak perlu verifikasi lagi — Google sudah
+memverifikasi alamatnya.
+
+### Pengaturan pengirim
+
+Sudah diarahkan ke mailbox Hostinger `patungan@trackertask.com`. Yang belum
+diisi hanya passwordnya, isi sendiri di `.env`:
+
+```
+MAIL_PASSWORD=
+```
+
+Lalu tes:
+
+```bash
+php artisan mail:test kamu@gmail.com
+```
+
+Selama password masih kosong, email verifikasi tidak akan terkirim dan
+pendaftar baru berhenti di halaman "Cek email kamu".
 
 ## Login dengan Google
 

@@ -26,6 +26,7 @@ class RegistrationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        // A fresh account must confirm its address before it can do anything.
+        $response->assertRedirect(route('verification.notice', absolute: false));
     }
 }

@@ -42,6 +42,27 @@ return [
         'min_amount' => (int) env('PAYOUT_MIN_AMOUNT', 10000),
     ],
 
+    /*
+    | Email quality gate. The domain must really be able to receive mail, and
+    | throwaway inboxes are refused - a payer we cannot reach later is a problem
+    | once money is involved.
+    */
+    'email' => [
+        'disposable_domains' => [
+            '0-mail.com', '10minutemail.com', '20minutemail.com', '33mail.com',
+            'anonbox.net', 'byom.de', 'dispostable.com', 'emailondeck.com',
+            'fakeinbox.com', 'getairmail.com', 'getnada.com', 'guerrillamail.com',
+            'guerrillamail.info', 'harakirimail.com', 'inboxbear.com', 'jetable.org',
+            'mail-temporaire.fr', 'mail7.io', 'mailcatch.com', 'maildrop.cc',
+            'mailinator.com', 'mailnesia.com', 'mailsac.com', 'mintemail.com',
+            'moakt.com', 'mohmal.com', 'mytemp.email', 'nowmymail.com',
+            'sharklasers.com', 'spam4.me', 'spamgourmet.com', 'tempinbox.com',
+            'temp-mail.io', 'temp-mail.org', 'tempmail.net', 'tempmailo.com',
+            'tempr.email', 'throwawaymail.com', 'trashmail.com', 'trashmail.de',
+            'yopmail.com', 'yopmail.fr', 'yopmail.net',
+        ],
+    ],
+
     'limits' => [
         'max_participants' => 200,
         'min_amount' => 1000,

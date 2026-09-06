@@ -3,6 +3,8 @@
 namespace App\Http\Requests\Settings;
 
 use App\Models\User;
+use App\Rules\NotDisposableEmail;
+use App\Rules\RealEmailDomain;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -14,6 +16,15 @@ class ProfileUpdateRequest extends FormRequest
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
+    /** @return array<string, string> */
+    public function messages(): array
+    {
+        return [
+            'email.unique' => 'Email ini sudah dipakai akun lain.',
+            'email.email' => 'Format emailnya belum benar.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -23,8 +34,10 @@ class ProfileUpdateRequest extends FormRequest
                 'required',
                 'string',
                 'lowercase',
-                'email',
+                'email:rfc',
                 'max:255',
+                app(RealEmailDomain::class),
+                new NotDisposableEmail,
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
         ];

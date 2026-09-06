@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Contracts\DnsResolver;
 use App\Contracts\PaymentGateway;
 use App\Contracts\PayoutProvider;
 use App\Models\Patungan;
@@ -10,6 +11,7 @@ use App\Payments\PaymentGatewayManager;
 use App\Payments\Payouts\ManualPayoutProvider;
 use App\Policies\PatunganPolicy;
 use App\Policies\SettlementPolicy;
+use App\Support\SystemDnsResolver;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -19,6 +21,8 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(DnsResolver::class, SystemDnsResolver::class);
+
         $this->app->singleton(PaymentGatewayManager::class, fn ($app) => new PaymentGatewayManager(
             $app['config'],
             $app->environment(),
