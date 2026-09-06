@@ -81,7 +81,7 @@ Driver `sandbox` menolak dijalankan di luar `local`/`testing`.
 ## Perintah
 
 ```bash
-php artisan test        # 125 test
+php artisan test        # 127 test
 php artisan payments:expire   # dijadwalkan tiap menit
 php artisan mail:test <email> # cek pengaturan SMTP
 npm run build
@@ -291,6 +291,15 @@ php artisan mail:test kamu@gmail.com
 
 Selama password masih kosong, email verifikasi tidak akan terkirim dan
 pendaftar baru berhenti di halaman "Cek email kamu".
+
+**Kalau email tidak sampai:** `php artisan serve` membaca `.env` sekali saat
+start. Ubah pengaturan mail lalu restart servernya, kalau tidak dia masih
+memakai mailer lama. Gejalanya khas: isi emailnya muncul di
+`storage/logs/laravel.log` sebagai `local.DEBUG: From: ...` alih-alih terkirim.
+
+Kegagalan kirim tidak pernah membatalkan pendaftaran. Kodenya tetap dibuat dan
+disimpan, error-nya dicatat di log, dan halaman verifikasi menampilkan
+"Email tidak bisa dikirim sekarang" supaya pendaftar tahu harus kirim ulang.
 
 ## Login dengan Google
 

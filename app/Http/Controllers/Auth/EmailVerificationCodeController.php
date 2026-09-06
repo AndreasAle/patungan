@@ -60,7 +60,11 @@ class EmailVerificationCodeController extends Controller
             return back()->withErrors(['code' => "Tunggu {$waitFor} detik lagi sebelum minta kode baru."]);
         }
 
-        $this->codes->send($user);
+        if (! $this->codes->send($user)) {
+            return back()->withErrors([
+                'code' => 'Email tidak bisa dikirim sekarang. Coba lagi sebentar lagi.',
+            ]);
+        }
 
         return back()->with('status', 'verification-code-sent');
     }

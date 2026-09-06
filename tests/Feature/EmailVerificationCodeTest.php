@@ -10,6 +10,7 @@ use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
+use RuntimeException;
 use Tests\TestCase;
 
 class EmailVerificationCodeTest extends TestCase
@@ -183,5 +184,29 @@ class EmailVerificationCodeTest extends TestCase
         $this->assertStringContainsString('cid:', $body);
         $this->assertStringNotContainsString('data:image', $body);
         $this->assertCount(1, $sent->getAttachments());
+    }
+
+    public function test_a_mail_outage_does_not_lose_the_signup(): void
+    {
+        // Every send attempt blows up, as if SMTP were unreachable.
+        Notification::fake();
+        Notification::shouldReceive('send')->andThrow(new RuntimeException('smtp down'));
+
+        $user = $this->unverified();
+
+        $this->assertFalse(app(EmailVerificationCode::class)->send($user));
+
+        // The code is still issued, so a later resend can succeed.
+        $this->assertNotNull($user->fresh()->email_verification_code);
+    }
+
+    public function test_a_failed_resend_says_so_instead_of_erroring(): void
+    {
+        $user = $this->unverified();
+
+        Notification::fake();
+        Notification::shouldReceive('send')->andThrow(new RuntimeException('smtp down'));
+
+        $this->actingAs($user)->post(route('verification.send'))->assertSessionHasErrors('code');
     }
 }

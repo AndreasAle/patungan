@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\User;
 use App\Notifications\VerifyEmailWithCode;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * Issues and checks the six digit code sent at registration.
@@ -22,7 +24,14 @@ class EmailVerificationCode
     /** Shortest gap between two sends, so the resend button cannot be spammed. */
     public const RESEND_SECONDS = 60;
 
-    public function send(User $user): void
+    /**
+     * Issues a code and mails it.
+     *
+     * Returns false when the mail could not be handed off, so the caller can
+     * say so instead of failing the whole request - the code is already
+     * stored, and the user can ask for it again.
+     */
+    public function send(User $user): bool
     {
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
@@ -33,7 +42,18 @@ class EmailVerificationCode
             'email_verification_attempts' => 0,
         ])->save();
 
-        $user->notify(new VerifyEmailWithCode($code));
+        try {
+            $user->notify(new VerifyEmailWithCode($code));
+        } catch (Throwable $e) {
+            Log::error('Could not send the verification code', [
+                'user' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
+
+        return true;
     }
 
     /** Seconds left before another code may be sent, or zero when it is allowed. */

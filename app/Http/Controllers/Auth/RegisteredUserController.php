@@ -53,6 +53,7 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
+        // Sends the verification code; a mail outage must not lose the signup.
         event(new Registered($user));
 
         Auth::login($user);
