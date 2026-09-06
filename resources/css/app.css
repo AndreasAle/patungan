@@ -1,0 +1,195 @@
+@import 'tailwindcss';
+
+@plugin 'tailwindcss-animate';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+    --font-sans:
+        'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --radius-lg: var(--radius);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    --color-success: var(--success);
+    --color-success-foreground: var(--success-foreground);
+    --color-success-soft: var(--success-soft);
+
+    --color-warning: var(--warning);
+    --color-warning-foreground: var(--warning-foreground);
+    --color-warning-soft: var(--warning-soft);
+
+    --color-brand-soft: var(--brand-soft);
+
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+
+    --color-sidebar: var(--sidebar-background);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentColor);
+    }
+}
+
+:root {
+    /* Patungan design tokens - indigo brand on an off-white ground. */
+    --background: hsl(240, 20%, 99%);
+    --foreground: hsl(240, 10%, 9%);
+    --card: hsl(0, 0%, 100%);
+    --card-foreground: hsl(240, 10%, 9%);
+    --popover: hsl(0, 0%, 100%);
+    --popover-foreground: hsl(240, 10%, 9%);
+    --primary: hsl(243, 75%, 59%);
+    --primary-foreground: hsl(0, 0%, 100%);
+    --brand-soft: hsl(243, 90%, 96%);
+    --secondary: hsl(240, 14%, 96%);
+    --secondary-foreground: hsl(240, 10%, 15%);
+    --muted: hsl(240, 14%, 96%);
+    --muted-foreground: hsl(240, 5%, 45%);
+    --accent: hsl(240, 14%, 95%);
+    --accent-foreground: hsl(240, 10%, 15%);
+    --destructive: hsl(0, 72%, 51%);
+    --destructive-foreground: hsl(0, 0%, 100%);
+    --success: hsl(152, 62%, 36%);
+    --success-foreground: hsl(0, 0%, 100%);
+    --success-soft: hsl(152, 60%, 95%);
+    --warning: hsl(35, 92%, 45%);
+    --warning-foreground: hsl(0, 0%, 100%);
+    --warning-soft: hsl(40, 95%, 94%);
+    --border: hsl(240, 12%, 91%);
+    --input: hsl(240, 12%, 89%);
+    --ring: hsl(243, 75%, 59%);
+    --chart-1: hsl(243, 75%, 59%);
+    --chart-2: hsl(152, 62%, 36%);
+    --chart-3: hsl(35, 92%, 45%);
+    --chart-4: hsl(280, 65%, 60%);
+    --chart-5: hsl(199, 89%, 48%);
+    --radius: 0.875rem;
+    --sidebar-background: hsl(0, 0%, 100%);
+    --sidebar-foreground: hsl(240, 6%, 32%);
+    --sidebar-primary: hsl(243, 75%, 59%);
+    --sidebar-primary-foreground: hsl(0, 0%, 100%);
+    --sidebar-accent: hsl(243, 90%, 96%);
+    --sidebar-accent-foreground: hsl(243, 60%, 40%);
+    --sidebar-border: hsl(240, 12%, 92%);
+    --sidebar-ring: hsl(243, 75%, 59%);
+}
+
+.dark {
+    --background: hsl(240, 12%, 7%);
+    --foreground: hsl(240, 10%, 97%);
+    --card: hsl(240, 10%, 11%);
+    --card-foreground: hsl(240, 10%, 97%);
+    --popover: hsl(240, 10%, 11%);
+    --popover-foreground: hsl(240, 10%, 97%);
+    --primary: hsl(243, 85%, 71%);
+    --primary-foreground: hsl(240, 30%, 12%);
+    --brand-soft: hsl(243, 40%, 20%);
+    --secondary: hsl(240, 8%, 17%);
+    --secondary-foreground: hsl(240, 10%, 95%);
+    --muted: hsl(240, 8%, 15%);
+    --muted-foreground: hsl(240, 6%, 65%);
+    --accent: hsl(240, 8%, 19%);
+    --accent-foreground: hsl(240, 10%, 95%);
+    --destructive: hsl(0, 72%, 60%);
+    --destructive-foreground: hsl(0, 0%, 100%);
+    --success: hsl(152, 55%, 48%);
+    --success-foreground: hsl(150, 40%, 10%);
+    --success-soft: hsl(152, 35%, 18%);
+    --warning: hsl(38, 92%, 58%);
+    --warning-foreground: hsl(35, 50%, 10%);
+    --warning-soft: hsl(38, 40%, 20%);
+    --border: hsl(240, 8%, 20%);
+    --input: hsl(240, 8%, 22%);
+    --ring: hsl(243, 85%, 71%);
+    --chart-1: hsl(243, 85%, 71%);
+    --chart-2: hsl(152, 55%, 48%);
+    --chart-3: hsl(38, 92%, 58%);
+    --chart-4: hsl(280, 65%, 68%);
+    --chart-5: hsl(199, 89%, 60%);
+    --sidebar-background: hsl(240, 10%, 10%);
+    --sidebar-foreground: hsl(240, 8%, 72%);
+    --sidebar-primary: hsl(243, 85%, 71%);
+    --sidebar-primary-foreground: hsl(240, 30%, 12%);
+    --sidebar-accent: hsl(243, 30%, 22%);
+    --sidebar-accent-foreground: hsl(243, 90%, 88%);
+    --sidebar-border: hsl(240, 8%, 20%);
+    --sidebar-ring: hsl(243, 85%, 71%);
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+    }
+}
+
+@layer base {
+    body {
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+    }
+
+    /* Keeps the fixed mobile tab bar clear of the iOS home indicator. */
+    .pb-safe {
+        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
+    }
+}
