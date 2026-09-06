@@ -11,6 +11,7 @@ use App\Services\PatunganService;
 use App\Services\PaymentService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use RuntimeException;
 
 /**
  * Demo data for local development.
@@ -25,6 +26,13 @@ class DatabaseSeeder extends Seeder
 
     public function run(PatunganService $patunganService, PaymentService $paymentService): void
     {
+        // This seeder plants an admin whose password is public knowledge, so it
+        // must never be able to run anywhere real - one stray `db:seed` on a
+        // deployed box would otherwise hand out the admin panel.
+        if (! app()->environment('local', 'testing')) {
+            throw new RuntimeException('DatabaseSeeder carries demo credentials and only runs in local or testing.');
+        }
+
         $admin = User::query()->firstOrCreate(
             ['email' => 'admin@patungan.test'],
             ['name' => 'Admin Patungan', 'password' => Hash::make('password')],
