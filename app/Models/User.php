@@ -61,6 +61,20 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Google-only accounts have no password. Returning an empty string keeps
+     * the hasher from being handed null, and it can never match a real one.
+     */
+    public function getAuthPassword(): string
+    {
+        return $this->password ?? '';
+    }
+
+    public function hasPassword(): bool
+    {
+        return filled($this->password);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin;

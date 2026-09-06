@@ -3,6 +3,7 @@ import { LoaderCircle } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
 import InputError from '@/components/input-error';
+import { GoogleButton } from '@/components/patungan/google-button';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -40,9 +41,13 @@ export default function Login({ status, canResetPassword }: LoginProps) {
         <AuthLayout title="Masuk ke akun kamu" description="Masukkan email dan password kamu">
             <Head title="Masuk" />
 
-            <form className="flex flex-col gap-6" onSubmit={submit}>
-                <div className="grid gap-6">
-                    <div className="grid gap-2">
+            {status && <div className="bg-success-soft text-success mb-4 rounded-xl px-3 py-2.5 text-center text-xs font-semibold">{status}</div>}
+
+            <GoogleButton label="Masuk dengan Google" />
+
+            <form className="flex flex-col gap-4" onSubmit={submit}>
+                <div className="grid gap-4">
+                    <div className="grid gap-1.5">
                         <Label htmlFor="email">Email</Label>
                         <Input
                             id="email"
@@ -54,15 +59,16 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
                             placeholder="email@kamu.com"
+                            className="h-11 rounded-xl"
                         />
                         <InputError message={errors.email} />
                     </div>
 
-                    <div className="grid gap-2">
+                    <div className="grid gap-1.5">
                         <div className="flex items-center">
                             <Label htmlFor="password">Password</Label>
                             {canResetPassword && (
-                                <TextLink href={route('password.request')} className="ml-auto text-sm" tabIndex={5}>
+                                <TextLink href={route('password.request')} className="text-primary ml-auto text-[11px] font-semibold" tabIndex={5}>
                                     Lupa password?
                                 </TextLink>
                             )}
@@ -76,30 +82,31 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             value={data.password}
                             onChange={(e) => setData('password', e.target.value)}
                             placeholder="Password"
+                            className="h-11 rounded-xl"
                         />
                         <InputError message={errors.password} />
                     </div>
 
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center gap-2.5">
                         <Checkbox id="remember" name="remember" tabIndex={3} />
-                        <Label htmlFor="remember">Ingat saya</Label>
+                        <Label htmlFor="remember" className="text-xs">
+                            Ingat saya
+                        </Label>
                     </div>
 
-                    <Button type="submit" className="mt-4 w-full" tabIndex={4} disabled={processing}>
-                        {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                        Log in
+                    <Button type="submit" className="h-11 w-full rounded-xl text-sm font-semibold" tabIndex={4} disabled={processing}>
+                        {processing && <LoaderCircle className="size-4 animate-spin" />}
+                        Masuk
                     </Button>
                 </div>
 
-                <div className="text-muted-foreground text-center text-sm">
+                <div className="text-muted-foreground text-center text-xs">
                     Belum punya akun?{' '}
-                    <TextLink href={route('register')} tabIndex={5}>
+                    <TextLink href={route('register')} className="text-primary font-semibold" tabIndex={5}>
                         Daftar
                     </TextLink>
                 </div>
             </form>
-
-            {status && <div className="mb-4 text-center text-sm font-medium text-green-600">{status}</div>}
         </AuthLayout>
     );
 }

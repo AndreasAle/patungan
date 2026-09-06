@@ -2,6 +2,7 @@ import { BalanceHero } from '@/components/patungan/balance-hero';
 import { EmptyState } from '@/components/patungan/empty-state';
 import { PatunganCard } from '@/components/patungan/patungan-card';
 import { QuickActions } from '@/components/patungan/quick-actions';
+import { WelcomeDialog } from '@/components/patungan/welcome-dialog';
 import { Button } from '@/components/ui/button';
 import PatunganLayout from '@/layouts/patungan-layout';
 import type { Balance, PatunganCard as PatunganCardData, SharedData } from '@/types';
@@ -27,6 +28,7 @@ export default function Dashboard({ balance, active, history, notifications }: D
     return (
         <PatunganLayout title="Home" hero={<BalanceHero name={user?.name ?? ''} balance={balance} unreadCount={notifications.length} />}>
             <Head title="Dashboard" />
+            <WelcomeDialog />
 
             <QuickActions />
 

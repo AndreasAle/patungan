@@ -30,6 +30,7 @@ export interface SharedData {
     name: string;
     auth: Auth;
     flash: { success: string | null; error: string | null };
+    oauth: { google: boolean };
     [key: string]: unknown;
 }
 

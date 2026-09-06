@@ -81,7 +81,7 @@ Driver `sandbox` menolak dijalankan di luar `local`/`testing`.
 ## Perintah
 
 ```bash
-php artisan test        # 99 test
+php artisan test        # 110 test
 php artisan payments:expire   # dijadwalkan tiap menit
 npm run build
 ./vendor/bin/pint
@@ -205,6 +205,34 @@ huruf P) hidup sebagai SVG di `app-logo-icon.tsx` dan `public/favicon.svg`.
 Halaman `/profil` adalah beranda akun: avatar inisial, statistik patungan,
 kartu saldo mengambang, lalu daftar menu untuk uang dan akun. Seluruh copy
 aplikasi berbahasa Indonesia — termasuk halaman auth dan pengaturan bawaan.
+
+## Login dengan Google
+
+Fondasinya sudah terpasang lewat Laravel Socialite; tinggal isi kredensial:
+
+```
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI="${APP_URL}/auth/google/callback"
+```
+
+Di Google Cloud Console, daftarkan redirect URI `/auth/google/callback`.
+
+Selama kredensial masih kosong, `GoogleAuthController::enabled()` bernilai
+false: rutenya membalas 404 dan tombolnya tidak dirender sama sekali, jadi tidak
+ada jalan buntu buat pengguna.
+
+Cara akun dipetakan:
+
+- Ketemu `google_id` yang sama → pakai akun itu
+- Belum ada, tapi emailnya sudah terdaftar → akunnya di-link, bukan diduplikasi,
+  dan password lamanya tetap berfungsi
+- Belum ada sama sekali → akun baru dibuat tanpa password, email langsung
+  dianggap terverifikasi karena Google sudah memverifikasinya
+
+Akun yang hanya punya Google tidak bisa ditembus lewat form password: kolom
+`password` boleh null dan `getAuthPassword()` mengembalikan string kosong,
+sehingga tidak pernah cocok dengan apa pun.
 
 ## Popup sambutan
 

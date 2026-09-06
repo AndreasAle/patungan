@@ -1,8 +1,9 @@
-import AppLogoIcon from '@/components/app-logo-icon';
+import AppLogo from '@/components/app-logo';
 import { Link } from '@inertiajs/react';
+import type { ReactNode } from 'react';
 
 interface AuthLayoutProps {
-    children: React.ReactNode;
+    children: ReactNode;
     name?: string;
     title?: string;
     description?: string;
@@ -10,25 +11,28 @@ interface AuthLayoutProps {
 
 export default function AuthSimpleLayout({ children, title, description }: AuthLayoutProps) {
     return (
-        <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-            <div className="w-full max-w-sm">
-                <div className="flex flex-col gap-8">
-                    <div className="flex flex-col items-center gap-4">
-                        <Link href={route('home')} className="flex flex-col items-center gap-2 font-medium">
-                            <div className="mb-1 flex h-9 w-9 items-center justify-center rounded-md">
-                                <AppLogoIcon className="size-9 fill-current text-[var(--foreground)] dark:text-white" />
-                            </div>
-                            <span className="sr-only">{title}</span>
-                        </Link>
+        <div className="bg-background flex min-h-svh flex-col">
+            {/* A slim brand band so the auth screens feel part of the app. */}
+            <header className="surface-deep flex h-14 shrink-0 items-center justify-center">
+                <Link href={route('home')} aria-label="Patungan">
+                    <AppLogo tone="onDeep" />
+                </Link>
+            </header>
 
-                        <div className="space-y-2 text-center">
-                            <h1 className="text-xl font-medium">{title}</h1>
-                            <p className="text-muted-foreground text-center text-sm">{description}</p>
-                        </div>
+            <main className="flex flex-1 items-center justify-center px-4 py-8">
+                <div className="w-full max-w-sm">
+                    <div className="border-border bg-card rounded-3xl border p-6 shadow-[0_8px_40px_rgba(16,66,44,0.06)]">
+                        <h1 className="text-foreground text-xl font-extrabold tracking-tight">{title}</h1>
+                        {description && <p className="text-muted-foreground mt-1 text-xs leading-relaxed">{description}</p>}
+
+                        <div className="mt-5">{children}</div>
                     </div>
-                    {children}
+
+                    <p className="text-muted-foreground mt-5 text-center text-[11px] leading-relaxed">
+                        Dengan lanjut, kamu setuju memakai Patungan secara wajar.
+                    </p>
                 </div>
-            </div>
+            </main>
         </div>
     );
 }

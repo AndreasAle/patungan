@@ -23,28 +23,38 @@ from pathlib import Path
 
 import numpy as np
 from PIL import Image, ImageFilter
+from scipy import ndimage
 
 
 def build_background_mask(pixels: np.ndarray, tolerance: int) -> np.ndarray:
-    """Flood fill from every border pixel, returning True where the backdrop is."""
+    """Flood fill inward from the backdrop, returning True where the backdrop is."""
     height, width = pixels.shape[:2]
     rgb = pixels[:, :, :3].astype(np.int16)
+
+    # The top row is the one edge a standing subject never reaches, so it gives
+    # a trustworthy sample of the backdrop colour.
+    reference = np.median(rgb[0], axis=0)
 
     is_background = np.zeros((height, width), dtype=bool)
     queue: deque[tuple[int, int]] = deque()
 
-    # Seed from the whole border - the subject never touches all four edges.
+    def seed(y: int, x: int) -> None:
+        # Only start from border pixels that actually look like the backdrop;
+        # the subject often runs off the bottom of the frame.
+        if is_background[y, x]:
+            return
+
+        if float(np.abs(rgb[y, x] - reference).max()) <= tolerance * 2:
+            is_background[y, x] = True
+            queue.append((y, x))
+
     for x in range(width):
-        for y in (0, height - 1):
-            if not is_background[y, x]:
-                is_background[y, x] = True
-                queue.append((y, x))
+        seed(0, x)
+        seed(height - 1, x)
 
     for y in range(height):
-        for x in (0, width - 1):
-            if not is_background[y, x]:
-                is_background[y, x] = True
-                queue.append((y, x))
+        seed(y, 0)
+        seed(y, width - 1)
 
     while queue:
         y, x = queue.popleft()
@@ -65,13 +75,36 @@ def build_background_mask(pixels: np.ndarray, tolerance: int) -> np.ndarray:
     return is_background
 
 
+def keep_largest_island(foreground: np.ndarray) -> np.ndarray:
+    """
+    Drop everything but the biggest connected shape.
+
+    A gradient backdrop leaves speckles the flood fill could not reach. The
+    subject is one large blob, so keeping only the largest island clears the
+    noise without touching them.
+    """
+    labels, count = ndimage.label(foreground)
+
+    if count <= 1:
+        return foreground
+
+    sizes = ndimage.sum(foreground, labels, range(1, count + 1))
+    biggest = int(np.argmax(sizes)) + 1
+
+    return labels == biggest
+
+
 def cutout(source: Path, target: Path, tolerance: int) -> None:
     image = Image.open(source).convert("RGBA")
     pixels = np.array(image)
 
     background = build_background_mask(pixels, tolerance)
+    foreground = keep_largest_island(~background)
 
-    alpha = np.where(background, 0, 255).astype(np.uint8)
+    # Close pinholes the fill left inside the subject, e.g. in shadowed folds.
+    foreground = ndimage.binary_closing(foreground, structure=np.ones((3, 3)))
+
+    alpha = np.where(foreground, 255, 0).astype(np.uint8)
     pixels[:, :, 3] = alpha
 
     result = Image.fromarray(pixels)

@@ -1,7 +1,6 @@
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { FlashToast } from '@/components/patungan/flash-toast';
-import { WelcomeDialog } from '@/components/patungan/welcome-dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { SharedData } from '@/types';
@@ -51,7 +50,6 @@ export default function PatunganLayout({ children, title, back, action, hero }: 
     return (
         <div className="bg-background min-h-screen">
             <FlashToast />
-            <WelcomeDialog />
 
             {/* Desktop rail */}
             <aside className="border-sidebar-border bg-sidebar fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r px-3 py-5 lg:flex">

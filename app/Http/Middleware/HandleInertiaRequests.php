@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Controllers\Auth\GoogleAuthController;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -51,6 +52,9 @@ class HandleInertiaRequests extends Middleware
                     'is_suspended' => $user->isSuspended(),
                     'email_verified_at' => $user->email_verified_at?->toIso8601String(),
                 ],
+            ],
+            'oauth' => [
+                'google' => GoogleAuthController::enabled(),
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

@@ -55,19 +55,6 @@ export function WelcomeDialog() {
                         <span aria-hidden="true" className="bg-brand-soft absolute -top-16 -right-12 size-44 rounded-full opacity-70" />
                         <span aria-hidden="true" className="bg-lime/25 absolute -bottom-24 -left-16 size-44 rounded-full" />
 
-                        {/*
-                          Cut-out founder photo, bottom aligned so it reads as part of the
-                          card rather than a pasted thumbnail. It stays hidden until it
-                          actually loads, so a missing file leaves no broken placeholder.
-                        */}
-                        <img
-                            src="/images/founder.png"
-                            alt=""
-                            hidden={!photoLoaded}
-                            onLoad={() => setPhotoLoaded(true)}
-                            className="pointer-events-none absolute right-0 -bottom-1 z-[1] w-32 select-none"
-                        />
-
                         <div className="relative z-[2]">
                             <div className="flex items-center justify-between gap-2">
                                 <AppLogoIcon className="size-8" />
@@ -77,16 +64,37 @@ export function WelcomeDialog() {
                                 </span>
                             </div>
 
-                            {/* Leave room on the right once the photo is in place. */}
-                            <div className={photoLoaded ? 'pr-24' : undefined}>
-                                <Dialog.Title className="text-primary mt-4 text-xl leading-tight font-extrabold tracking-tight">
-                                    Halo, saya Andreas 👋
-                                </Dialog.Title>
+                            {/* Text and photo sit side by side, both resting on the same baseline. */}
+                            <div className="mt-4 flex items-end gap-1">
+                                <div className="min-w-0 flex-1">
+                                    <Dialog.Title className="text-primary text-lg leading-tight font-extrabold tracking-tight">
+                                        Halo, saya Andreas 👋
+                                    </Dialog.Title>
 
-                                <Dialog.Description className="text-muted-foreground mt-2 text-xs leading-relaxed">
-                                    Saya developer Patungan. Kamu masuk sebagai 100 pengguna pertama yang mencoba aplikasi ini. Silakan pakai semua
-                                    fiturnya dengan aman — saya akan terus memantau dan mengembangkannya biar makin nyaman dipakai.
-                                </Dialog.Description>
+                                    <Dialog.Description className="text-muted-foreground mt-2 text-xs leading-relaxed">
+                                        Saya developer Patungan. Kamu masuk sebagai 100 pengguna pertama yang mencoba aplikasi ini. Pakai semua
+                                        fiturnya dengan aman — saya terus memantau dan mengembangkannya.
+                                    </Dialog.Description>
+                                </div>
+
+                                {/*
+                                  Cut-out founder photo. It stays hidden until it actually
+                                  loads, so a missing file leaves no gap in the row.
+                                */}
+                                <div className="relative shrink-0">
+                                    <span
+                                        aria-hidden="true"
+                                        hidden={!photoLoaded}
+                                        className="bg-lime/30 absolute right-1 bottom-2 size-20 rounded-full"
+                                    />
+                                    <img
+                                        src="/images/founder.png"
+                                        alt=""
+                                        hidden={!photoLoaded}
+                                        onLoad={() => setPhotoLoaded(true)}
+                                        className="pointer-events-none relative -mr-2 -mb-4 w-28 select-none"
+                                    />
+                                </div>
                             </div>
 
                             <ul className="mt-5 flex items-center justify-between gap-2">
