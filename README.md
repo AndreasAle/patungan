@@ -81,7 +81,7 @@ Driver `sandbox` menolak dijalankan di luar `local`/`testing`.
 ## Perintah
 
 ```bash
-php artisan test        # 118 test
+php artisan test        # 125 test
 php artisan payments:expire   # dijadwalkan tiap menit
 php artisan mail:test <email> # cek pengaturan SMTP
 npm run build
@@ -207,6 +207,42 @@ Halaman `/profil` adalah beranda akun: avatar inisial, statistik patungan,
 kartu saldo mengambang, lalu daftar menu untuk uang dan akun. Seluruh copy
 aplikasi berbahasa Indonesia — termasuk halaman auth dan pengaturan bawaan.
 
+## Landing page
+
+Halaman depan mengikuti struktur landing fintech: announcement bar, nav
+sticky, hero, strip metode pembayaran, cara kerja, angka, fitur, keunggulan,
+preview dashboard, use case, biaya, FAQ, CTA, dan footer dengan wordmark
+besar.
+
+Dua hal sengaja tidak mengikuti template aslinya, karena akan jadi klaim
+palsu di produk yang dipakai orang sungguhan:
+
+- **Tidak ada logo partner karangan.** Diganti strip aplikasi yang memang bisa
+  memindai QRIS.
+- **Tidak ada testimoni karangan.** Diganti kartu use case yang menjelaskan
+  skenario pemakaian.
+
+Angka biayanya juga bukan angka hiasan — diambil dari `config/patungan.php`
+lewat props, jadi kalau tarifnya diubah, halaman depan ikut berubah.
+
+Product shot-nya bukan screenshot PNG, melainkan komponen React yang memakai
+komponen asli aplikasi, jadi tidak bisa basi.
+
+## Verifikasi email pakai kode
+
+Pendaftar menerima **kode 6 digit**, bukan link. Kodenya:
+
+- disimpan ter-hash, jadi dump database tidak membocorkan kode yang berlaku
+- kedaluwarsa dalam 15 menit
+- hanya boleh salah 6 kali sebelum harus minta kode baru
+- kirim ulang dibatasi 60 detik sekali
+
+Emailnya memakai template sendiri di `resources/views/emails/verify-code.blade.php`,
+disusun dengan tabel dan inline style supaya rapi di semua mail client. Logonya
+ikut terkirim sebagai lampiran inline (`cid:`), bukan di-hotlink maupun data URI —
+keduanya diblokir Gmail. Ada test yang memeriksa ini pada pesan yang benar-benar
+dikirim.
+
 ## Email harus benar-benar bisa dihubungi
 
 Tiga lapis, karena uang orang lain ada di sini dan penyelenggara harus bisa
@@ -217,14 +253,14 @@ dihubungi lagi kalau ada masalah:
    `asdkjhasd.xyz` langsung ditolak.
 2. **Email sekali pakai ditolak.** Daftar domainnya ada di
    `config/patungan.php`, termasuk subdomainnya.
-3. **Link verifikasi.** Ini satu-satunya bukti nyata bahwa inbox-nya aktif.
+3. **Kode verifikasi.** Ini satu-satunya bukti nyata bahwa inbox-nya aktif.
    Akun baru tidak bisa membuka dashboard atau membuat patungan sampai
-   linknya diklik.
+   kodenya dimasukkan.
 
 Batasnya jujur: cek DNS **tidak** menangkap typo dari domain yang benar-benar
 terdaftar. `gmial.com` misalnya milik typo-squatter, jadi lolos DNS. Untuk itu
 form pendaftaran memberi saran ejaan ("Maksud kamu andreas@gmail.com?"), dan
-link verifikasi yang tidak pernah sampai jadi penjaga terakhirnya.
+kode verifikasi yang tidak pernah sampai jadi penjaga terakhirnya.
 
 Akun yang masuk lewat Google tidak perlu verifikasi lagi — Google sudah
 memverifikasi alamatnya.

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\UserRole;
+use App\Services\EmailVerificationCode;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -35,6 +36,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
+        'email_verification_code',
     ];
 
     /**
@@ -59,6 +61,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'role' => UserRole::class,
             'suspended_at' => 'datetime',
+            'email_verification_sent_at' => 'datetime',
+            'email_verification_expires_at' => 'datetime',
         ];
     }
 
@@ -74,6 +78,15 @@ class User extends Authenticatable implements MustVerifyEmail
     public function hasPassword(): bool
     {
         return filled($this->password);
+    }
+
+    /**
+     * Verification is a code typed into the app, not a signed link, so every
+     * path that asks for verification goes through the same place.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        app(EmailVerificationCode::class)->send($this);
     }
 
     public function isAdmin(): bool

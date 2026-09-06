@@ -23,7 +23,18 @@ use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', fn () => Inertia::render('welcome'))->name('home');
+// The landing page quotes the real fee configuration, never hardcoded numbers.
+Route::get('/', fn () => Inertia::render('welcome', [
+    'fees' => [
+        'platform_flat' => (int) config('patungan.fees.platform.flat'),
+        'platform_bps' => (int) config('patungan.fees.platform.bps'),
+        'gateway_flat' => (int) config('patungan.fees.gateway.flat'),
+        'gateway_bps' => (int) config('patungan.fees.gateway.bps'),
+        'bearer' => config('patungan.fees.bearer'),
+    ],
+    'invoice_minutes' => (int) round(((int) config('patungan.invoice_ttl')) / 60),
+    'max_participants' => (int) config('patungan.limits.max_participants'),
+]))->name('home');
 
 /*
 |--------------------------------------------------------------------------

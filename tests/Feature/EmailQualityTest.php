@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Contracts\DnsResolver;
 use App\Models\User;
-use Illuminate\Auth\Notifications\VerifyEmail;
+use App\Notifications\VerifyEmailWithCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
@@ -80,7 +80,7 @@ class EmailQualityTest extends TestCase
         $this->post(route('register'), $this->payload('andreas@'))->assertSessionHasErrors('email');
     }
 
-    public function test_registering_sends_a_verification_link_and_holds_the_account_back(): void
+    public function test_registering_sends_a_verification_code_and_holds_the_account_back(): void
     {
         Notification::fake();
         $this->dnsKnows('gmail.com');
@@ -91,7 +91,7 @@ class EmailQualityTest extends TestCase
         $user = User::query()->firstOrFail();
 
         $this->assertNull($user->email_verified_at);
-        Notification::assertSentTo($user, VerifyEmail::class);
+        Notification::assertSentTo($user, VerifyEmailWithCode::class);
 
         // Signed in, but nothing is usable until the link is clicked.
         $this->get(route('dashboard'))->assertRedirect(route('verification.notice'));
