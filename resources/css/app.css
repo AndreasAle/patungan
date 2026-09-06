@@ -272,6 +272,33 @@
         flex: 0 0 auto;
     }
 
+    /*
+      A rail that gives way to a normal grid once there is room for one.
+
+      Scoped to small screens on purpose: `.rail` and Tailwind's `grid` have the
+      same specificity, so a `sm:grid` on the same element would lose to it.
+    */
+    @media (width < 40rem) {
+        .rail-mobile {
+            display: flex;
+            gap: 0.75rem;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            scroll-padding-left: 1rem;
+        }
+
+        .rail-mobile::-webkit-scrollbar {
+            display: none;
+        }
+
+        .rail-mobile > * {
+            scroll-snap-align: start;
+            flex: 0 0 auto;
+        }
+    }
+
     /* Display type for the landing page: tight, confident, not airy. */
     .display {
         letter-spacing: -0.035em;

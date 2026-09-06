@@ -2,6 +2,7 @@ import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Rail } from '@/components/landing/rail';
 import { CategoryIcon } from '@/components/patungan/category-icon';
+import { Eyebrow } from '@/components/patungan/section-heading';
 import { Button } from '@/components/ui/button';
 import { rupiah } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -96,16 +97,6 @@ function Shell({ id, className, children }: { id?: string; className?: string; c
         <section id={id} className={cn('mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8', className)}>
             {children}
         </section>
-    );
-}
-
-/** Left-aligned section label with a hairline rule - never a centred pill. */
-function Eyebrow({ children, onDeep = false }: { children: ReactNode; onDeep?: boolean }) {
-    return (
-        <p className={cn('flex items-center gap-2.5 text-[11px] font-bold tracking-[0.18em] uppercase', onDeep ? 'text-lime' : 'text-primary')}>
-            <span className={cn('h-px w-6', onDeep ? 'bg-lime/60' : 'bg-primary/40')} />
-            {children}
-        </p>
     );
 }
 

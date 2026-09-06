@@ -153,3 +153,10 @@ export interface Balance {
     pending: number;
     paid_out: number;
 }
+
+/** Counts across every patungan the organizer owns, not just the listed ones. */
+export interface DashboardStats {
+    active_count: number;
+    awaiting_count: number;
+    collected_this_month: number;
+}

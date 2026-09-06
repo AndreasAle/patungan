@@ -40,12 +40,15 @@ interface PatunganLayoutProps {
     action?: ReactNode;
     /** Rendered inside the deep green panel at the top, e.g. the balance block. */
     hero?: ReactNode;
+    /** Widens the content column to the landing page's measure, for the dashboard. */
+    wide?: boolean;
 }
 
-export default function PatunganLayout({ children, title, back, action, hero }: PatunganLayoutProps) {
+export default function PatunganLayout({ children, title, back, action, hero, wide = false }: PatunganLayoutProps) {
     const page = usePage<SharedData>();
     const user = page.props.auth.user;
     const pathname = new URL(page.url, 'http://localhost').pathname;
+    const measure = wide ? 'max-w-6xl' : 'max-w-4xl';
 
     return (
         <div className="bg-background min-h-screen">
@@ -118,7 +121,7 @@ export default function PatunganLayout({ children, title, back, action, hero }: 
                 {hero ? (
                     /* Deep green "money" panel; page content overlaps its lower edge. */
                     <header className="surface-deep rounded-b-[28px] px-4 pt-4 pb-16 lg:rounded-b-3xl lg:px-8 lg:pt-6 lg:pb-20">
-                        <div className="mx-auto w-full max-w-4xl">{hero}</div>
+                        <div className={cn('mx-auto w-full', measure)}>{hero}</div>
                     </header>
                 ) : (
                     <header className="surface-deep sticky top-0 z-30 flex h-14 items-center gap-2 px-4 lg:static lg:h-auto lg:bg-transparent lg:px-8 lg:pt-7 lg:pb-0">
@@ -136,9 +139,7 @@ export default function PatunganLayout({ children, title, back, action, hero }: 
                     </header>
                 )}
 
-                <main
-                    className={cn('relative z-10 mx-auto w-full max-w-4xl px-4 pb-24 lg:px-8 lg:pb-12', hero ? '-mt-12 lg:-mt-14' : 'pt-4 lg:pt-5')}
-                >
+                <main className={cn('relative z-10 mx-auto w-full px-4 pb-24 lg:px-8 lg:pb-12', measure, hero ? '-mt-12 lg:-mt-14' : 'pt-4 lg:pt-5')}>
                     {children}
                 </main>
             </div>
