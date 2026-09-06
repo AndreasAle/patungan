@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\ParticipantStatus;
 use App\Enums\PatunganCategory;
+use App\Enums\PatunganPrivacy;
 use App\Enums\PatunganStatus;
 use App\Enums\SplitType;
 use App\Events\PatunganCompleted;
@@ -16,10 +17,13 @@ use Illuminate\Support\Str;
 
 class PatunganService
 {
-    public function __construct(private readonly Analytics $analytics) {}
+    public function __construct(
+        private readonly Analytics $analytics,
+        private readonly RoomPinService $pins,
+    ) {}
 
     /**
-     * @param  array{title: string, description?: ?string, category: string, split_type: string, equal_amount?: ?int, event_date?: ?string, expires_at?: ?string, name_privacy?: ?string, participants: array<int, array{name: string, amount?: ?int, note?: ?string}>}  $data
+     * @param  array{title: string, description?: ?string, category: string, split_type: string, equal_amount?: ?int, event_date?: ?string, expires_at?: ?string, name_privacy?: ?string, privacy_mode?: ?string, participants: array<int, array{name: string, amount?: ?int, note?: ?string}>}  $data
      */
     public function create(User $organizer, array $data): Patungan
     {
@@ -42,6 +46,7 @@ class PatunganService
             $patungan->public_token = Patungan::generatePublicToken();
             $patungan->slug = Str::slug($data['title']) ?: null;
             $patungan->name_privacy = $data['name_privacy'] ?? 'FULL';
+            $patungan->privacy_mode = PatunganPrivacy::from($data['privacy_mode'] ?? PatunganPrivacy::Open->value);
             $patungan->currency = config('patungan.currency');
             $patungan->save();
 
@@ -50,12 +55,18 @@ class PatunganService
                     ? $equalAmount
                     : (int) $participant['amount'];
 
-                $patungan->participants()->create([
+                $row = $patungan->participants()->make([
                     'name' => $participant['name'],
                     'note' => $participant['note'] ?? null,
                     'amount_due' => $amountDue,
                     'position' => $index,
                 ]);
+
+                if ($patungan->isPrivateRoom()) {
+                    $this->pins->assign($row, $patungan);
+                }
+
+                $patungan->participants()->save($row);
             }
 
             $this->refreshAggregates($patungan);

@@ -35,8 +35,12 @@ class PatunganParticipant extends Model
             'position' => 'integer',
             'paid_at' => 'datetime',
             'metadata' => 'array',
+            'access_pin' => 'encrypted',
         ];
     }
+
+    /** Never serialise the room PIN or its lookup hash by accident. */
+    protected $hidden = ['access_pin', 'access_pin_lookup'];
 
     public function hasInvoice(): bool
     {

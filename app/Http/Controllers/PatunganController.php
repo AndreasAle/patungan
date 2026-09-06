@@ -73,6 +73,7 @@ class PatunganController extends Controller
                 'close' => $request->user()->can('close', $patungan),
             ],
             'share_message' => $this->shareMessage($patungan),
+            'organizer_name' => $patungan->organizer->name,
         ]);
     }
 

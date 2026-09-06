@@ -11,7 +11,7 @@ import { rupiah } from '@/lib/format';
 import { parseQuickNames, type ParsedName } from '@/lib/parse-names';
 import { cn } from '@/lib/utils';
 import { Head, useForm } from '@inertiajs/react';
-import { ArrowLeft, ArrowRight, ClipboardPaste, Plus, Users, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ClipboardPaste, DoorClosed, Globe, Plus, Users, X } from 'lucide-react';
 import { useMemo, useState, type FormEvent, type KeyboardEvent } from 'react';
 
 interface Category {
@@ -32,6 +32,7 @@ interface CreateForm {
     category: string;
     event_date: string;
     expires_at: string;
+    privacy_mode: 'OPEN' | 'PRIVATE_ROOM';
     split_type: 'EQUAL' | 'CUSTOM';
     equal_amount: number;
     participants: ParticipantDraft[];
@@ -68,6 +69,7 @@ export default function CreatePatungan({ categories, fee_bearer }: { categories:
         category: 'OLAHRAGA',
         event_date: '',
         expires_at: '',
+        privacy_mode: 'OPEN',
         split_type: 'EQUAL',
         equal_amount: 0,
         participants: [],
@@ -216,6 +218,56 @@ export default function CreatePatungan({ categories, fee_bearer }: { categories:
                                 })}
                             </div>
                             <InputError message={errors.category} className="mt-1.5" />
+                        </Section>
+
+                        <Section title="Siapa yang boleh lihat" description="Bisa diubah lagi nanti.">
+                            <div className="grid gap-2">
+                                {(
+                                    [
+                                        {
+                                            value: 'OPEN',
+                                            icon: Globe,
+                                            title: 'Link terbuka',
+                                            body: 'Semua yang punya link lihat daftar peserta dan total terkumpul.',
+                                        },
+                                        {
+                                            value: 'PRIVATE_ROOM',
+                                            icon: DoorClosed,
+                                            title: 'Private room',
+                                            body: 'Tiap peserta dapat PIN sendiri dan cuma lihat tagihannya. Cocok buat vendor.',
+                                        },
+                                    ] as const
+                                ).map((option) => {
+                                    const active = data.privacy_mode === option.value;
+
+                                    return (
+                                        <button
+                                            key={option.value}
+                                            type="button"
+                                            aria-pressed={active}
+                                            onClick={() => setData('privacy_mode', option.value)}
+                                            className={cn(
+                                                'flex items-start gap-3 rounded-xl border p-3.5 text-left transition',
+                                                active ? 'border-primary bg-brand-soft' : 'border-border hover:border-primary/40',
+                                            )}
+                                        >
+                                            <span
+                                                className={cn(
+                                                    'flex size-9 shrink-0 items-center justify-center rounded-xl',
+                                                    active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground',
+                                                )}
+                                            >
+                                                <option.icon className="size-[18px]" />
+                                            </span>
+                                            <span className="min-w-0">
+                                                <span className={cn('block text-sm font-semibold', active && 'text-primary')}>{option.title}</span>
+                                                <span className="text-muted-foreground mt-0.5 block text-[11px] leading-relaxed">{option.body}</span>
+                                            </span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            <InputError message={errors.privacy_mode} className="mt-1.5" />
                         </Section>
 
                         <Section title="Waktu" description="Dua-duanya opsional.">

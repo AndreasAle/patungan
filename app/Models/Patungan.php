@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\NamePrivacy;
 use App\Enums\PatunganCategory;
+use App\Enums\PatunganPrivacy;
 use App\Enums\PatunganStatus;
 use App\Enums\SplitType;
 use App\Models\Concerns\HasUuid;
@@ -38,6 +39,7 @@ class Patungan extends Model
             'split_type' => SplitType::class,
             'status' => PatunganStatus::class,
             'name_privacy' => NamePrivacy::class,
+            'privacy_mode' => PatunganPrivacy::class,
             'equal_amount' => 'integer',
             'target_amount' => 'integer',
             'collected_amount' => 'integer',
@@ -64,6 +66,11 @@ class Patungan extends Model
         } while (strlen($token) < 8 || static::where('public_token', $token)->exists());
 
         return $token;
+    }
+
+    public function isPrivateRoom(): bool
+    {
+        return $this->privacy_mode === PatunganPrivacy::PrivateRoom;
     }
 
     /** True once the organizer's payment deadline has passed. */

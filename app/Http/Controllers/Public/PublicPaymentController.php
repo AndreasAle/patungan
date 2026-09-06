@@ -10,6 +10,7 @@ use App\Payments\PaymentGatewayException;
 use App\Services\Analytics;
 use App\Services\PaymentService;
 use App\Support\PatunganPresenter;
+use App\Support\RoomAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -34,6 +35,9 @@ class PublicPaymentController extends Controller
     {
         [$patungan, $participant] = $this->resolve($token, $participantUuid);
 
+        // In a private room only the participant whose PIN unlocked the session may pay.
+        abort_unless(RoomAccess::allows($request, $patungan, $participant), 403);
+
         $this->analytics->record(
             Analytics::PARTICIPANT_SELECTED,
             [],
@@ -53,9 +57,11 @@ class PublicPaymentController extends Controller
         ]);
     }
 
-    public function show(string $token, string $paymentUuid): Response
+    public function show(Request $request, string $token, string $paymentUuid): Response
     {
         [$patungan, $payment] = $this->resolvePayment($token, $paymentUuid);
+
+        abort_unless(RoomAccess::allows($request, $patungan, $payment->participant), 403);
 
         return Inertia::render('public/payment', [
             'patungan' => [
@@ -77,9 +83,11 @@ class PublicPaymentController extends Controller
      * Status polled by the payment page. The verdict comes from our payment
      * record, never from a query string the browser could fake.
      */
-    public function status(string $token, string $paymentUuid): JsonResponse
+    public function status(Request $request, string $token, string $paymentUuid): JsonResponse
     {
-        [, $payment] = $this->resolvePayment($token, $paymentUuid);
+        [$patungan, $payment] = $this->resolvePayment($token, $paymentUuid);
+
+        abort_unless(RoomAccess::allows($request, $patungan, $payment->participant), 403);
 
         return response()->json([
             'status' => $payment->status->value,

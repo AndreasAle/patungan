@@ -15,6 +15,7 @@ use App\Http\Controllers\ProfileHubController;
 use App\Http\Controllers\Public\InvoiceController;
 use App\Http\Controllers\Public\PublicPatunganController;
 use App\Http\Controllers\Public\PublicPaymentController;
+use App\Http\Controllers\Public\RoomAccessController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\Webhooks\PaymentWebhookController;
 use App\Http\Controllers\Webhooks\SandboxSimulatorController;
@@ -38,6 +39,12 @@ Route::prefix('p/{token}')->name('public.')->group(function () {
     Route::post('bayar/{participant}', [PublicPaymentController::class, 'store'])
         ->middleware('throttle:10,1')
         ->name('payment.store');
+
+    // Private room: the PIN is the only way in, so attempts are throttled hard.
+    Route::post('buka', [RoomAccessController::class, 'unlock'])
+        ->middleware('throttle:8,1')
+        ->name('room.unlock');
+    Route::post('kunci', [RoomAccessController::class, 'lock'])->name('room.lock');
 
     Route::get('invoice/{participant}', [InvoiceController::class, 'show'])->name('invoice.show');
 

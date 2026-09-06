@@ -44,6 +44,9 @@ class PatunganPresenter
             'split_type_label' => $patungan->split_type->label(),
             'equal_amount' => $patungan->equal_amount,
             'name_privacy' => $patungan->name_privacy->value,
+            'privacy_mode' => $patungan->privacy_mode->value,
+            'privacy_label' => $patungan->privacy_mode->label(),
+            'is_private_room' => $patungan->isPrivateRoom(),
             'public_token' => $patungan->public_token,
             'completed_at' => $patungan->completed_at?->toIso8601String(),
             'closed_at' => $patungan->closed_at?->toIso8601String(),
@@ -71,6 +74,8 @@ class PatunganPresenter
             'invoice_url' => $participant->hasInvoice()
                 ? route('public.invoice.show', [$patungan->public_token, $participant->uuid])
                 : null,
+            // Only ever present in a private room, and only for the organizer.
+            'access_pin' => $patungan->isPrivateRoom() ? $participant->access_pin : null,
         ];
     }
 
@@ -105,6 +110,34 @@ class PatunganPresenter
                 ->map(fn (PatunganParticipant $p) => $this->publicParticipant($patungan, $p))
                 ->values()
                 ->all(),
+        ];
+    }
+
+    /**
+     * The private-room payload.
+     *
+     * Deliberately omits the participant list, the collected total, the target
+     * and the head count - a vendor must not be able to infer what anyone else
+     * is paying. Only the unlocked participant's own row is included.
+     *
+     * @return array<string, mixed>
+     */
+    public function privateRoomView(Patungan $patungan, ?PatunganParticipant $unlocked): array
+    {
+        return [
+            'title' => $patungan->title,
+            'description' => $patungan->description,
+            'category' => $patungan->category->value,
+            'category_label' => $patungan->category->label(),
+            'status' => $patungan->status->value,
+            'status_label' => $patungan->status->label(),
+            'event_date' => $patungan->event_date?->toDateString(),
+            'expires_at' => $patungan->expires_at?->toIso8601String(),
+            'has_expired' => $patungan->hasExpired(),
+            'accepts_payment' => $patungan->acceptsPayment(),
+            'public_token' => $patungan->public_token,
+            'organizer_name' => $patungan->organizer->name,
+            'participant' => $unlocked === null ? null : $this->publicParticipant($patungan, $unlocked),
         ];
     }
 

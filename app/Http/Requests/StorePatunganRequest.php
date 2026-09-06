@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\NamePrivacy;
 use App\Enums\PatunganCategory;
+use App\Enums\PatunganPrivacy;
 use App\Enums\SplitType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -23,6 +24,7 @@ class StorePatunganRequest extends FormRequest
             'event_date' => ['nullable', 'date'],
             'expires_at' => ['nullable', 'date', 'after:now'],
             'name_privacy' => ['nullable', Rule::enum(NamePrivacy::class)],
+            'privacy_mode' => ['nullable', Rule::enum(PatunganPrivacy::class)],
 
             'split_type' => ['required', Rule::enum(SplitType::class)],
             'equal_amount' => [

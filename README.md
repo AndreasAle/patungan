@@ -81,7 +81,7 @@ Driver `sandbox` menolak dijalankan di luar `local`/`testing`.
 ## Perintah
 
 ```bash
-php artisan test        # 84 test
+php artisan test        # 99 test
 php artisan payments:expire   # dijadwalkan tiap menit
 npm run build
 ./vendor/bin/pint
@@ -109,8 +109,8 @@ record payment — bukan dari query string.
 
 | Tabel | Isi |
 | --- | --- |
-| `patungans` | Judul, kategori, jenis pembagian, status, token publik, batas waktu bayar, agregat ter-cache |
-| `patungan_participants` | Nama, tagihan, jumlah dibayar, status, nomor invoice, UUID sendiri (nama tidak pernah jadi identifier) |
+| `patungans` | Judul, kategori, jenis pembagian, status, token publik, mode privasi, batas waktu bayar, agregat ter-cache |
+| `patungan_participants` | Nama, tagihan, jumlah dibayar, status, nomor invoice, PIN room terenkripsi, UUID sendiri (nama tidak pernah jadi identifier) |
 | `payments` | Nominal, fee gateway/platform, net, referensi gateway, status, QR, kedaluwarsa |
 | `wallet_ledgers` | Setiap pergerakan uang, unik per `(type, reference)` |
 | `payout_destinations` | Rekening/e-wallet tujuan, nomor tidak pernah dikirim ke browser |
@@ -152,6 +152,32 @@ Kalau teksnya memakai penomoran atau bullet, hanya baris itu yang diambil.
 Kalau tidak ada penomoran sama sekali, tiap baris dihitung satu nama. Hasil
 bacaan ditampilkan sebagai chip yang bisa dibatalkan satu-satu sebelum
 ditambahkan, jadi judul yang lolos tidak pernah jadi peserta yang ditagih.
+
+## Private room (mode vendor)
+
+Buat kasus EO: satu event, banyak vendor, dan vendor lighting tidak boleh tahu
+nominal vendor sound. Saat membuat patungan, pilih **Private room** sebagai ganti
+link terbuka.
+
+Yang berubah:
+
+- Tiap peserta dapat PIN 6 digit unik yang dibuat sistem
+- Linknya tetap satu untuk semua, tapi halaman publiknya terkunci: pengunjung
+  harus memasukkan PIN dulu
+- Setelah terbuka, vendor **hanya** melihat tagihannya sendiri. Daftar peserta,
+  total terkumpul, target, dan jumlah peserta tidak pernah dikirim ke browser —
+  bukan disembunyikan lewat CSS, tapi memang tidak ada di payload
+- Di halaman organizer, tiap peserta punya tombol **Salin undangan** yang
+  menyalin pesan lengkap: sapaan, nominal, link, dan PIN orang itu, siap
+  ditempel ke chat. PIN-nya sendiri tersembunyi sampai ditekan tombol mata
+
+Aturan aksesnya:
+
+- PIN disimpan terenkripsi, bukan plaintext, plus hash berkunci untuk pencarian
+  dan untuk menjamin tidak ada dua peserta ber-PIN sama dalam satu room
+- Percobaan PIN dibatasi 8 kali per menit per IP
+- Sesi yang terbuka hanya mengizinkan aksi untuk peserta itu: membuat
+  pembayaran atau membuka invoice milik vendor lain menghasilkan 403
 
 ## Batas waktu pembayaran
 

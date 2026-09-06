@@ -6,6 +6,8 @@ use App\Enums\PaymentMethod;
 use App\Http\Controllers\Controller;
 use App\Models\Patungan;
 use App\Models\PatunganParticipant;
+use App\Support\RoomAccess;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -18,7 +20,7 @@ use Inertia\Response;
  */
 class InvoiceController extends Controller
 {
-    public function show(string $token, string $participantUuid): Response
+    public function show(Request $request, string $token, string $participantUuid): Response
     {
         $patungan = Patungan::query()
             ->with('organizer:id,name')
@@ -32,6 +34,9 @@ class InvoiceController extends Controller
 
         // No receipt exists until the share is actually settled.
         abort_unless($participant->hasInvoice(), 404);
+
+        // A private room receipt belongs to the vendor who unlocked it, nobody else.
+        abort_unless(RoomAccess::allows($request, $patungan, $participant), 403);
 
         return Inertia::render('public/invoice', [
             'invoice' => [

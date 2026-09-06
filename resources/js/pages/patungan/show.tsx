@@ -3,6 +3,7 @@ import { ConfirmDialog } from '@/components/patungan/confirm-dialog';
 import { PasteNamesSheet } from '@/components/patungan/paste-names-sheet';
 import { ProgressBar } from '@/components/patungan/progress-bar';
 import { SharePatungan } from '@/components/patungan/share-patungan';
+import { ShareRoomInvite } from '@/components/patungan/share-room-invite';
 import { StatusBadge } from '@/components/patungan/status-badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +13,7 @@ import type { ParsedName } from '@/lib/parse-names';
 import { cn } from '@/lib/utils';
 import type { OrganizerParticipant, PatunganDetail } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { Check, ClipboardPaste, Clock, Lock, LockOpen, Plus, ReceiptText, Settings2, Trash2 } from 'lucide-react';
+import { Check, ClipboardPaste, Clock, DoorClosed, Lock, LockOpen, Plus, ReceiptText, Settings2, Trash2 } from 'lucide-react';
 import { useMemo, useState, type FormEvent } from 'react';
 
 type Filter = 'ALL' | 'PAID' | 'UNPAID';
@@ -21,6 +22,7 @@ interface ShowProps {
     patungan: PatunganDetail;
     can: { manage: boolean; close: boolean };
     share_message: string;
+    organizer_name: string;
 }
 
 const filters: [Filter, string][] = [
@@ -29,7 +31,7 @@ const filters: [Filter, string][] = [
     ['UNPAID', 'Belum bayar'],
 ];
 
-export default function PatunganShow({ patungan, can, share_message }: ShowProps) {
+export default function PatunganShow({ patungan, can, share_message, organizer_name }: ShowProps) {
     const [filter, setFilter] = useState<Filter>('ALL');
     const [closing, setClosing] = useState(false);
     const [removing, setRemoving] = useState<OrganizerParticipant | null>(null);
@@ -89,6 +91,12 @@ export default function PatunganShow({ patungan, can, share_message }: ShowProps
                     <div className="flex items-start gap-3">
                         <CategoryIcon category={patungan.category} size="sm" className="bg-white/15 text-white" />
                         <div className="min-w-0 flex-1">
+                            {patungan.is_private_room && (
+                                <span className="chip bg-lime text-lime-foreground mb-1.5">
+                                    <DoorClosed className="size-3" />
+                                    Private room
+                                </span>
+                            )}
                             <h1 className="text-brand-deep-foreground truncate text-base font-bold tracking-tight">{patungan.title}</h1>
                             <p className="text-brand-deep-muted mt-0.5 truncate text-xs">
                                 {patungan.split_type === 'EQUAL' && patungan.equal_amount
@@ -134,7 +142,20 @@ export default function PatunganShow({ patungan, can, share_message }: ShowProps
 
             <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_19rem]">
                 <div className="lg:order-2">
-                    <SharePatungan url={patungan.public_url} message={share_message} />
+                    {patungan.is_private_room ? (
+                        <div className="border-border bg-card rounded-2xl border p-4">
+                            <p className="text-sm font-bold tracking-tight">Bagikan per peserta</p>
+                            <p className="text-muted-foreground mt-0.5 text-[11px] leading-relaxed">
+                                Linknya sama untuk semua, tapi PIN-nya beda tiap orang. Pakai tombol Salin undangan di masing-masing peserta biar link
+                                dan PIN-nya ikut lengkap.
+                            </p>
+                            <div className="bg-surface mt-3 flex items-center gap-2 rounded-xl px-3 py-2.5">
+                                <span className="text-muted-foreground min-w-0 flex-1 truncate font-mono text-[11px]">{patungan.public_url}</span>
+                            </div>
+                        </div>
+                    ) : (
+                        <SharePatungan url={patungan.public_url} message={share_message} />
+                    )}
                 </div>
 
                 <div className="lg:order-1">
@@ -171,65 +192,76 @@ export default function PatunganShow({ patungan, can, share_message }: ShowProps
                                     <li
                                         key={participant.uuid}
                                         className={cn(
-                                            'flex items-center gap-3 rounded-2xl border px-3.5 py-3',
+                                            'rounded-2xl border px-3.5 py-3',
                                             paid ? 'border-success/20 bg-success-soft/50' : 'border-border bg-card',
                                         )}
                                     >
-                                        <span
-                                            className={cn(
-                                                'flex size-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold',
-                                                paid ? 'bg-success text-success-foreground' : 'bg-brand-soft text-primary',
-                                            )}
-                                            aria-hidden="true"
-                                        >
-                                            {paid ? <Check className="size-4" strokeWidth={3} /> : participant.name.charAt(0).toUpperCase()}
-                                        </span>
+                                        <div className="flex items-center gap-3">
+                                            <span
+                                                className={cn(
+                                                    'flex size-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold',
+                                                    paid ? 'bg-success text-success-foreground' : 'bg-brand-soft text-primary',
+                                                )}
+                                                aria-hidden="true"
+                                            >
+                                                {paid ? <Check className="size-4" strokeWidth={3} /> : participant.name.charAt(0).toUpperCase()}
+                                            </span>
 
-                                        <div className="min-w-0 flex-1">
-                                            <p className="truncate text-sm font-semibold">{participant.name}</p>
-                                            <p className="text-muted-foreground mt-0.5 truncate text-[11px]">
-                                                {rupiah(participant.amount_due)}
-                                                {paid && participant.paid_at && ` · ${formatTime(participant.paid_at)}`}
-                                                {paid && participant.paid_method === 'MANUAL' && ' · manual'}
-                                                {!paid && ` · ${participant.status_label}`}
-                                            </p>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="truncate text-sm font-semibold">{participant.name}</p>
+                                                <p className="text-muted-foreground mt-0.5 text-[11px]">
+                                                    {rupiah(participant.amount_due)}
+                                                    {paid && participant.paid_at && ` · ${formatTime(participant.paid_at)}`}
+                                                    {paid && participant.paid_method === 'MANUAL' && ' · manual'}
+                                                    {!paid && ` · ${participant.status_label}`}
+                                                </p>
+                                            </div>
+
+                                            {paid
+                                                ? participant.invoice_url && (
+                                                      <a
+                                                          href={participant.invoice_url}
+                                                          className="text-success border-success/30 hover:bg-success/10 inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border px-2.5 text-[11px] font-semibold transition"
+                                                      >
+                                                          <ReceiptText className="size-3.5" />
+                                                          Invoice
+                                                      </a>
+                                                  )
+                                                : can.manage && (
+                                                      <div className="flex shrink-0 items-center gap-1">
+                                                          <button
+                                                              type="button"
+                                                              onClick={() =>
+                                                                  router.post(
+                                                                      route('participant.mark-paid', [patungan.uuid, participant.uuid]),
+                                                                      {},
+                                                                      { preserveScroll: true },
+                                                                  )
+                                                              }
+                                                              className="border-border hover:border-primary/40 hover:text-primary h-8 rounded-lg border px-2.5 text-[11px] font-semibold transition"
+                                                          >
+                                                              Tandai lunas
+                                                          </button>
+                                                          <button
+                                                              type="button"
+                                                              aria-label={`Hapus ${participant.name}`}
+                                                              onClick={() => setRemoving(participant)}
+                                                              className="text-muted-foreground hover:text-destructive rounded-lg p-1.5 transition"
+                                                          >
+                                                              <Trash2 className="size-4" />
+                                                          </button>
+                                                      </div>
+                                                  )}
                                         </div>
 
-                                        {paid
-                                            ? participant.invoice_url && (
-                                                  <a
-                                                      href={participant.invoice_url}
-                                                      className="text-success border-success/30 hover:bg-success/10 inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border px-2.5 text-[11px] font-semibold transition"
-                                                  >
-                                                      <ReceiptText className="size-3.5" />
-                                                      Invoice
-                                                  </a>
-                                              )
-                                            : can.manage && (
-                                                  <div className="flex shrink-0 items-center gap-1">
-                                                      <button
-                                                          type="button"
-                                                          onClick={() =>
-                                                              router.post(
-                                                                  route('participant.mark-paid', [patungan.uuid, participant.uuid]),
-                                                                  {},
-                                                                  { preserveScroll: true },
-                                                              )
-                                                          }
-                                                          className="border-border hover:border-primary/40 hover:text-primary h-8 rounded-lg border px-2.5 text-[11px] font-semibold transition"
-                                                      >
-                                                          Tandai lunas
-                                                      </button>
-                                                      <button
-                                                          type="button"
-                                                          aria-label={`Hapus ${participant.name}`}
-                                                          onClick={() => setRemoving(participant)}
-                                                          className="text-muted-foreground hover:text-destructive rounded-lg p-1.5 transition"
-                                                      >
-                                                          <Trash2 className="size-4" />
-                                                      </button>
-                                                  </div>
-                                              )}
+                                        {can.manage && patungan.is_private_room && (
+                                            <ShareRoomInvite
+                                                participant={participant}
+                                                patunganTitle={patungan.title}
+                                                publicUrl={patungan.public_url}
+                                                organizerName={organizer_name}
+                                            />
+                                        )}
                                     </li>
                                 );
                             })}

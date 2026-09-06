@@ -72,6 +72,8 @@ export interface OrganizerParticipant {
     paid_at: string | null;
     invoice_number: string | null;
     invoice_url: string | null;
+    /** Only present for the organizer of a private room. */
+    access_pin: string | null;
 }
 
 export interface PatunganDetail extends PatunganCard {
@@ -80,6 +82,9 @@ export interface PatunganDetail extends PatunganCard {
     split_type_label: string;
     equal_amount: number | null;
     name_privacy: 'FULL' | 'MASKED';
+    privacy_mode: 'OPEN' | 'PRIVATE_ROOM';
+    privacy_label: string;
+    is_private_room: boolean;
     public_token: string;
     completed_at: string | null;
     closed_at: string | null;

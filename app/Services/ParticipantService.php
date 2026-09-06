@@ -19,6 +19,7 @@ class ParticipantService
     public function __construct(
         private readonly PatunganService $patunganService,
         private readonly InvoiceNumberGenerator $invoiceNumbers,
+        private readonly RoomPinService $pins,
     ) {}
 
     /** @param  array<int, array{name: string, amount?: ?int, note?: ?string}>  $participants */
@@ -32,12 +33,18 @@ class ParticipantService
                     ? (int) $patungan->equal_amount
                     : (int) $participant['amount'];
 
-                $patungan->participants()->create([
+                $row = $patungan->participants()->make([
                     'name' => $participant['name'],
                     'note' => $participant['note'] ?? null,
                     'amount_due' => $amountDue,
                     'position' => ++$position,
                 ]);
+
+                if ($patungan->isPrivateRoom()) {
+                    $this->pins->assign($row, $patungan);
+                }
+
+                $patungan->participants()->save($row);
             }
 
             return $this->patunganService->refreshAggregates($patungan);
