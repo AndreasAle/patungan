@@ -48,7 +48,7 @@ export default function AdminPayments({ payments, filters, statuses }: Props) {
             <Head title="Admin · Payments" />
 
             <div className="flex flex-wrap items-center justify-between gap-3">
-                <h1 className="text-2xl font-extrabold tracking-tight">Payments</h1>
+                <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Payments</h1>
 
                 <div className="flex flex-wrap gap-2">
                     <select

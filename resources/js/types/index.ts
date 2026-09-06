@@ -70,6 +70,8 @@ export interface OrganizerParticipant {
     status_label: string;
     paid_method: string | null;
     paid_at: string | null;
+    invoice_number: string | null;
+    invoice_url: string | null;
 }
 
 export interface PatunganDetail extends PatunganCard {
@@ -93,6 +95,8 @@ export interface PublicParticipant {
     status_label: string;
     is_paid: boolean;
     paid_at: string | null;
+    invoice_number: string | null;
+    invoice_url: string | null;
 }
 
 export interface PublicPatungan {

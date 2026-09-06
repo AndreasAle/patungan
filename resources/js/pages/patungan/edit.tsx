@@ -42,7 +42,7 @@ export default function PatunganEdit({ patungan, categories }: EditProps) {
                         id="title"
                         value={data.title}
                         onChange={(event) => setData('title', event.target.value)}
-                        className="mt-1.5 h-12 rounded-xl"
+                        className="mt-1.5 h-11 rounded-xl"
                     />
                     <InputError message={errors.title} className="mt-1.5" />
                 </div>
@@ -53,7 +53,7 @@ export default function PatunganEdit({ patungan, categories }: EditProps) {
                         id="description"
                         value={data.description}
                         onChange={(event) => setData('description', event.target.value)}
-                        className="mt-1.5 h-12 rounded-xl"
+                        className="mt-1.5 h-11 rounded-xl"
                     />
                     <InputError message={errors.description} className="mt-1.5" />
                 </div>
@@ -87,7 +87,7 @@ export default function PatunganEdit({ patungan, categories }: EditProps) {
                         type="date"
                         value={data.event_date}
                         onChange={(event) => setData('event_date', event.target.value)}
-                        className="mt-1.5 h-12 rounded-xl"
+                        className="mt-1.5 h-11 rounded-xl"
                     />
                     <InputError message={errors.event_date} className="mt-1.5" />
                 </div>
@@ -118,13 +118,13 @@ export default function PatunganEdit({ patungan, categories }: EditProps) {
                                 )}
                             >
                                 <p className="font-semibold">{option.title}</p>
-                                <p className="text-muted-foreground mt-0.5 text-sm">{option.body}</p>
+                                <p className="text-muted-foreground mt-0.5 text-xs">{option.body}</p>
                             </button>
                         ))}
                     </div>
                 </div>
 
-                <Button type="submit" className="h-12 w-full rounded-xl font-semibold" disabled={processing}>
+                <Button type="submit" className="h-11 w-full rounded-xl font-semibold" disabled={processing}>
                     {processing ? 'Menyimpan...' : 'Simpan perubahan'}
                 </Button>
             </form>

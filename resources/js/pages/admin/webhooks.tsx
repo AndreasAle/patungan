@@ -33,8 +33,8 @@ export default function AdminWebhooks({ logs, filters, statuses }: Props) {
 
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                    <h1 className="text-2xl font-extrabold tracking-tight">Webhook log</h1>
-                    <p className="text-muted-foreground mt-0.5 text-sm">Payload sudah disanitasi sebelum disimpan.</p>
+                    <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Webhook log</h1>
+                    <p className="text-muted-foreground mt-0.5 text-xs">Payload sudah disanitasi sebelum disimpan.</p>
                 </div>
 
                 <select

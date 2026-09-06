@@ -24,7 +24,7 @@ export function RupiahInput({ value, onChange, id, placeholder = '0', className,
                 onChange={(event) => onChange(parseRupiahInput(event.target.value))}
                 placeholder={placeholder}
                 aria-label={rest['aria-label']}
-                className="h-12 rounded-xl pl-9 font-semibold tabular-nums"
+                className="h-11 rounded-xl pl-9 font-semibold tabular-nums"
             />
         </div>
     );

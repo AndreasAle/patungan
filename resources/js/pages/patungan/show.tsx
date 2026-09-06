@@ -1,17 +1,18 @@
 import { CategoryIcon } from '@/components/patungan/category-icon';
 import { ConfirmDialog } from '@/components/patungan/confirm-dialog';
-import { MoneyText } from '@/components/patungan/money-text';
+import { PasteNamesSheet } from '@/components/patungan/paste-names-sheet';
 import { ProgressBar } from '@/components/patungan/progress-bar';
 import { SharePatungan } from '@/components/patungan/share-patungan';
 import { StatusBadge } from '@/components/patungan/status-badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import PatunganLayout from '@/layouts/patungan-layout';
-import { formatDateTime, formatTime } from '@/lib/format';
+import { formatDateTime, formatTime, rupiah } from '@/lib/format';
+import type { ParsedName } from '@/lib/parse-names';
 import { cn } from '@/lib/utils';
 import type { OrganizerParticipant, PatunganDetail } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { Check, Clock, Lock, LockOpen, Plus, Settings2, Trash2 } from 'lucide-react';
+import { ClipboardPaste, Clock, Lock, LockOpen, Plus, ReceiptText, Settings2, Trash2 } from 'lucide-react';
 import { useMemo, useState, type FormEvent } from 'react';
 
 type Filter = 'ALL' | 'PAID' | 'UNPAID';
@@ -29,6 +30,7 @@ export default function PatunganShow({ patungan, can, share_message }: ShowProps
 
     const [newName, setNewName] = useState('');
     const [addingParticipant, setAddingParticipant] = useState(false);
+    const [pasting, setPasting] = useState(false);
 
     const filtered = useMemo(() => {
         if (filter === 'PAID') return patungan.participants.filter((p) => p.status === 'PAID');
@@ -51,6 +53,20 @@ export default function PatunganShow({ patungan, can, share_message }: ShowProps
                 onFinish: () => setAddingParticipant(false),
                 onSuccess: () => setNewName(''),
             },
+        );
+    };
+
+    const addPastedNames = (entries: ParsedName[]) => {
+        router.post(
+            route('participant.store', patungan.uuid),
+            {
+                participants: entries.map((entry) => ({
+                    name: entry.name,
+                    note: entry.note,
+                    amount: patungan.equal_amount,
+                })),
+            },
+            { preserveScroll: true },
         );
     };
 
@@ -81,31 +97,27 @@ export default function PatunganShow({ patungan, can, share_message }: ShowProps
                         )}
                     </div>
 
-                    <div className="border-border bg-card mt-5 rounded-2xl border p-5">
-                        <MoneyText amount={patungan.collected_amount} size="xl" className="text-primary" />
-                        <p className="text-muted-foreground mt-1 text-sm">
-                            terkumpul dari <span className="text-foreground font-semibold">Rp{patungan.target_amount.toLocaleString('id-ID')}</span>
+                    <div className="surface-deep mt-4 rounded-3xl px-4 py-5">
+                        <p className="text-brand-deep-foreground text-[26px] leading-none font-bold tracking-tight sm:text-3xl">
+                            {rupiah(patungan.collected_amount)}
                         </p>
+                        <p className="text-brand-deep-muted mt-1 text-[11px]">terkumpul dari {rupiah(patungan.target_amount)}</p>
 
-                        <ProgressBar
-                            className="mt-4"
-                            value={patungan.collected_amount}
-                            total={patungan.target_amount}
-                            tone={patungan.status === 'COMPLETED' ? 'success' : 'brand'}
-                        />
+                        <ProgressBar className="mt-3" value={patungan.collected_amount} total={patungan.target_amount} tone="onDeep" />
 
-                        <p className="mt-2 text-sm font-medium">
-                            {patungan.paid_participant_count} dari {patungan.participant_count} orang sudah bayar
+                        <p className="text-brand-deep-muted mt-2 text-[11px]">
+                            <span className="text-brand-deep-foreground font-semibold">{patungan.paid_participant_count}</span> dari{' '}
+                            {patungan.participant_count} orang sudah bayar
                         </p>
 
                         {patungan.expires_at && (
                             <p
                                 className={cn(
-                                    'mt-3 flex items-center gap-1.5 text-sm',
-                                    patungan.has_expired ? 'text-destructive font-medium' : 'text-muted-foreground',
+                                    'mt-3 flex items-center gap-1.5 text-[11px]',
+                                    patungan.has_expired ? 'text-lime font-semibold' : 'text-brand-deep-muted',
                                 )}
                             >
-                                <Clock className="size-4" />
+                                <Clock className="size-3.5" />
                                 {patungan.has_expired ? 'Batas bayar lewat' : 'Batas bayar'} {formatDateTime(patungan.expires_at)}
                             </p>
                         )}
@@ -149,8 +161,8 @@ export default function PatunganShow({ patungan, can, share_message }: ShowProps
                                 >
                                     <div className="min-w-0 flex-1">
                                         <p className="truncate font-semibold">{participant.name}</p>
-                                        <div className="text-muted-foreground mt-0.5 flex items-center gap-2 text-sm">
-                                            <MoneyText amount={participant.amount_due} size="sm" className="text-muted-foreground font-medium" />
+                                        <div className="text-muted-foreground mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs">
+                                            <span className="font-medium tabular-nums">{rupiah(participant.amount_due)}</span>
                                             <span>·</span>
                                             <span>{participant.status_label}</span>
                                             {participant.paid_at && <span>{formatTime(participant.paid_at)}</span>}
@@ -160,39 +172,43 @@ export default function PatunganShow({ patungan, can, share_message }: ShowProps
                                         </div>
                                     </div>
 
-                                    {participant.status === 'PAID' ? (
-                                        <span className="bg-success text-success-foreground flex size-8 items-center justify-center rounded-full">
-                                            <Check className="size-4" strokeWidth={3} />
-                                        </span>
-                                    ) : (
-                                        can.manage && (
-                                            <div className="flex items-center gap-1">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="rounded-lg"
-                                                    onClick={() =>
-                                                        router.post(
-                                                            route('participant.mark-paid', [patungan.uuid, participant.uuid]),
-                                                            {},
-                                                            { preserveScroll: true },
-                                                        )
-                                                    }
-                                                >
-                                                    Tandai lunas
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    aria-label={`Hapus ${participant.name}`}
-                                                    className="text-muted-foreground hover:text-destructive"
-                                                    onClick={() => setRemoving(participant)}
-                                                >
-                                                    <Trash2 className="size-4" />
-                                                </Button>
-                                            </div>
-                                        )
-                                    )}
+                                    {participant.status === 'PAID'
+                                        ? participant.invoice_url && (
+                                              <a
+                                                  href={participant.invoice_url}
+                                                  className="text-success border-success/30 hover:bg-success/10 inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition"
+                                              >
+                                                  <ReceiptText className="size-3.5" />
+                                                  Invoice
+                                              </a>
+                                          )
+                                        : can.manage && (
+                                              <div className="flex items-center gap-1">
+                                                  <Button
+                                                      variant="outline"
+                                                      size="sm"
+                                                      className="rounded-lg"
+                                                      onClick={() =>
+                                                          router.post(
+                                                              route('participant.mark-paid', [patungan.uuid, participant.uuid]),
+                                                              {},
+                                                              { preserveScroll: true },
+                                                          )
+                                                      }
+                                                  >
+                                                      Tandai lunas
+                                                  </Button>
+                                                  <Button
+                                                      variant="ghost"
+                                                      size="icon"
+                                                      aria-label={`Hapus ${participant.name}`}
+                                                      className="text-muted-foreground hover:text-destructive"
+                                                      onClick={() => setRemoving(participant)}
+                                                  >
+                                                      <Trash2 className="size-4" />
+                                                  </Button>
+                                              </div>
+                                          )}
                                 </li>
                             ))}
                         </ul>
@@ -212,6 +228,15 @@ export default function PatunganShow({ patungan, can, share_message }: ShowProps
                                 />
                                 <Button type="submit" className="h-11 rounded-xl px-4" disabled={addingParticipant}>
                                     <Plus className="size-4" />
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="h-11 rounded-xl px-4"
+                                    aria-label="Tempel daftar nama dari chat"
+                                    onClick={() => setPasting(true)}
+                                >
+                                    <ClipboardPaste className="size-4" />
                                 </Button>
                             </form>
                         )}
@@ -244,6 +269,8 @@ export default function PatunganShow({ patungan, can, share_message }: ShowProps
                     <SharePatungan url={patungan.public_url} message={share_message} />
                 </aside>
             </div>
+
+            <PasteNamesSheet open={pasting} onOpenChange={setPasting} onConfirm={addPastedNames} />
 
             <ConfirmDialog
                 open={closing}

@@ -25,8 +25,8 @@ export default function Transaksi({ entries }: { entries: Paginated<LedgerEntry>
         <PatunganLayout title="Transaksi">
             <Head title="Transaksi" />
 
-            <h1 className="text-2xl font-extrabold tracking-tight">Transaksi</h1>
-            <p className="text-muted-foreground mt-0.5 text-sm">Semua pergerakan dana di akun kamu.</p>
+            <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Transaksi</h1>
+            <p className="text-muted-foreground mt-0.5 text-xs">Semua pergerakan dana di akun kamu.</p>
 
             {entries.data.length === 0 ? (
                 <EmptyState className="mt-6" icon={Receipt} title="Belum ada transaksi." description="Transaksi muncul setelah ada yang bayar." />

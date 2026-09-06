@@ -4,15 +4,16 @@ import { cn } from '@/lib/utils';
 interface MoneyTextProps {
     amount: number;
     className?: string;
-    /** Visual weight of the figure in its surroundings. */
-    size?: 'sm' | 'md' | 'lg' | 'xl';
+    /** Sized for phones first; the larger steps only grow on wider screens. */
+    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 }
 
 const sizes = {
+    xs: 'text-xs',
     sm: 'text-sm',
     md: 'text-base',
-    lg: 'text-xl',
-    xl: 'text-3xl',
+    lg: 'text-lg sm:text-xl',
+    xl: 'text-[28px] leading-none sm:text-4xl',
 } as const;
 
 export function MoneyText({ amount, className, size = 'md' }: MoneyTextProps) {

@@ -48,14 +48,14 @@ class PatunganPresenter
             'completed_at' => $patungan->completed_at?->toIso8601String(),
             'closed_at' => $patungan->closed_at?->toIso8601String(),
             'participants' => $patungan->participants
-                ->map(fn (PatunganParticipant $p) => $this->organizerParticipant($p))
+                ->map(fn (PatunganParticipant $p) => $this->organizerParticipant($patungan, $p))
                 ->values()
                 ->all(),
         ]);
     }
 
     /** @return array<string, mixed> */
-    public function organizerParticipant(PatunganParticipant $participant): array
+    public function organizerParticipant(Patungan $patungan, PatunganParticipant $participant): array
     {
         return [
             'uuid' => $participant->uuid,
@@ -67,6 +67,10 @@ class PatunganPresenter
             'status_label' => $participant->status->label(),
             'paid_method' => $participant->paid_method?->value,
             'paid_at' => $participant->paid_at?->toIso8601String(),
+            'invoice_number' => $participant->invoice_number,
+            'invoice_url' => $participant->hasInvoice()
+                ? route('public.invoice.show', [$patungan->public_token, $participant->uuid])
+                : null,
         ];
     }
 
@@ -116,6 +120,10 @@ class PatunganPresenter
             'status_label' => $participant->status->label(),
             'is_paid' => $participant->status === ParticipantStatus::Paid,
             'paid_at' => $participant->paid_at?->toIso8601String(),
+            'invoice_number' => $participant->invoice_number,
+            'invoice_url' => $participant->hasInvoice()
+                ? route('public.invoice.show', [$patungan->public_token, $participant->uuid])
+                : null,
         ];
     }
 

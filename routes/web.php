@@ -11,6 +11,8 @@ use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\PatunganController;
 use App\Http\Controllers\PayoutController;
 use App\Http\Controllers\PayoutDestinationController;
+use App\Http\Controllers\ProfileHubController;
+use App\Http\Controllers\Public\InvoiceController;
 use App\Http\Controllers\Public\PublicPatunganController;
 use App\Http\Controllers\Public\PublicPaymentController;
 use App\Http\Controllers\TransactionController;
@@ -37,6 +39,8 @@ Route::prefix('p/{token}')->name('public.')->group(function () {
         ->middleware('throttle:10,1')
         ->name('payment.store');
 
+    Route::get('invoice/{participant}', [InvoiceController::class, 'show'])->name('invoice.show');
+
     Route::get('pembayaran/{payment}', [PublicPaymentController::class, 'show'])->name('payment.show');
     Route::get('pembayaran/{payment}/status', [PublicPaymentController::class, 'status'])
         ->middleware('throttle:120,1')
@@ -51,6 +55,7 @@ Route::prefix('p/{token}')->name('public.')->group(function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
     Route::get('transaksi', TransactionController::class)->name('transactions.index');
+    Route::get('profil', ProfileHubController::class)->name('profile.index');
 
     Route::get('patungan', [PatunganController::class, 'index'])->name('patungan.index');
     Route::get('patungan/{patungan}', [PatunganController::class, 'show'])->name('patungan.show');

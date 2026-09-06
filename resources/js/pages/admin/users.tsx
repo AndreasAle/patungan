@@ -31,7 +31,7 @@ export default function AdminUsers({ users, search }: { users: Paginated<AdminUs
             <Head title="Admin · Users" />
 
             <div className="flex flex-wrap items-center justify-between gap-3">
-                <h1 className="text-2xl font-extrabold tracking-tight">Users</h1>
+                <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Users</h1>
 
                 <form onSubmit={submit} className="flex gap-2">
                     <Input

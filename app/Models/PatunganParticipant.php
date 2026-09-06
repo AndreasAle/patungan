@@ -38,6 +38,11 @@ class PatunganParticipant extends Model
         ];
     }
 
+    public function hasInvoice(): bool
+    {
+        return $this->invoice_number !== null && $this->status->isSettled();
+    }
+
     /** @return BelongsTo<Patungan, $this> */
     public function patungan(): BelongsTo
     {

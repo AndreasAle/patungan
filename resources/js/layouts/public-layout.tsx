@@ -4,23 +4,23 @@ import { Link } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 
 /**
- * Chrome for share links and the payment page: no navigation, nothing to sign
+ * Chrome for share links, payment and receipts: no navigation, nothing to sign
  * into, nothing that pulls the payer away from finishing.
  */
 export default function PublicLayout({ children }: { children: ReactNode }) {
     return (
-        <div className="bg-background min-h-screen">
+        <div className="bg-background flex min-h-screen flex-col">
             <FlashToast />
 
-            <header className="border-border bg-background/90 flex h-14 items-center justify-center border-b px-4 backdrop-blur">
+            <header className="border-border bg-card/90 flex h-13 items-center justify-center border-b py-3 backdrop-blur print:hidden">
                 <Link href="/" aria-label="Patungan">
                     <AppLogo />
                 </Link>
             </header>
 
-            <main className="mx-auto w-full max-w-lg px-4 py-5 pb-12">{children}</main>
+            <main className="mx-auto w-full max-w-md flex-1 px-4 py-4 sm:max-w-lg">{children}</main>
 
-            <footer className="text-muted-foreground pb-8 text-center text-xs">
+            <footer className="text-muted-foreground px-4 py-6 text-center text-[11px] print:hidden">
                 Ditenagai <span className="text-foreground font-semibold">Patungan</span> · Bayar bagianmu, beres.
             </footer>
         </div>

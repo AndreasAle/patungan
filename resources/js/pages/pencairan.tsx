@@ -56,8 +56,8 @@ export default function Pencairan({ balance, destinations, settlements, payout }
         <PatunganLayout title="Pencairan">
             <Head title="Pencairan" />
 
-            <h1 className="text-2xl font-extrabold tracking-tight">Pencairan</h1>
-            <p className="text-muted-foreground mt-0.5 text-sm">Tarik saldo kamu ke rekening atau e-wallet.</p>
+            <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Pencairan</h1>
+            <p className="text-muted-foreground mt-0.5 text-xs">Tarik saldo kamu ke rekening atau e-wallet.</p>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
                 <DashboardStat label="Saldo tersedia" amount={balance.available} emphasis />
@@ -130,7 +130,7 @@ export default function Pencairan({ balance, destinations, settlements, payout }
 
                         <Button
                             type="submit"
-                            className="mt-4 h-12 w-full rounded-xl font-semibold"
+                            className="mt-4 h-11 w-full rounded-xl font-semibold"
                             disabled={processing || data.amount <= 0 || data.amount > balance.available}
                         >
                             {processing ? 'Mengirim...' : 'Tarik dana'}

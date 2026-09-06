@@ -9,11 +9,11 @@ import SettingsLayout from '@/layouts/settings/layout';
 export default function Appearance() {
     return (
         <AppLayout>
-            <Head title="Appearance settings" />
+            <Head title="Pengaturan tampilan" />
 
             <SettingsLayout>
                 <div className="space-y-6">
-                    <HeadingSmall title="Appearance settings" description="Update your account's appearance settings" />
+                    <HeadingSmall title="Pengaturan tampilan" description="Atur tampilan terang atau gelap" />
                     <AppearanceTabs />
                 </div>
             </SettingsLayout>

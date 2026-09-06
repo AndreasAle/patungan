@@ -44,7 +44,7 @@ export default function AdminPatungans({ patungans, filters, statuses }: Props) 
             <Head title="Admin · Patungan" />
 
             <div className="flex flex-wrap items-center justify-between gap-3">
-                <h1 className="text-2xl font-extrabold tracking-tight">Patungan</h1>
+                <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Patungan</h1>
 
                 <div className="flex flex-wrap gap-2">
                     <select

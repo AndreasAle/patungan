@@ -65,6 +65,9 @@ class PublicPaymentController extends Controller
             ],
             'participant' => [
                 'name' => $patungan->displayName($payment->participant->name),
+                'invoice_url' => $payment->participant->hasInvoice()
+                    ? route('public.invoice.show', [$token, $payment->participant->uuid])
+                    : null,
             ],
             'payment' => $this->presenter->publicPayment($payment),
         ]);
@@ -83,6 +86,10 @@ class PublicPaymentController extends Controller
             'status_label' => $payment->status->label(),
             'paid_at' => $payment->paid_at?->toIso8601String(),
             'expires_at' => $payment->expires_at?->toIso8601String(),
+            // Present as soon as the payment settles, so the page can offer the receipt.
+            'invoice_url' => $payment->participant->hasInvoice()
+                ? route('public.invoice.show', [$token, $payment->participant->uuid])
+                : null,
         ]);
     }
 

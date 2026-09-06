@@ -13,8 +13,8 @@ export default function PatunganIndex({ patungans }: { patungans: Paginated<Patu
 
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-extrabold tracking-tight">Patungan</h1>
-                    <p className="text-muted-foreground mt-0.5 text-sm">{patungans.total} patungan total</p>
+                    <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Patungan</h1>
+                    <p className="text-muted-foreground mt-0.5 text-xs">{patungans.total} patungan total</p>
                 </div>
 
                 <Button asChild className="hidden h-11 rounded-xl font-semibold lg:inline-flex">

@@ -16,7 +16,10 @@ use Illuminate\Validation\ValidationException;
 
 class ParticipantService
 {
-    public function __construct(private readonly PatunganService $patunganService) {}
+    public function __construct(
+        private readonly PatunganService $patunganService,
+        private readonly InvoiceNumberGenerator $invoiceNumbers,
+    ) {}
 
     /** @param  array<int, array{name: string, amount?: ?int, note?: ?string}>  $participants */
     public function addMany(Patungan $patungan, array $participants): Patungan
@@ -123,6 +126,7 @@ class ParticipantService
             $locked->amount_paid = $locked->amount_due;
             $locked->paid_at = now();
             $locked->marked_by_user_id = $actor->id;
+            $locked->invoice_number ??= $this->invoiceNumbers->generate();
             $locked->save();
 
             $participant->setRawAttributes($locked->getAttributes(), true);
@@ -150,6 +154,8 @@ class ParticipantService
             $participant->amount_paid = 0;
             $participant->paid_at = null;
             $participant->marked_by_user_id = null;
+            // The receipt is void once the payment mark is withdrawn.
+            $participant->invoice_number = null;
             $participant->save();
 
             $this->patunganService->refreshAggregates($participant->patungan);

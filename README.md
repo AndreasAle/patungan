@@ -81,7 +81,7 @@ Driver `sandbox` menolak dijalankan di luar `local`/`testing`.
 ## Perintah
 
 ```bash
-php artisan test        # 76 test
+php artisan test        # 84 test
 php artisan payments:expire   # dijadwalkan tiap menit
 npm run build
 ./vendor/bin/pint
@@ -110,7 +110,7 @@ record payment — bukan dari query string.
 | Tabel | Isi |
 | --- | --- |
 | `patungans` | Judul, kategori, jenis pembagian, status, token publik, batas waktu bayar, agregat ter-cache |
-| `patungan_participants` | Nama, tagihan, jumlah dibayar, status, UUID sendiri (nama tidak pernah jadi identifier) |
+| `patungan_participants` | Nama, tagihan, jumlah dibayar, status, nomor invoice, UUID sendiri (nama tidak pernah jadi identifier) |
 | `payments` | Nominal, fee gateway/platform, net, referensi gateway, status, QR, kedaluwarsa |
 | `wallet_ledgers` | Setiap pergerakan uang, unik per `(type, reference)` |
 | `payout_destinations` | Rekening/e-wallet tujuan, nomor tidak pernah dikirim ke browser |
@@ -119,6 +119,39 @@ record payment — bukan dari query string.
 | `analytics_events` | Event produk internal, tanpa IP mentah |
 
 Semua uang disimpan sebagai integer rupiah (`BIGINT`) — tidak ada float.
+
+## Invoice per peserta
+
+Begitu bagian seseorang lunas — lewat QRIS maupun dicatat manual oleh
+organizer — sistem menerbitkan nomor invoice (`INV-260906-AB12C`) dan tombol
+**Invoice** muncul di sebelah namanya, baik di halaman publik maupun di halaman
+organizer.
+
+Halaman invoice berisi nomor, tanggal, nominal, metode, penyelenggara, QR untuk
+membuka/mengecek bukti itu sendiri, tombol bagikan, dan simpan PDF (lewat print
+stylesheet, tanpa library tambahan).
+
+Invoice memakai nomor sendiri, bukan referensi payment gateway — jadi bukti
+bayar aman dibagikan ke grup tanpa membocorkan internal provider. Membatalkan
+tanda bayar manual otomatis membatalkan invoice-nya.
+
+## Tempel daftar nama dari chat
+
+Organizer tidak perlu mengetik satu per satu. Copy line-up dari grup, tempel,
+dan sistem membaca namanya sendiri:
+
+```
+Beta Minisoccer 1 September 2026     -> dibuang (judul)
+20.00-22.00                          -> dibuang (jam)
+Tim A (baju ijo)                     -> dibuang (judul tim)
+1. ando                              -> ando
+4. fafa (kiper)                      -> fafa, catatan "kiper"
+```
+
+Kalau teksnya memakai penomoran atau bullet, hanya baris itu yang diambil.
+Kalau tidak ada penomoran sama sekali, tiap baris dihitung satu nama. Hasil
+bacaan ditampilkan sebagai chip yang bisa dibatalkan satu-satu sebelum
+ditambahkan, jadi judul yang lolos tidak pernah jadi peserta yang ditagih.
 
 ## Batas waktu pembayaran
 
@@ -130,6 +163,22 @@ hari / 7 hari, atau tanggal-jam sendiri, atau tanpa batas). Setelah lewat:
 - masa berlaku QRIS tidak pernah melewati batas waktu patungan
 
 Batas waktu bisa diperpanjang atau dihapus lagi dari halaman ubah patungan.
+
+## Desain
+
+Hijau tua sebagai permukaan "uang" (saldo, ringkasan patungan, header invoice,
+profil), mint sebagai latar, dan satu aksen lime khusus untuk progress dan aksi
+utama. Panel hijau memakai gradien plus bloom lime tipis biar tidak kaku seperti
+blok bank.
+
+Mobile-first: semua ukuran teks dan tinggi kontrol dipatok untuk layar 375px
+dulu, baru membesar di `sm`/`lg`. Ikon memakai satu set Lucide; emoji hanya
+dipakai di copy, bukan sebagai ikon aplikasi. Logo Patungan (dua daun membentuk
+huruf P) hidup sebagai SVG di `app-logo-icon.tsx` dan `public/favicon.svg`.
+
+Halaman `/profil` adalah beranda akun: avatar inisial, statistik patungan,
+kartu saldo mengambang, lalu daftar menu untuk uang dan akun. Seluruh copy
+aplikasi berbahasa Indonesia — termasuk halaman auth dan pengaturan bawaan.
 
 ## Keamanan
 
@@ -169,6 +218,7 @@ app/Payments/Payouts/          ManualPayoutProvider
 app/Services/                  Patungan, Participant, Payment, Ledger,
                                Settlement, Fee, WebhookProcessor, Analytics
 app/Support/PatunganPresenter  Bentuk payload publik vs organizer
-resources/js/pages/public/     Halaman share link & pembayaran QRIS
+resources/js/lib/parse-names   Pembaca daftar nama dari chat
+resources/js/pages/public/     Halaman share link, pembayaran QRIS & invoice
 resources/js/pages/admin/      Panel admin
 ```

@@ -1,13 +1,13 @@
-import { MoneyText } from '@/components/patungan/money-text';
 import { Button } from '@/components/ui/button';
-import { formatTime } from '@/lib/format';
+import { formatTime, rupiah } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import type { PublicParticipant } from '@/types';
-import { Check } from 'lucide-react';
+import { Link } from '@inertiajs/react';
+import { Check, ReceiptText } from 'lucide-react';
 
 interface ParticipantRowProps {
     participant: PublicParticipant;
-    /** Omitted on a closed patungan, where nobody can pay any more. */
+    /** Omitted when the patungan no longer accepts payments. */
     onPay?: (participant: PublicParticipant) => void;
     disabled?: boolean;
 }
@@ -18,26 +18,49 @@ export function ParticipantRow({ participant, onPay, disabled = false }: Partici
     return (
         <li
             className={cn(
-                'border-border bg-card flex items-center gap-3 rounded-2xl border px-4 py-3 transition',
-                paid && 'bg-success-soft/50 border-transparent opacity-70',
+                'flex items-center gap-3 rounded-2xl border px-3.5 py-3 transition',
+                paid ? 'border-success/20 bg-success-soft/50' : 'border-border bg-card',
             )}
         >
+            <span
+                className={cn(
+                    'flex size-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold',
+                    paid ? 'bg-success text-success-foreground' : 'bg-brand-soft text-primary',
+                )}
+                aria-hidden="true"
+            >
+                {paid ? <Check className="size-4" strokeWidth={3} /> : participant.name.charAt(0).toUpperCase()}
+            </span>
+
             <div className="min-w-0 flex-1">
-                <p className="text-foreground truncate font-semibold">{participant.name}</p>
-                <div className="text-muted-foreground mt-0.5 flex items-center gap-2 text-sm">
-                    <MoneyText amount={participant.amount_due} size="sm" className="text-muted-foreground font-medium" />
-                    {participant.note && <span className="truncate">· {participant.note}</span>}
-                </div>
+                <p className="text-foreground truncate text-sm font-semibold">{participant.name}</p>
+                <p className="text-muted-foreground mt-0.5 truncate text-xs">
+                    {rupiah(participant.amount_due)}
+                    {paid && participant.paid_at && ` · ${formatTime(participant.paid_at)}`}
+                    {!paid && participant.note && ` · ${participant.note}`}
+                </p>
             </div>
 
             {paid ? (
-                <span className="bg-success-soft text-success inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold">
-                    <Check className="size-4" strokeWidth={3} />
-                    Sudah bayar
-                    {participant.paid_at && <span className="hidden font-normal opacity-70 sm:inline">{formatTime(participant.paid_at)}</span>}
-                </span>
+                participant.invoice_url ? (
+                    /* A settled share always has a receipt to open. */
+                    <Link
+                        href={participant.invoice_url}
+                        className="text-success border-success/30 hover:bg-success/10 inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition"
+                    >
+                        <ReceiptText className="size-3.5" />
+                        Invoice
+                    </Link>
+                ) : (
+                    <span className="text-success shrink-0 text-xs font-semibold">Sudah bayar</span>
+                )
             ) : (
-                <Button size="sm" className="h-10 rounded-xl px-5 font-semibold" onClick={() => onPay?.(participant)} disabled={disabled || !onPay}>
+                <Button
+                    size="sm"
+                    className="h-9 shrink-0 rounded-xl px-4 text-xs font-semibold"
+                    onClick={() => onPay?.(participant)}
+                    disabled={disabled || !onPay}
+                >
                     Bayar
                 </Button>
             )}

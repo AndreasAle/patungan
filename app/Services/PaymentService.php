@@ -28,6 +28,7 @@ class PaymentService
         private readonly LedgerService $ledger,
         private readonly PatunganService $patunganService,
         private readonly Analytics $analytics,
+        private readonly InvoiceNumberGenerator $invoiceNumbers,
     ) {}
 
     /**
@@ -121,6 +122,7 @@ class PaymentService
                     'paid_method' => PaymentMethod::Qris->value,
                     'amount_paid' => $locked->amount,
                     'paid_at' => now(),
+                    'invoice_number' => $participant->invoice_number ?? $this->invoiceNumbers->generate(),
                 ])->save();
             }
 

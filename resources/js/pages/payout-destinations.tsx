@@ -42,8 +42,8 @@ export default function PayoutDestinations({ channels, destinations }: Destinati
         <PatunganLayout title="Rekening tujuan" back={route('payout.index')}>
             <Head title="Rekening tujuan" />
 
-            <h1 className="text-2xl font-extrabold tracking-tight">Rekening tujuan</h1>
-            <p className="text-muted-foreground mt-0.5 text-sm">Ke mana saldo kamu dikirim saat dicairkan.</p>
+            <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Rekening tujuan</h1>
+            <p className="text-muted-foreground mt-0.5 text-xs">Ke mana saldo kamu dikirim saat dicairkan.</p>
 
             {destinations.length === 0 ? (
                 <EmptyState className="mt-5" icon={Landmark} title="Belum ada rekening." description="Tambahkan satu di bawah." />
@@ -89,7 +89,7 @@ export default function PayoutDestinations({ channels, destinations }: Destinati
                         id="provider_code"
                         value={data.provider_code}
                         onChange={(event) => setData('provider_code', event.target.value)}
-                        className="border-input bg-background mt-1.5 h-12 w-full rounded-xl border px-3 text-sm font-medium"
+                        className="border-input bg-background mt-1.5 h-11 w-full rounded-xl border px-3 text-sm font-medium"
                     >
                         {options.map((channel) => (
                             <option key={channel.code} value={channel.code}>
@@ -107,7 +107,7 @@ export default function PayoutDestinations({ channels, destinations }: Destinati
                         inputMode="numeric"
                         value={data.account_number}
                         onChange={(event) => setData('account_number', event.target.value.replace(/\D/g, ''))}
-                        className="mt-1.5 h-12 rounded-xl tabular-nums"
+                        className="mt-1.5 h-11 rounded-xl tabular-nums"
                     />
                     <InputError message={errors.account_number} className="mt-1.5" />
                 </div>
@@ -118,12 +118,12 @@ export default function PayoutDestinations({ channels, destinations }: Destinati
                         id="account_holder"
                         value={data.account_holder}
                         onChange={(event) => setData('account_holder', event.target.value)}
-                        className="mt-1.5 h-12 rounded-xl"
+                        className="mt-1.5 h-11 rounded-xl"
                     />
                     <InputError message={errors.account_holder} className="mt-1.5" />
                 </div>
 
-                <Button type="submit" className="mt-5 h-12 w-full rounded-xl font-semibold" disabled={processing}>
+                <Button type="submit" className="mt-5 h-11 w-full rounded-xl font-semibold" disabled={processing}>
                     {processing ? 'Menyimpan...' : 'Simpan rekening'}
                 </Button>
             </form>

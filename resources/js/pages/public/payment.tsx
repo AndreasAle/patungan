@@ -1,4 +1,3 @@
-import { MoneyText } from '@/components/patungan/money-text';
 import { PaymentStatus } from '@/components/patungan/payment-status';
 import { QrCodeCard } from '@/components/patungan/qr-code-card';
 import { Button } from '@/components/ui/button';
@@ -6,12 +5,12 @@ import PublicLayout from '@/layouts/public-layout';
 import { countdown, rupiah } from '@/lib/format';
 import type { PublicPayment } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { CheckCircle2 } from 'lucide-react';
+import { Check, ReceiptText } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface PaymentPageProps {
     patungan: { title: string; public_token: string; category_label: string };
-    participant: { name: string };
+    participant: { name: string; invoice_url: string | null };
     payment: PublicPayment;
 }
 
@@ -19,6 +18,7 @@ const POLL_INTERVAL = 4000;
 
 export default function PublicPaymentPage({ patungan, participant, payment }: PaymentPageProps) {
     const [status, setStatus] = useState(payment.status);
+    const [invoiceUrl, setInvoiceUrl] = useState(participant.invoice_url);
     const [now, setNow] = useState(() => Date.now());
 
     /*
@@ -38,7 +38,11 @@ export default function PublicPaymentPage({ patungan, participant, payment }: Pa
 
                 if (!response.ok) return;
 
-                const body: { status: PublicPayment['status'] } = await response.json();
+                const body: { status: PublicPayment['status']; invoice_url: string | null } = await response.json();
+
+                if (body.invoice_url) {
+                    setInvoiceUrl(body.invoice_url);
+                }
 
                 if (body.status !== status) {
                     setStatus(body.status);
@@ -65,26 +69,30 @@ export default function PublicPaymentPage({ patungan, participant, payment }: Pa
             <PublicLayout>
                 <Head title="Pembayaran berhasil" />
 
-                <div className="flex flex-col items-center py-10 text-center">
-                    <span className="bg-success-soft text-success flex size-16 items-center justify-center rounded-full">
-                        <CheckCircle2 className="size-8" />
+                <div className="surface-deep rounded-3xl px-5 py-8 text-center">
+                    <span className="bg-lime text-lime-foreground mx-auto flex size-14 items-center justify-center rounded-full">
+                        <Check className="size-7" strokeWidth={3} />
                     </span>
 
-                    <h1 className="mt-5 text-2xl font-extrabold tracking-tight">Pembayaran berhasil</h1>
-                    <MoneyText amount={payment.charged_amount} size="xl" className="text-primary mt-2" />
+                    <h1 className="text-brand-deep-foreground mt-4 text-lg font-bold tracking-tight">Pembayaran berhasil</h1>
+                    <p className="text-brand-deep-foreground mt-2 text-[28px] leading-none font-bold tracking-tight sm:text-3xl">
+                        {rupiah(payment.charged_amount)}
+                    </p>
+                    <p className="text-brand-deep-muted mt-2 text-xs">
+                        {participant.name} · {patungan.title}
+                    </p>
+                </div>
 
-                    <dl className="border-border bg-card mt-6 w-full space-y-3 rounded-2xl border p-4 text-left">
-                        <div className="flex justify-between">
-                            <dt className="text-muted-foreground text-sm">Nama</dt>
-                            <dd className="font-semibold">{participant.name}</dd>
-                        </div>
-                        <div className="flex justify-between">
-                            <dt className="text-muted-foreground text-sm">Patungan</dt>
-                            <dd className="font-semibold">{patungan.title}</dd>
-                        </div>
-                    </dl>
-
-                    <Button asChild className="mt-6 h-12 w-full rounded-xl font-semibold">
+                <div className="mt-3 space-y-2.5">
+                    {invoiceUrl && (
+                        <Button asChild className="h-11 w-full rounded-xl text-sm font-semibold">
+                            <Link href={invoiceUrl}>
+                                <ReceiptText className="size-4" />
+                                Lihat invoice
+                            </Link>
+                        </Button>
+                    )}
+                    <Button asChild variant="outline" className="h-11 w-full rounded-xl text-sm font-semibold">
                         <Link href={route('public.patungan.show', patungan.public_token)}>Kembali ke patungan</Link>
                     </Button>
                 </div>
@@ -96,47 +104,49 @@ export default function PublicPaymentPage({ patungan, participant, payment }: Pa
         <PublicLayout>
             <Head title={`Bayar ${rupiah(payment.charged_amount)}`} />
 
-            <div className="text-center">
-                <p className="text-muted-foreground text-sm">Bayar</p>
-                <MoneyText amount={payment.charged_amount} size="xl" className="mt-1 block" />
-                <p className="text-muted-foreground mt-2 text-sm">
-                    untuk <span className="text-foreground font-semibold">{participant.name}</span> · {patungan.title}
+            <div className="surface-deep rounded-3xl px-5 py-5 text-center">
+                <p className="text-brand-deep-muted text-[11px]">Bayar</p>
+                <p className="text-brand-deep-foreground mt-1 text-[30px] leading-none font-bold tracking-tight sm:text-4xl">
+                    {rupiah(payment.charged_amount)}
+                </p>
+                <p className="text-brand-deep-muted mt-2 text-xs">
+                    untuk <span className="text-brand-deep-foreground font-semibold">{participant.name}</span> · {patungan.title}
                 </p>
             </div>
 
-            <div className="mt-5">
+            <div className="mt-3">
                 <QrCodeCard qrUrl={payment.qr_url} qrString={payment.qr_string} simulated={payment.simulated} />
             </div>
 
             {payment.service_fee > 0 && (
-                <dl className="border-border bg-card mt-4 space-y-2 rounded-2xl border p-4 text-sm">
+                <dl className="border-border bg-card mt-3 space-y-2 rounded-2xl border p-4 text-xs">
                     <div className="flex justify-between">
                         <dt className="text-muted-foreground">Tagihan</dt>
-                        <dd className="font-medium">{rupiah(payment.amount)}</dd>
+                        <dd className="font-medium tabular-nums">{rupiah(payment.amount)}</dd>
                     </div>
                     <div className="flex justify-between">
                         <dt className="text-muted-foreground">Biaya layanan</dt>
-                        <dd className="font-medium">{rupiah(payment.service_fee)}</dd>
+                        <dd className="font-medium tabular-nums">{rupiah(payment.service_fee)}</dd>
                     </div>
                     <div className="border-border flex justify-between border-t pt-2">
-                        <dt className="font-semibold">Total</dt>
-                        <dd className="font-semibold">{rupiah(payment.charged_amount)}</dd>
+                        <dt className="text-sm font-semibold">Total</dt>
+                        <dd className="text-sm font-bold tabular-nums">{rupiah(payment.charged_amount)}</dd>
                     </div>
                 </dl>
             )}
 
-            <PaymentStatus className="mt-4" status={effectiveStatus} countdown={remaining} />
+            <PaymentStatus className="mt-3" status={effectiveStatus} countdown={remaining} />
 
             {effectiveStatus !== 'PENDING' && (
                 <Button
-                    className="mt-4 h-12 w-full rounded-xl font-semibold"
+                    className="mt-3 h-11 w-full rounded-xl text-sm font-semibold"
                     onClick={() => router.visit(route('public.patungan.show', patungan.public_token))}
                 >
                     Coba bayar lagi
                 </Button>
             )}
 
-            <Button asChild variant="ghost" className="mt-2 h-11 w-full rounded-xl">
+            <Button asChild variant="ghost" className="mt-2 h-11 w-full rounded-xl text-sm">
                 <Link href={route('public.patungan.show', patungan.public_token)}>Kembali ke patungan</Link>
             </Button>
         </PublicLayout>

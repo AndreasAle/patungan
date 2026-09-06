@@ -57,7 +57,7 @@ export function DeadlinePicker({ value, onChange, id = 'expires_at' }: DeadlineP
                 </button>
             </div>
 
-            <Input id={id} type="datetime-local" value={value} onChange={(event) => onChange(event.target.value)} className="mt-2 h-12 rounded-xl" />
+            <Input id={id} type="datetime-local" value={value} onChange={(event) => onChange(event.target.value)} className="mt-2 h-11 rounded-xl" />
         </div>
     );
 }

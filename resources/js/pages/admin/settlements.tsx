@@ -56,8 +56,8 @@ export default function AdminSettlements({ settlements, filters, statuses, provi
 
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                    <h1 className="text-2xl font-extrabold tracking-tight">Pencairan</h1>
-                    <p className="text-muted-foreground mt-0.5 text-sm">
+                    <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Pencairan</h1>
+                    <p className="text-muted-foreground mt-0.5 text-xs">
                         Provider: <span className="font-semibold">{provider.name}</span>
                         {!provider.automated && ' · diproses manual oleh operator'}
                     </p>
