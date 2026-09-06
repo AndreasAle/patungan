@@ -62,6 +62,69 @@ class PatunganManagementTest extends TestCase
         $this->assertSame([25000, 25000, 50000], $patungan->participants->pluck('amount_due')->all());
     }
 
+    public function test_a_custom_split_ignores_the_unused_equal_amount_field(): void
+    {
+        $organizer = $this->organizer();
+
+        // The wizard carries an untouched equal_amount of 0 through to step four.
+        $this->actingAs($organizer)->post(route('patungan.store'), [
+            'title' => 'Event Corespace',
+            'description' => '-',
+            'category' => PatunganCategory::Acara->value,
+            'split_type' => SplitType::Custom->value,
+            'equal_amount' => 0,
+            'participants' => [
+                ['name' => 'sound', 'amount' => 2131222],
+                ['name' => 'listrik', 'amount' => 1121332],
+            ],
+        ])->assertSessionHasNoErrors();
+
+        $patungan = Patungan::query()->firstOrFail();
+
+        $this->assertSame(3252554, $patungan->target_amount);
+        $this->assertNull($patungan->equal_amount);
+    }
+
+    public function test_an_equal_split_ignores_unused_participant_amounts(): void
+    {
+        $this->actingAs($this->organizer())->post(route('patungan.store'), [
+            'title' => 'Badminton Minggu Malam',
+            'category' => PatunganCategory::Olahraga->value,
+            'split_type' => SplitType::Equal->value,
+            'equal_amount' => 25000,
+            'participants' => [
+                ['name' => 'Andreas', 'amount' => 0],
+                ['name' => 'Niko', 'amount' => null],
+            ],
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame(50000, Patungan::query()->firstOrFail()->target_amount);
+    }
+
+    public function test_an_equal_split_still_requires_its_amount(): void
+    {
+        $this->actingAs($this->organizer())->post(route('patungan.store'), [
+            'title' => 'Badminton',
+            'category' => PatunganCategory::Olahraga->value,
+            'split_type' => SplitType::Equal->value,
+            'participants' => [['name' => 'Andreas']],
+        ])->assertSessionHasErrors('equal_amount');
+
+        $this->assertSame(0, Patungan::query()->count());
+    }
+
+    public function test_a_custom_split_still_requires_each_participant_amount(): void
+    {
+        $this->actingAs($this->organizer())->post(route('patungan.store'), [
+            'title' => 'Event',
+            'category' => PatunganCategory::Acara->value,
+            'split_type' => SplitType::Custom->value,
+            'participants' => [['name' => 'sound']],
+        ])->assertSessionHasErrors('participants.0.amount');
+
+        $this->assertSame(0, Patungan::query()->count());
+    }
+
     public function test_duplicate_participant_names_stay_distinct_records(): void
     {
         $patungan = $this->makePatungan($this->organizer(), ['Andreas', 'Andreas']);

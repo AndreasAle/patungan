@@ -11,7 +11,7 @@ import { rupiah } from '@/lib/format';
 import { parseQuickNames, type ParsedName } from '@/lib/parse-names';
 import { cn } from '@/lib/utils';
 import { Head, useForm } from '@inertiajs/react';
-import { ArrowLeft, ArrowRight, ClipboardPaste, DoorClosed, Globe, Plus, Users, X } from 'lucide-react';
+import { AlertCircle, ArrowLeft, ArrowRight, ClipboardPaste, DoorClosed, Globe, Plus, Users, X } from 'lucide-react';
 import { useMemo, useState, type FormEvent, type KeyboardEvent } from 'react';
 
 interface Category {
@@ -63,7 +63,7 @@ export default function CreatePatungan({ categories, fee_bearer }: { categories:
     const [pasting, setPasting] = useState(false);
     const [pastedText, setPastedText] = useState('');
 
-    const { data, setData, post, processing, errors } = useForm<CreateForm>({
+    const { data, setData, post, transform, processing, errors } = useForm<CreateForm>({
         title: '',
         description: '',
         category: 'OLAHRAGA',
@@ -123,9 +123,37 @@ export default function CreatePatungan({ categories, fee_bearer }: { categories:
         );
     };
 
+    /** Which step owns each field, so a rejected submit lands where it can be fixed. */
+    const stepForField = (field: string): number => {
+        if (field.startsWith('participants')) return 2;
+        if (field === 'split_type' || field === 'equal_amount') return 1;
+
+        return 0;
+    };
+
     const submit = (event: FormEvent) => {
         event.preventDefault();
-        post(route('patungan.store'));
+
+        // Send only the amount field that this split type actually uses.
+        transform((payload) => ({
+            ...payload,
+            equal_amount: payload.split_type === 'EQUAL' ? payload.equal_amount : null,
+            participants: payload.participants.map((participant) => ({
+                name: participant.name,
+                note: participant.note,
+                amount: payload.split_type === 'CUSTOM' ? participant.amount : null,
+            })),
+        }));
+
+        post(route('patungan.store'), {
+            onError: (failed) => {
+                const first = Object.keys(failed)[0];
+
+                if (first !== undefined) {
+                    setStep(stepForField(first));
+                }
+            },
+        });
     };
 
     const canContinue =
@@ -512,6 +540,20 @@ export default function CreatePatungan({ categories, fee_bearer }: { categories:
                                 ))}
                             </ul>
                         </Section>
+                    </div>
+                )}
+
+                {step === steps.length - 1 && Object.keys(errors).length > 0 && (
+                    <div className="border-destructive/30 bg-destructive/5 text-destructive mt-3 flex items-start gap-2 rounded-2xl border px-3.5 py-3">
+                        <AlertCircle className="mt-0.5 size-4 shrink-0" />
+                        <div className="min-w-0 text-[11px] leading-relaxed">
+                            <p className="font-semibold">Ada yang belum beres</p>
+                            <ul className="mt-1 space-y-0.5">
+                                {Object.values(errors).map((message) => (
+                                    <li key={message}>{message}</li>
+                                ))}
+                            </ul>
+                        </div>
                     </div>
                 )}
 
