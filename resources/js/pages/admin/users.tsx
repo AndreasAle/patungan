@@ -1,4 +1,5 @@
 import { DataTable } from '@/components/patungan/data-table';
+import { Eyebrow } from '@/components/patungan/section-heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AdminLayout from '@/layouts/admin-layout';
@@ -31,7 +32,10 @@ export default function AdminUsers({ users, search }: { users: Paginated<AdminUs
             <Head title="Admin · Users" />
 
             <div className="flex flex-wrap items-center justify-between gap-3">
-                <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Users</h1>
+                <div>
+                    <Eyebrow>Akun terdaftar</Eyebrow>
+                    <h1 className="display mt-2.5 text-[22px] sm:text-3xl">Users</h1>
+                </div>
 
                 <form onSubmit={submit} className="flex gap-2">
                     <Input

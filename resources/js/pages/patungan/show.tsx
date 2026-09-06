@@ -2,6 +2,7 @@ import { CategoryIcon } from '@/components/patungan/category-icon';
 import { ConfirmDialog } from '@/components/patungan/confirm-dialog';
 import { PasteNamesSheet } from '@/components/patungan/paste-names-sheet';
 import { ProgressBar } from '@/components/patungan/progress-bar';
+import { Eyebrow, PanelHeading } from '@/components/patungan/section-heading';
 import { SharePatungan } from '@/components/patungan/share-patungan';
 import { ShareRoomInvite } from '@/components/patungan/share-room-invite';
 import { StatusBadge } from '@/components/patungan/status-badge';
@@ -97,7 +98,7 @@ export default function PatunganShow({ patungan, can, share_message, organizer_n
                                     Private room
                                 </span>
                             )}
-                            <h1 className="text-brand-deep-foreground truncate text-base font-bold tracking-tight">{patungan.title}</h1>
+                            <h1 className="display text-brand-deep-foreground truncate text-lg sm:text-xl">{patungan.title}</h1>
                             <p className="text-brand-deep-muted mt-0.5 truncate text-xs">
                                 {patungan.split_type === 'EQUAL' && patungan.equal_amount
                                     ? `${rupiah(patungan.equal_amount)} / orang`
@@ -107,11 +108,12 @@ export default function PatunganShow({ patungan, can, share_message, organizer_n
                         <StatusBadge status={patungan.status} label={patungan.status_label} />
                     </div>
 
-                    <div className="mt-5">
-                        <p className="text-brand-deep-foreground text-[26px] leading-none font-bold tracking-tight sm:text-3xl">
+                    <div className="border-brand-deep-muted/25 mt-6 border-t pt-5">
+                        <Eyebrow onDeep>Terkumpul</Eyebrow>
+                        <p className="display text-brand-deep-foreground mt-3 text-[29px] tabular-nums sm:text-5xl">
                             {rupiah(patungan.collected_amount)}
                         </p>
-                        <p className="text-brand-deep-muted mt-1 text-[11px]">terkumpul dari {rupiah(patungan.target_amount)}</p>
+                        <p className="text-brand-deep-muted mt-2 text-[11px]">dari {rupiah(patungan.target_amount)}</p>
 
                         <ProgressBar className="mt-3" value={patungan.collected_amount} total={patungan.target_amount} tone="onDeep" />
 
@@ -140,16 +142,16 @@ export default function PatunganShow({ patungan, can, share_message, organizer_n
         >
             <Head title={patungan.title} />
 
-            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_19rem]">
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_19rem] lg:gap-6">
                 <div className="lg:order-2">
                     {patungan.is_private_room ? (
-                        <div className="border-border bg-card rounded-2xl border p-4">
-                            <p className="text-sm font-bold tracking-tight">Bagikan per peserta</p>
-                            <p className="text-muted-foreground mt-0.5 text-[11px] leading-relaxed">
+                        <div className="border-border bg-card rounded-3xl border p-5">
+                            <PanelHeading>Bagikan per peserta</PanelHeading>
+                            <p className="text-muted-foreground mt-2 text-[11px] leading-relaxed">
                                 Linknya sama untuk semua, tapi PIN-nya beda tiap orang. Pakai tombol Salin undangan di masing-masing peserta biar link
                                 dan PIN-nya ikut lengkap.
                             </p>
-                            <div className="bg-surface mt-3 flex items-center gap-2 rounded-xl px-3 py-2.5">
+                            <div className="bg-surface mt-4 flex items-center gap-2 rounded-2xl px-3 py-2.5">
                                 <span className="text-muted-foreground min-w-0 flex-1 truncate font-mono text-[11px]">{patungan.public_url}</span>
                             </div>
                         </div>
@@ -160,12 +162,12 @@ export default function PatunganShow({ patungan, can, share_message, organizer_n
 
                 <div className="lg:order-1">
                     {patungan.description && (
-                        <p className="text-muted-foreground border-border bg-card rounded-2xl border px-3.5 py-3 text-xs leading-relaxed">
+                        <p className="text-muted-foreground border-border bg-card rounded-3xl border px-4 py-3.5 text-xs leading-relaxed">
                             {patungan.description}
                         </p>
                     )}
 
-                    <section className={cn(patungan.description && 'mt-3')}>
+                    <section className={cn(patungan.description && 'mt-4')}>
                         <div className="flex gap-1.5 overflow-x-auto pb-0.5">
                             {filters.map(([value, label]) => (
                                 <button
@@ -184,7 +186,7 @@ export default function PatunganShow({ patungan, can, share_message, organizer_n
                             ))}
                         </div>
 
-                        <ul className="mt-2.5 space-y-2">
+                        <ul className="mt-3 space-y-2">
                             {filtered.map((participant) => {
                                 const paid = participant.status === 'PAID';
 
@@ -299,7 +301,7 @@ export default function PatunganShow({ patungan, can, share_message, organizer_n
                     {can.close && (
                         <div className="mt-6">
                             {isOpen ? (
-                                <Button variant="outline" className="h-11 rounded-xl text-sm font-semibold" onClick={() => setClosing(true)}>
+                                <Button variant="outline" className="h-11 rounded-full px-6 text-sm font-semibold" onClick={() => setClosing(true)}>
                                     <Lock className="size-4" />
                                     Tutup patungan
                                 </Button>
@@ -307,7 +309,7 @@ export default function PatunganShow({ patungan, can, share_message, organizer_n
                                 patungan.status === 'CLOSED' && (
                                     <Button
                                         variant="outline"
-                                        className="h-11 rounded-xl text-sm font-semibold"
+                                        className="h-11 rounded-full px-6 text-sm font-semibold"
                                         onClick={() => router.post(route('patungan.reopen', patungan.uuid), {}, { preserveScroll: true })}
                                     >
                                         <LockOpen className="size-4" />

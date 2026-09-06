@@ -3,6 +3,7 @@ import { CategoryIcon } from '@/components/patungan/category-icon';
 import { DeadlinePicker } from '@/components/patungan/deadline-picker';
 import { PasteNamesSheet } from '@/components/patungan/paste-names-sheet';
 import { RupiahInput } from '@/components/patungan/rupiah-input';
+import { Eyebrow, PanelHeading } from '@/components/patungan/section-heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -49,10 +50,10 @@ const steps = [
 /** Card shell used for every block in the wizard, so the rhythm stays even. */
 function Section({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
     return (
-        <section className="border-border bg-card rounded-2xl border p-4">
-            <h2 className="text-sm font-bold tracking-tight">{title}</h2>
-            {description && <p className="text-muted-foreground mt-0.5 text-xs leading-relaxed">{description}</p>}
-            <div className="mt-3.5">{children}</div>
+        <section className="border-border bg-card rounded-3xl border p-5">
+            <PanelHeading>{title}</PanelHeading>
+            {description && <p className="text-muted-foreground mt-2 text-xs leading-relaxed">{description}</p>}
+            <div className="mt-4">{children}</div>
         </section>
     );
 }
@@ -165,13 +166,13 @@ export default function CreatePatungan({ categories, fee_bearer }: { categories:
         <PatunganLayout
             hero={
                 <div>
-                    <p className="text-brand-deep-muted text-[11px]">
+                    <Eyebrow onDeep>
                         Langkah {step + 1} dari {steps.length}
-                    </p>
-                    <h1 className="text-brand-deep-foreground mt-0.5 text-lg font-bold tracking-tight sm:text-xl">{steps[step].label}</h1>
-                    <p className="text-brand-deep-muted mt-0.5 text-xs">{steps[step].hint}</p>
+                    </Eyebrow>
+                    <h1 className="display text-brand-deep-foreground mt-3 text-[26px] sm:text-4xl">{steps[step].label}</h1>
+                    <p className="text-brand-deep-muted mt-2 text-xs sm:text-sm">{steps[step].hint}</p>
 
-                    <ol className="mt-4 flex gap-1.5" aria-label="Progres pembuatan patungan">
+                    <ol className="mt-6 flex gap-1.5" aria-label="Progres pembuatan patungan">
                         {steps.map((entry, index) => (
                             <li
                                 key={entry.label}
@@ -489,9 +490,7 @@ export default function CreatePatungan({ categories, fee_bearer }: { categories:
                             <div className="flex items-start gap-3">
                                 <CategoryIcon category={data.category} size="sm" className="bg-white/15 text-white" />
                                 <div className="min-w-0">
-                                    <h2 className="text-brand-deep-foreground truncate text-base font-bold tracking-tight">
-                                        {data.title || 'Tanpa judul'}
-                                    </h2>
+                                    <h2 className="display text-brand-deep-foreground truncate text-lg">{data.title || 'Tanpa judul'}</h2>
                                     {data.description && <p className="text-brand-deep-muted mt-0.5 text-xs">{data.description}</p>}
                                 </div>
                             </div>

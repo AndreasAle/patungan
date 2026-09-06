@@ -95,7 +95,7 @@ export default function Password() {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <Button className="h-11 rounded-xl px-5 text-sm font-semibold" disabled={processing}>
+                        <Button className="h-11 rounded-full px-6 text-sm font-semibold" disabled={processing}>
                             {processing ? 'Menyimpan...' : 'Simpan password'}
                         </Button>
 

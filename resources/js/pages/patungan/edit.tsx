@@ -1,6 +1,7 @@
 import InputError from '@/components/input-error';
 import { CategoryIcon } from '@/components/patungan/category-icon';
 import { DeadlinePicker } from '@/components/patungan/deadline-picker';
+import { PageHeader } from '@/components/patungan/section-heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -35,7 +36,11 @@ export default function PatunganEdit({ patungan, categories }: EditProps) {
         <PatunganLayout title="Ubah patungan" back={route('patungan.show', patungan.uuid)}>
             <Head title={`Ubah ${patungan.title}`} />
 
-            <form onSubmit={submit} className="mx-auto w-full max-w-xl space-y-5">
+            <div className="mx-auto w-full max-w-xl">
+                <PageHeader eyebrow="Pengaturan" title="Ubah patungan" description={patungan.title} />
+            </div>
+
+            <form onSubmit={submit} className="mx-auto mt-7 w-full max-w-xl space-y-5">
                 <div>
                     <Label htmlFor="title">Judul patungan</Label>
                     <Input
@@ -124,7 +129,7 @@ export default function PatunganEdit({ patungan, categories }: EditProps) {
                     </div>
                 </div>
 
-                <Button type="submit" className="h-11 w-full rounded-xl font-semibold" disabled={processing}>
+                <Button type="submit" className="h-12 w-full rounded-full text-sm font-semibold" disabled={processing}>
                     {processing ? 'Menyimpan...' : 'Simpan perubahan'}
                 </Button>
             </form>

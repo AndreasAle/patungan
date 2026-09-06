@@ -139,7 +139,9 @@ export default function PatunganLayout({ children, title, back, action, hero, wi
                     </header>
                 )}
 
-                <main className={cn('relative z-10 mx-auto w-full px-4 pb-24 lg:px-8 lg:pb-12', measure, hero ? '-mt-12 lg:-mt-14' : 'pt-4 lg:pt-5')}>
+                <main
+                    className={cn('relative z-10 mx-auto w-full px-4 pb-24 lg:px-8 lg:pb-12', measure, hero ? '-mt-12 lg:-mt-14' : 'pt-5 lg:pt-10')}
+                >
                     {children}
                 </main>
             </div>

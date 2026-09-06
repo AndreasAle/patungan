@@ -24,6 +24,38 @@ export function Eyebrow({ children, onDeep = false, className }: { children: Rea
     );
 }
 
+interface PageHeaderProps {
+    eyebrow: string;
+    title: string;
+    description?: string;
+    /** Rendered on the right, e.g. a primary button. */
+    action?: ReactNode;
+    className?: string;
+}
+
+/**
+ * The top of a page: the same eyebrow, rule and display type the landing page
+ * opens its sections with, so the app does not change voice at the login wall.
+ */
+export function PageHeader({ eyebrow, title, description, action, className }: PageHeaderProps) {
+    return (
+        <div className={cn('flex items-end justify-between gap-4', className)}>
+            <div className="min-w-0">
+                <Eyebrow>{eyebrow}</Eyebrow>
+                <h1 className="display mt-2.5 text-[22px] sm:text-3xl">{title}</h1>
+                {description && <p className="text-muted-foreground mt-2 max-w-md text-xs leading-relaxed sm:text-sm">{description}</p>}
+            </div>
+
+            {action && <div className="shrink-0 pb-1">{action}</div>}
+        </div>
+    );
+}
+
+/** The quiet uppercase label that titles a card or a panel. */
+export function PanelHeading({ children, className }: { children: ReactNode; className?: string }) {
+    return <h2 className={cn('text-muted-foreground text-[11px] font-bold tracking-[0.18em] uppercase', className)}>{children}</h2>;
+}
+
 interface SectionHeadingProps {
     eyebrow: string;
     title: string;

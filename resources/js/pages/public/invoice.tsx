@@ -69,8 +69,8 @@ export default function Invoice({ invoice, patungan }: InvoiceProps) {
                 <header className="surface-deep px-5 py-5">
                     <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                            <p className="text-brand-deep-muted text-[11px]">Invoice</p>
-                            <h1 className="text-brand-deep-foreground mt-0.5 text-lg font-bold tracking-tight">{invoice.number}</h1>
+                            <p className="text-brand-deep-muted text-[10px] font-semibold tracking-[0.18em] uppercase">Invoice</p>
+                            <h1 className="display text-brand-deep-foreground mt-1.5 text-lg">{invoice.number}</h1>
                         </div>
                         <span className="bg-lime text-lime-foreground inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold">
                             <Check className="size-3" strokeWidth={3} />
@@ -78,10 +78,8 @@ export default function Invoice({ invoice, patungan }: InvoiceProps) {
                         </span>
                     </div>
 
-                    <p className="text-brand-deep-foreground mt-5 text-[28px] leading-none font-bold tracking-tight sm:text-4xl">
-                        {rupiah(invoice.amount)}
-                    </p>
-                    <p className="text-brand-deep-muted mt-1.5 text-[11px]">
+                    <p className="display text-brand-deep-foreground mt-6 text-[29px] tabular-nums sm:text-4xl">{rupiah(invoice.amount)}</p>
+                    <p className="text-brand-deep-muted mt-2 text-[11px]">
                         Dibayar {formatDateTime(invoice.issued_at)} · {invoice.method_label}
                     </p>
                 </header>
@@ -90,7 +88,7 @@ export default function Invoice({ invoice, patungan }: InvoiceProps) {
                     <div className="flex items-center gap-3">
                         <CategoryIcon category={patungan.category} size="sm" />
                         <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold">{patungan.title}</p>
+                            <p className="truncate text-sm font-bold tracking-tight">{patungan.title}</p>
                             <p className="text-muted-foreground truncate text-xs">Diselenggarakan oleh {patungan.organizer_name}</p>
                         </div>
                     </div>

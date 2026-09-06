@@ -84,7 +84,7 @@ export default function PrivateRoom({ patungan, fee_bearer }: RoomProps) {
         <PublicLayout>
             <Head title={patungan.title} />
 
-            <section className="surface-deep rounded-3xl px-4 py-5">
+            <section className="surface-deep rounded-3xl px-5 py-6">
                 <div className="flex items-start gap-3">
                     <CategoryIcon category={patungan.category} size="sm" className="bg-white/15 text-white" />
                     <div className="min-w-0 flex-1">
@@ -92,7 +92,7 @@ export default function PrivateRoom({ patungan, fee_bearer }: RoomProps) {
                             <DoorClosed className="size-3" />
                             Private room
                         </span>
-                        <h1 className="text-brand-deep-foreground truncate text-base font-bold tracking-tight">{patungan.title}</h1>
+                        <h1 className="display text-brand-deep-foreground truncate text-lg sm:text-xl">{patungan.title}</h1>
                         <p className="text-brand-deep-muted mt-0.5 truncate text-xs">Dari {patungan.organizer_name}</p>
                     </div>
                 </div>
@@ -107,13 +107,13 @@ export default function PrivateRoom({ patungan, fee_bearer }: RoomProps) {
             </section>
 
             {participant === null ? (
-                <form onSubmit={unlock} className="border-border bg-card mt-3 rounded-2xl border p-5">
+                <form onSubmit={unlock} className="border-border bg-card mt-4 rounded-3xl border p-6">
                     <span className="bg-brand-soft text-primary mx-auto flex size-11 items-center justify-center rounded-2xl">
                         <LockKeyhole className="size-5" />
                     </span>
 
-                    <h2 className="mt-3 text-center text-sm font-bold tracking-tight">Masukkan PIN kamu</h2>
-                    <p className="text-muted-foreground mt-1 text-center text-xs leading-relaxed">
+                    <h2 className="display mt-4 text-center text-lg">Masukkan PIN kamu</h2>
+                    <p className="text-muted-foreground mt-2 text-center text-xs leading-relaxed">
                         Penyelenggara mengirim PIN 6 digit khusus buat kamu. Kamu cuma akan melihat tagihan kamu sendiri.
                     </p>
 
@@ -133,7 +133,11 @@ export default function PrivateRoom({ patungan, fee_bearer }: RoomProps) {
                     />
                     <InputError message={errors.pin} className="mt-2 text-center" />
 
-                    <Button type="submit" className="mt-4 h-11 w-full rounded-xl text-sm font-semibold" disabled={processing || data.pin.length < 6}>
+                    <Button
+                        type="submit"
+                        className="mt-5 h-12 w-full rounded-full text-sm font-semibold"
+                        disabled={processing || data.pin.length < 6}
+                    >
                         {processing ? 'Mengecek...' : 'Buka tagihan saya'}
                     </Button>
 

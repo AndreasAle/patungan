@@ -3,6 +3,7 @@ import { CategoryIcon } from '@/components/patungan/category-icon';
 import { ParticipantRow } from '@/components/patungan/participant-row';
 import { ParticipantSearch } from '@/components/patungan/participant-search';
 import { ProgressBar } from '@/components/patungan/progress-bar';
+import { Eyebrow } from '@/components/patungan/section-heading';
 import { Button } from '@/components/ui/button';
 import PublicLayout from '@/layouts/public-layout';
 import { rupiah, timeLeft } from '@/lib/format';
@@ -72,11 +73,11 @@ export default function PublicPatunganPage({ patungan, fee_bearer }: PublicPatun
             <Head title={patungan.title} />
 
             {/* Deep green summary card - the one place money is stated up front. */}
-            <section className="surface-deep rounded-3xl px-4 py-5">
+            <section className="surface-deep rounded-3xl px-5 py-6">
                 <div className="flex items-start gap-3">
                     <CategoryIcon category={patungan.category} size="sm" className="bg-white/15 text-white" />
                     <div className="min-w-0 flex-1">
-                        <h1 className="text-brand-deep-foreground truncate text-base font-bold tracking-tight">{patungan.title}</h1>
+                        <h1 className="display text-brand-deep-foreground truncate text-lg sm:text-xl">{patungan.title}</h1>
                         <p className="text-brand-deep-muted mt-0.5 text-xs">
                             {patungan.split_type === 'EQUAL' && patungan.equal_amount
                                 ? `${rupiah(patungan.equal_amount)} / orang`
@@ -85,11 +86,12 @@ export default function PublicPatunganPage({ patungan, fee_bearer }: PublicPatun
                     </div>
                 </div>
 
-                <div className="mt-5">
-                    <p className="text-brand-deep-foreground text-[26px] leading-none font-bold tracking-tight sm:text-3xl">
+                <div className="border-brand-deep-muted/25 mt-6 border-t pt-5">
+                    <Eyebrow onDeep>Terkumpul</Eyebrow>
+                    <p className="display text-brand-deep-foreground mt-3 text-[29px] tabular-nums sm:text-4xl">
                         {rupiah(patungan.collected_amount)}
                     </p>
-                    <p className="text-brand-deep-muted mt-1 text-[11px]">terkumpul dari {rupiah(patungan.target_amount)}</p>
+                    <p className="text-brand-deep-muted mt-2 text-[11px]">dari {rupiah(patungan.target_amount)}</p>
 
                     <ProgressBar className="mt-3" value={patungan.collected_amount} total={patungan.target_amount} tone="onDeep" />
 

@@ -84,7 +84,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                     )}
 
                     <div className="flex items-center gap-3 pt-0.5">
-                        <Button className="h-11 rounded-xl px-5 text-sm font-semibold" disabled={processing}>
+                        <Button className="h-11 rounded-full px-6 text-sm font-semibold" disabled={processing}>
                             {processing ? 'Menyimpan...' : 'Simpan'}
                         </Button>
 

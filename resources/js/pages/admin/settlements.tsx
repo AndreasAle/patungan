@@ -1,4 +1,5 @@
 import { DataTable } from '@/components/patungan/data-table';
+import { Eyebrow } from '@/components/patungan/section-heading';
 import { StatusBadge } from '@/components/patungan/status-badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -56,8 +57,9 @@ export default function AdminSettlements({ settlements, filters, statuses, provi
 
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                    <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Pencairan</h1>
-                    <p className="text-muted-foreground mt-0.5 text-xs">
+                    <Eyebrow>Operasional</Eyebrow>
+                    <h1 className="display mt-2.5 text-[22px] sm:text-3xl">Pencairan</h1>
+                    <p className="text-muted-foreground mt-2 text-xs">
                         Provider: <span className="font-semibold">{provider.name}</span>
                         {!provider.automated && ' · diproses manual oleh operator'}
                     </p>

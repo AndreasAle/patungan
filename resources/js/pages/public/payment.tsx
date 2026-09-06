@@ -74,25 +74,23 @@ export default function PublicPaymentPage({ patungan, participant, payment }: Pa
                         <Check className="size-7" strokeWidth={3} />
                     </span>
 
-                    <h1 className="text-brand-deep-foreground mt-4 text-lg font-bold tracking-tight">Pembayaran berhasil</h1>
-                    <p className="text-brand-deep-foreground mt-2 text-[28px] leading-none font-bold tracking-tight sm:text-3xl">
-                        {rupiah(payment.charged_amount)}
-                    </p>
+                    <h1 className="display text-brand-deep-foreground mt-5 text-lg">Pembayaran berhasil</h1>
+                    <p className="display text-brand-deep-foreground mt-3 text-[29px] tabular-nums sm:text-4xl">{rupiah(payment.charged_amount)}</p>
                     <p className="text-brand-deep-muted mt-2 text-xs">
                         {participant.name} · {patungan.title}
                     </p>
                 </div>
 
-                <div className="mt-3 space-y-2.5">
+                <div className="mt-4 space-y-2.5">
                     {invoiceUrl && (
-                        <Button asChild className="h-11 w-full rounded-xl text-sm font-semibold">
+                        <Button asChild className="h-12 w-full rounded-full text-sm font-semibold">
                             <Link href={invoiceUrl}>
                                 <ReceiptText className="size-4" />
                                 Lihat invoice
                             </Link>
                         </Button>
                     )}
-                    <Button asChild variant="outline" className="h-11 w-full rounded-xl text-sm font-semibold">
+                    <Button asChild variant="outline" className="h-12 w-full rounded-full text-sm font-semibold">
                         <Link href={route('public.patungan.show', patungan.public_token)}>Kembali ke patungan</Link>
                     </Button>
                 </div>
@@ -105,10 +103,8 @@ export default function PublicPaymentPage({ patungan, participant, payment }: Pa
             <Head title={`Bayar ${rupiah(payment.charged_amount)}`} />
 
             <div className="surface-deep rounded-3xl px-5 py-5 text-center">
-                <p className="text-brand-deep-muted text-[11px]">Bayar</p>
-                <p className="text-brand-deep-foreground mt-1 text-[30px] leading-none font-bold tracking-tight sm:text-4xl">
-                    {rupiah(payment.charged_amount)}
-                </p>
+                <p className="text-brand-deep-muted text-[10px] font-semibold tracking-[0.18em] uppercase">Bayar</p>
+                <p className="display text-brand-deep-foreground mt-3 text-[29px] tabular-nums sm:text-4xl">{rupiah(payment.charged_amount)}</p>
                 <p className="text-brand-deep-muted mt-2 text-xs">
                     untuk <span className="text-brand-deep-foreground font-semibold">{participant.name}</span> · {patungan.title}
                 </p>

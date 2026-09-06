@@ -46,7 +46,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                                 key={tab.href}
                                 href={route(tab.href)}
                                 className={cn(
-                                    'rounded-lg px-3 py-1.5 text-sm font-semibold whitespace-nowrap transition',
+                                    'rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap transition',
                                     active ? 'bg-brand-soft text-primary' : 'text-muted-foreground hover:bg-muted',
                                 )}
                             >

@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/patungan/section-heading';
 import AdminLayout from '@/layouts/admin-layout';
 import { rupiah } from '@/lib/format';
 import { Head } from '@inertiajs/react';
@@ -34,14 +35,18 @@ export default function AdminDashboard({ stats }: { stats: Stats }) {
         <AdminLayout>
             <Head title="Admin" />
 
-            <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Ringkasan platform</h1>
+            <PageHeader
+                eyebrow="Platform"
+                title="Ringkasan"
+                description="Angka agregat seluruh Patungan, dihitung ulang tiap kali halaman ini dibuka."
+            />
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {cards.map((card) => (
-                    <div key={card.label} className="border-border bg-card rounded-2xl border p-4">
-                        <p className="text-muted-foreground text-sm">{card.label}</p>
-                        <p className="mt-1 text-2xl font-bold tracking-tight tabular-nums">{card.value}</p>
-                        {card.hint && <p className="text-muted-foreground mt-1 text-xs">{card.hint}</p>}
+                    <div key={card.label} className="border-border bg-card rounded-3xl border p-5">
+                        <p className="text-muted-foreground text-[11px] font-semibold tracking-[0.14em] uppercase">{card.label}</p>
+                        <p className="display mt-2.5 text-2xl tabular-nums">{card.value}</p>
+                        {card.hint && <p className="text-muted-foreground mt-1.5 text-xs">{card.hint}</p>}
                     </div>
                 ))}
             </div>

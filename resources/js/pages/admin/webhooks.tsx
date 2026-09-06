@@ -1,4 +1,5 @@
 import { DataTable } from '@/components/patungan/data-table';
+import { Eyebrow } from '@/components/patungan/section-heading';
 import AdminLayout from '@/layouts/admin-layout';
 import { formatDateTime } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -33,7 +34,10 @@ export default function AdminWebhooks({ logs, filters, statuses }: Props) {
 
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                    <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Webhook log</h1>
+                    <div>
+                        <Eyebrow>Notifikasi gateway</Eyebrow>
+                        <h1 className="display mt-2.5 text-[22px] sm:text-3xl">Webhook log</h1>
+                    </div>
                     <p className="text-muted-foreground mt-0.5 text-xs">Payload sudah disanitasi sebelum disimpan.</p>
                 </div>
 

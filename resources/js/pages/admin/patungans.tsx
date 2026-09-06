@@ -1,4 +1,5 @@
 import { DataTable } from '@/components/patungan/data-table';
+import { Eyebrow } from '@/components/patungan/section-heading';
 import { StatusBadge } from '@/components/patungan/status-badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,7 +45,10 @@ export default function AdminPatungans({ patungans, filters, statuses }: Props) 
             <Head title="Admin · Patungan" />
 
             <div className="flex flex-wrap items-center justify-between gap-3">
-                <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Patungan</h1>
+                <div>
+                    <Eyebrow>Semua organizer</Eyebrow>
+                    <h1 className="display mt-2.5 text-[22px] sm:text-3xl">Patungan</h1>
+                </div>
 
                 <div className="flex flex-wrap gap-2">
                     <select
