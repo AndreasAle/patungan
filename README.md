@@ -206,6 +206,21 @@ Halaman `/profil` adalah beranda akun: avatar inisial, statistik patungan,
 kartu saldo mengambang, lalu daftar menu untuk uang dan akun. Seluruh copy
 aplikasi berbahasa Indonesia — termasuk halaman auth dan pengaturan bawaan.
 
+## Popup sambutan
+
+`WelcomeDialog` muncul sekali untuk gelombang pengguna pertama. "Jangan
+tampilkan lagi" disimpan di `localStorage` browser itu, "Tutup" hanya
+menyembunyikan untuk sesi berjalan. Naikkan `STORAGE_KEY` kalau pesannya
+diganti, biar pengguna lama melihat versi baru.
+
+Foto developer opsional: simpan sebagai `public/images/founder.png`. Kalau
+filenya tidak ada, popup tetap tampil rapi tanpa ruang kosong. Untuk memotong
+background dari foto studio:
+
+```bash
+python scripts/cutout-photo.py <foto-asli> public/images/founder.png
+```
+
 ## Keamanan
 
 - Nominal selalu dibaca dari database; input nominal dari klien diabaikan

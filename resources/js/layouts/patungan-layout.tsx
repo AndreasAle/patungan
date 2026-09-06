@@ -1,6 +1,7 @@
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { FlashToast } from '@/components/patungan/flash-toast';
+import { WelcomeDialog } from '@/components/patungan/welcome-dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { SharedData } from '@/types';
@@ -50,6 +51,7 @@ export default function PatunganLayout({ children, title, back, action, hero }: 
     return (
         <div className="bg-background min-h-screen">
             <FlashToast />
+            <WelcomeDialog />
 
             {/* Desktop rail */}
             <aside className="border-sidebar-border bg-sidebar fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r px-3 py-5 lg:flex">
@@ -143,20 +145,22 @@ export default function PatunganLayout({ children, title, back, action, hero }: 
                 </main>
             </div>
 
-            {/* Mobile tab bar */}
-            <nav className="border-border bg-card pb-safe fixed inset-x-0 bottom-0 z-40 border-t lg:hidden">
-                <div className="mx-auto grid max-w-md grid-cols-5 items-end px-1 pt-1.5">
+            {/* Mobile tab bar: a floating pill that clears the home indicator. */}
+            <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 px-3 lg:hidden">
+                <div className="border-border/70 bg-card/90 mx-auto grid max-w-md grid-cols-5 items-center gap-1 rounded-[26px] border px-2 py-2 shadow-[0_8px_30px_rgba(16,66,44,0.14)] backdrop-blur-xl">
                     {mobileNav.slice(0, 2).map((link) => (
                         <NavTab key={link.href} link={link} pathname={pathname} />
                     ))}
 
-                    <Link
-                        href={route('patungan.create')}
-                        className="bg-primary text-primary-foreground shadow-primary/25 mx-auto -mt-5 flex size-11 items-center justify-center rounded-2xl shadow-lg"
-                        aria-label="Buat patungan"
-                    >
-                        <Plus className="size-5" strokeWidth={2.5} />
-                    </Link>
+                    <div className="flex justify-center">
+                        <Link
+                            href={route('patungan.create')}
+                            className="bg-primary text-primary-foreground shadow-primary/30 ring-card flex size-12 -translate-y-3 items-center justify-center rounded-2xl shadow-lg ring-4 transition active:scale-95"
+                            aria-label="Buat patungan"
+                        >
+                            <Plus className="size-5" strokeWidth={2.6} />
+                        </Link>
+                    </div>
 
                     {mobileNav.slice(2).map((link) => (
                         <NavTab key={link.href} link={link} pathname={pathname} />
@@ -173,13 +177,16 @@ function NavTab({ link, pathname }: { link: NavLink; pathname: string }) {
     return (
         <Link
             href={route(link.href)}
+            aria-current={active ? 'page' : undefined}
             className={cn(
-                'flex flex-col items-center gap-0.5 rounded-lg py-1.5 text-[10px] font-medium transition',
-                active ? 'text-primary' : 'text-muted-foreground',
+                'flex flex-col items-center gap-1 rounded-2xl py-1.5 transition',
+                active ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
             )}
         >
-            <link.icon className="size-[18px]" strokeWidth={active ? 2.4 : 2} />
-            {link.label}
+            <span className={cn('flex h-7 w-11 items-center justify-center rounded-full transition', active ? 'bg-brand-soft' : 'bg-transparent')}>
+                <link.icon className="size-[18px]" strokeWidth={active ? 2.5 : 2} />
+            </span>
+            <span className={cn('text-[10px] leading-none', active ? 'font-bold' : 'font-medium')}>{link.label}</span>
         </Link>
     );
 }
