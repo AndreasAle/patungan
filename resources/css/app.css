@@ -252,12 +252,23 @@
         z-index: -1;
     }
 
-    /* Horizontal card rails: no visible scrollbar, snap to each card. */
+    /*
+      Horizontal card rails: no visible scrollbar, snap to each card.
+
+      Snapping is deliberately "proximity", not "mandatory". Mandatory snap
+      forces the browser to land on a snap point for any gesture it decides
+      belongs to this scroller, which swallows the small horizontal component
+      of an ordinary vertical wheel or trackpad scroll and makes the whole page
+      feel like it is fighting back. Proximity snaps when the user really is
+      scrolling sideways and stays out of the way otherwise.
+    */
     .rail {
         display: flex;
         gap: 0.75rem;
         overflow-x: auto;
-        scroll-snap-type: x mandatory;
+        scroll-snap-type: x proximity;
+        /* Never chain a sideways flick to the page or the browser's back gesture. */
+        overscroll-behavior-x: contain;
         scrollbar-width: none;
         -ms-overflow-style: none;
         scroll-padding-left: 1rem;
@@ -283,7 +294,8 @@
             display: flex;
             gap: 0.75rem;
             overflow-x: auto;
-            scroll-snap-type: x mandatory;
+            scroll-snap-type: x proximity;
+            overscroll-behavior-x: contain;
             scrollbar-width: none;
             -ms-overflow-style: none;
             scroll-padding-left: 1rem;

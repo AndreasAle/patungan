@@ -112,8 +112,15 @@ export default function Welcome({ fees, max_participants }: WelcomeProps) {
         <>
             <Head title="Patungan jadi gampang" />
 
-            <div className="bg-background min-h-screen overflow-x-hidden">
-                <header className="border-border/70 bg-background/85 sticky top-0 z-50 border-b backdrop-blur-xl">
+            {/*
+                overflow-x-clip, not -hidden: `hidden` turns this into a scroll
+                container, which silently breaks `position: sticky` on the header
+                below - it would stick to this box instead of the viewport and so
+                never appear to stick at all. `clip` trims the decorative bleed
+                without creating a scroll container.
+            */}
+            <div className="bg-background min-h-screen overflow-x-clip">
+                <header className="border-border/70 bg-background/95 sticky top-0 z-50 border-b backdrop-blur-sm">
                     <Shell className="flex h-16 items-center justify-between lg:h-[72px]">
                         <AppLogo />
 
@@ -151,7 +158,7 @@ export default function Welcome({ fees, max_participants }: WelcomeProps) {
                 {/* Hero: cut-out photography over a brand field, copy on the left */}
                 <div className="relative overflow-hidden">
                     <div className="from-brand-soft/70 absolute inset-0 -z-10 bg-gradient-to-b via-transparent to-transparent" />
-                    <div className="bg-lime/20 absolute -top-24 -right-24 -z-10 size-96 rounded-full blur-3xl" />
+                    <div className="bg-lime/20 absolute -top-24 -right-24 -z-10 size-96 rounded-full blur-2xl" />
 
                     <Shell className="pt-12 lg:pt-16">
                         <div className="grid items-end gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)]">

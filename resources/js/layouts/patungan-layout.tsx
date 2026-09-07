@@ -148,7 +148,7 @@ export default function PatunganLayout({ children, title, back, action, hero, wi
 
             {/* Mobile tab bar: a floating pill that clears the home indicator. */}
             <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 px-3 lg:hidden">
-                <div className="border-border/70 bg-card/90 mx-auto grid max-w-md grid-cols-5 items-center gap-1 rounded-[26px] border px-2 py-2 shadow-[0_8px_30px_rgba(16,66,44,0.14)] backdrop-blur-xl">
+                <div className="border-border/70 bg-card/95 mx-auto grid max-w-md grid-cols-5 items-center gap-1 rounded-[26px] border px-2 py-2 shadow-[0_8px_30px_rgba(16,66,44,0.14)] backdrop-blur-sm">
                     {mobileNav.slice(0, 2).map((link) => (
                         <NavTab key={link.href} link={link} pathname={pathname} />
                     ))}
