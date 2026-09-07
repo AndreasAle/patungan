@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Payments\ChargeRequest;
 use App\Payments\ChargeResult;
 use App\Payments\GatewayEvent;
+use App\Payments\InboundWebhook;
 use App\Payments\PaymentGatewayException;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\ConnectionException;
@@ -99,8 +100,9 @@ class MidtransGateway implements PaymentGateway
         );
     }
 
-    public function parseWebhook(array $payload, string $rawBody): ?GatewayEvent
+    public function parseWebhook(InboundWebhook $webhook): ?GatewayEvent
     {
+        $payload = $webhook->payload;
         $orderId = $payload['order_id'] ?? null;
         $statusCode = $payload['status_code'] ?? null;
         $grossAmount = $payload['gross_amount'] ?? null;
@@ -143,7 +145,7 @@ class MidtransGateway implements PaymentGateway
             return null;
         }
 
-        return $this->parseWebhook($body, $response->body());
+        return $this->parseWebhook(InboundWebhook::fake($body));
     }
 
     public function cancel(Payment $payment): void

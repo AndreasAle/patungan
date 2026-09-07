@@ -12,6 +12,7 @@ interface WebhookRow {
     provider: string;
     event_type: string | null;
     external_id: string | null;
+    request_id: string | null;
     signature_valid: boolean;
     status: string;
     error: string | null;
@@ -56,7 +57,7 @@ export default function AdminWebhooks({ logs, filters, statuses }: Props) {
             </div>
 
             <DataTable
-                headers={['Waktu', 'Provider', 'Event', 'Reference', 'Signature', 'Status', '']}
+                headers={['Waktu', 'Provider', 'Event', 'Reference', 'Request ID', 'Signature', 'Status', '']}
                 isEmpty={logs.data.length === 0}
                 empty="Belum ada webhook masuk."
                 pagination={{ ...logs, routeName: 'admin.webhooks', params: filters }}
@@ -67,6 +68,7 @@ export default function AdminWebhooks({ logs, filters, statuses }: Props) {
                         <td className="px-4 py-3">{log.provider}</td>
                         <td className="px-4 py-3">{log.event_type ?? '-'}</td>
                         <td className="px-4 py-3 font-mono text-xs">{log.external_id ?? '-'}</td>
+                        <td className="text-muted-foreground px-4 py-3 font-mono text-[11px]">{log.request_id ?? '-'}</td>
                         <td className="px-4 py-3">
                             <span className={log.signature_valid ? 'text-success' : 'text-destructive'}>
                                 {log.signature_valid ? 'valid' : 'invalid'}

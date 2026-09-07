@@ -58,6 +58,18 @@ return [
             'ignore_exceptions' => false,
         ],
 
+        /*
+        | DOKU integration trail: endpoints, external ids, response codes and
+        | latency. Never tokens, signatures, secrets or key material.
+        */
+        'doku' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/doku.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => env('DOKU_LOG_DAYS', 30),
+            'replace_placeholders' => true,
+        ],
+
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),

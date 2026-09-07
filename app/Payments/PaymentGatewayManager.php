@@ -3,9 +3,18 @@
 namespace App\Payments;
 
 use App\Contracts\PaymentGateway;
+use App\Payments\Doku\DokuAccessToken;
+use App\Payments\Doku\DokuClient;
+use App\Payments\Doku\DokuCredentials;
+use App\Payments\Doku\DokuExternalIdGenerator;
+use App\Payments\Doku\DokuGateway;
+use App\Payments\Doku\DokuNotificationVerifier;
+use App\Payments\Doku\DokuQrisService;
 use App\Payments\Gateways\MidtransGateway;
 use App\Payments\Gateways\SandboxGateway;
+use Illuminate\Contracts\Cache\Repository as Cache;
 use Illuminate\Contracts\Config\Repository as Config;
+use Illuminate\Http\Client\Factory as Http;
 use RuntimeException;
 
 class PaymentGatewayManager
@@ -16,6 +25,8 @@ class PaymentGatewayManager
     public function __construct(
         private readonly Config $config,
         private readonly string $environment,
+        private readonly Cache $cache,
+        private readonly Http $http,
     ) {}
 
     public function default(): PaymentGateway
@@ -26,10 +37,34 @@ class PaymentGatewayManager
     public function driver(string $name): PaymentGateway
     {
         return $this->resolved[$name] ??= match ($name) {
+            'doku' => $this->makeDoku(),
             'midtrans' => $this->makeMidtrans(),
             'sandbox' => $this->makeSandbox(),
             default => throw new RuntimeException("Payment gateway [{$name}] is not supported."),
         };
+    }
+
+    /**
+     * DOKU SNAP. Credentials are validated as the driver is built, so a
+     * misconfiguration surfaces immediately rather than at charge time.
+     */
+    private function makeDoku(): DokuGateway
+    {
+        $credentials = DokuCredentials::fromConfig($this->config);
+        $externalIds = new DokuExternalIdGenerator;
+
+        $client = new DokuClient(
+            $credentials,
+            new DokuAccessToken($credentials, $this->cache, $this->http),
+            $externalIds,
+            $this->http,
+        );
+
+        return new DokuGateway(
+            new DokuQrisService($client, $credentials),
+            new DokuNotificationVerifier($credentials),
+            $externalIds,
+        );
     }
 
     private function makeMidtrans(): MidtransGateway

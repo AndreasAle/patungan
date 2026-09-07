@@ -23,7 +23,10 @@ export function QrCodeCard({ qrUrl, qrString, simulated }: QrCodeCardProps) {
                 )}
             </div>
 
-            <p className="text-muted-foreground mt-4 text-center text-sm">Scan QRIS pakai aplikasi pembayaran kamu.</p>
+            <p className="text-foreground mt-4 text-center text-sm font-semibold">Scan QRIS untuk membayar</p>
+            <p className="text-muted-foreground mt-1 text-center text-xs leading-relaxed">
+                Pakai DANA, GoPay, OVO, ShopeePay, mobile banking, atau aplikasi lain yang mendukung QRIS.
+            </p>
 
             {simulated && (
                 <p className="bg-warning-soft text-warning mt-3 rounded-xl px-3 py-2 text-center text-xs font-medium">

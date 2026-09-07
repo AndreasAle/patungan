@@ -6,6 +6,7 @@ use App\Models\Payment;
 use App\Payments\ChargeRequest;
 use App\Payments\ChargeResult;
 use App\Payments\GatewayEvent;
+use App\Payments\InboundWebhook;
 
 interface PaymentGateway
 {
@@ -18,10 +19,8 @@ interface PaymentGateway
     /**
      * Normalises an inbound webhook and reports whether its signature checked out.
      * Returns null when the payload is not a payment notification we understand.
-     *
-     * @param  array<string, mixed>  $payload
      */
-    public function parseWebhook(array $payload, string $rawBody): ?GatewayEvent;
+    public function parseWebhook(InboundWebhook $webhook): ?GatewayEvent;
 
     /** Pulls the authoritative status from the provider, for reconciliation. */
     public function fetchStatus(Payment $payment): ?GatewayEvent;

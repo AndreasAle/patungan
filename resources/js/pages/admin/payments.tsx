@@ -12,11 +12,15 @@ import { useState, type FormEvent } from 'react';
 interface AdminPayment {
     uuid: string;
     reference: string;
+    provider_reference: string | null;
+    external_id: string | null;
     organizer: string;
     patungan: string;
     participant: string;
     amount: number;
     charged_amount: number;
+    platform_fee: number;
+    gateway_fee: number;
     fee: number;
     net_amount: number;
     gateway: string;
@@ -72,8 +76,8 @@ export default function AdminPayments({ payments, filters, statuses }: Props) {
                         <Input
                             value={term}
                             onChange={(event) => setTerm(event.target.value)}
-                            placeholder="Cari reference"
-                            className="h-10 w-56 rounded-xl"
+                            placeholder="Reference, provider ref, external id, nama"
+                            className="h-10 w-72 rounded-xl"
                         />
                         <Button type="submit" variant="outline" className="h-10 rounded-xl">
                             Cari
@@ -83,7 +87,20 @@ export default function AdminPayments({ payments, filters, statuses }: Props) {
             </div>
 
             <DataTable
-                headers={['Reference', 'Organizer', 'Patungan', 'Peserta', 'Gross', 'Fee', 'Net', 'Provider', 'Waktu', 'Status']}
+                headers={[
+                    'Reference',
+                    'Provider ref',
+                    'Organizer',
+                    'Patungan',
+                    'Peserta',
+                    'Gross',
+                    'Platform',
+                    'Provider fee',
+                    'Net',
+                    'Provider',
+                    'Waktu',
+                    'Status',
+                ]}
                 isEmpty={payments.data.length === 0}
                 empty="Tidak ada payment."
                 pagination={{ ...payments, routeName: 'admin.payments', params: filters }}
@@ -91,11 +108,16 @@ export default function AdminPayments({ payments, filters, statuses }: Props) {
                 {payments.data.map((payment) => (
                     <tr key={payment.uuid}>
                         <td className="px-4 py-3 font-mono text-xs">{payment.reference}</td>
+                        <td className="text-muted-foreground px-4 py-3 font-mono text-[11px]">
+                            {payment.provider_reference ?? '-'}
+                            {payment.external_id && <span className="block opacity-60">ext {payment.external_id}</span>}
+                        </td>
                         <td className="text-muted-foreground px-4 py-3">{payment.organizer}</td>
                         <td className="px-4 py-3">{payment.patungan}</td>
                         <td className="px-4 py-3">{payment.participant}</td>
                         <td className="px-4 py-3 tabular-nums">{rupiah(payment.charged_amount)}</td>
-                        <td className="text-muted-foreground px-4 py-3 tabular-nums">{rupiah(payment.fee)}</td>
+                        <td className="text-muted-foreground px-4 py-3 tabular-nums">{rupiah(payment.platform_fee)}</td>
+                        <td className="text-muted-foreground px-4 py-3 tabular-nums">{rupiah(payment.gateway_fee)}</td>
                         <td className="px-4 py-3 tabular-nums">{rupiah(payment.net_amount)}</td>
                         <td className="text-muted-foreground px-4 py-3">{payment.gateway}</td>
                         <td className="text-muted-foreground px-4 py-3 whitespace-nowrap">{formatDateTime(payment.paid_at ?? payment.created_at)}</td>

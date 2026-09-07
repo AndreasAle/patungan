@@ -18,7 +18,14 @@ class AdminPaymentController extends Controller
 
         $payments = Payment::query()
             ->with(['organizer:id,name', 'patungan:id,title', 'participant:id,name'])
-            ->when($search !== '', fn ($query) => $query->where('gateway_reference', 'like', "%{$search}%"))
+            ->when($search !== '', fn ($query) => $query->where(function ($q) use ($search) {
+                // Support gets handed any one of these when chasing a payment.
+                $q->where('gateway_reference', 'like', "%{$search}%")
+                    ->orWhere('gateway_transaction_id', 'like', "%{$search}%")
+                    ->orWhere('external_id', 'like', "%{$search}%")
+                    ->orWhereHas('organizer', fn ($o) => $o->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('participant', fn ($pt) => $pt->where('name', 'like', "%{$search}%"));
+            }))
             ->when($status !== '', fn ($query) => $query->where('status', $status))
             ->latest('id')
             ->paginate(25)
@@ -31,11 +38,15 @@ class AdminPaymentController extends Controller
                 'data' => collect($payments->items())->map(fn (Payment $payment) => [
                     'uuid' => $payment->uuid,
                     'reference' => $payment->gateway_reference,
+                    'provider_reference' => $payment->gateway_transaction_id,
+                    'external_id' => $payment->external_id,
                     'organizer' => $payment->organizer->name,
                     'patungan' => $payment->patungan->title,
                     'participant' => $payment->participant->name,
                     'amount' => $payment->amount,
                     'charged_amount' => $payment->charged_amount,
+                    'platform_fee' => $payment->platform_fee,
+                    'gateway_fee' => $payment->gateway_fee,
                     'fee' => $payment->fee,
                     'net_amount' => $payment->net_amount,
                     'gateway' => $payment->gateway,

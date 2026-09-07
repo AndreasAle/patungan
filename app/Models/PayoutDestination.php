@@ -19,6 +19,7 @@ class PayoutDestination extends Model
         'provider_code',
         'provider_label',
         'account_number',
+        'account_last4',
         'account_holder',
         'is_default',
     ];
@@ -30,6 +31,8 @@ class PayoutDestination extends Model
     {
         return [
             'type' => PayoutDestinationType::class,
+            // Encrypted at rest; the model decrypts only when something asks.
+            'account_number' => 'encrypted',
             'is_default' => 'boolean',
             'verified_at' => 'datetime',
             'metadata' => 'array',
@@ -44,10 +47,10 @@ class PayoutDestination extends Model
 
     public function maskedAccountNumber(): string
     {
-        $number = $this->account_number ?? '';
-        $tail = substr($number, -4);
+        // account_last4 is stored alongside so masking never needs the plaintext.
+        $tail = $this->account_last4 ?? substr((string) $this->account_number, -4);
 
-        return str_repeat('*', max(strlen($number) - 4, 0)).$tail;
+        return str_repeat('*', 6).$tail;
     }
 
     /** @return BelongsTo<User, $this> */

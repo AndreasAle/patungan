@@ -67,6 +67,7 @@ class PaymentService
 
         $payment->forceFill([
             'gateway_transaction_id' => $charge->transactionId,
+            'external_id' => $charge->externalId,
             'status' => $charge->status->value,
             'qr_string' => $charge->qrString,
             'qr_url' => $charge->qrUrl,
@@ -109,7 +110,13 @@ class PaymentService
                 'status' => PaymentStatus::Paid->value,
                 'paid_at' => now(),
                 'active_participant_id' => null,
-                'gateway_transaction_id' => $transactionId ?? $locked->gateway_transaction_id,
+                /*
+                 * Keep the id the gateway gave us when the charge was opened.
+                 * A notification that repeats a reference already used by another
+                 * payment would otherwise collide with the unique index, turn the
+                 * webhook into a 500, and have the provider retry it forever.
+                 */
+                'gateway_transaction_id' => $locked->gateway_transaction_id ?? $transactionId,
                 'raw_response' => $raw ?: $locked->raw_response,
             ])->save();
 

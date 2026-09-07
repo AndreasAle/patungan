@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Payments\ChargeRequest;
 use App\Payments\ChargeResult;
 use App\Payments\GatewayEvent;
+use App\Payments\InboundWebhook;
 use Carbon\CarbonImmutable;
 
 /**
@@ -51,8 +52,9 @@ class SandboxGateway implements PaymentGateway
         );
     }
 
-    public function parseWebhook(array $payload, string $rawBody): ?GatewayEvent
+    public function parseWebhook(InboundWebhook $webhook): ?GatewayEvent
     {
+        $payload = $webhook->payload;
         $orderId = $payload['order_id'] ?? null;
         $transactionStatus = $payload['transaction_status'] ?? null;
 

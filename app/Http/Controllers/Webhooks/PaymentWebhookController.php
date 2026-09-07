@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Webhooks;
 
 use App\Http\Controllers\Controller;
 use App\Models\WebhookLog;
+use App\Payments\InboundWebhook;
 use App\Payments\PaymentGatewayManager;
 use App\Services\WebhookProcessor;
 use Illuminate\Http\JsonResponse;
@@ -20,13 +21,7 @@ class PaymentWebhookController extends Controller
     {
         $gateway = $this->gateways->driver($provider);
 
-        $payload = $request->json()->all();
-
-        if ($payload === []) {
-            $payload = $request->all();
-        }
-
-        $log = $this->processor->handle($gateway, $payload, $request->getContent());
+        $log = $this->processor->handle($gateway, InboundWebhook::fromRequest($request));
 
         /*
          * Providers retry on non-2xx. Everything we understood - including

@@ -15,5 +15,7 @@ final readonly class ChargeResult
         public ?string $qrUrl,
         public CarbonImmutable $expiresAt,
         public array $raw,
+        /** The provider's own id for the call that opened this charge, when it has one. */
+        public ?string $externalId = null,
     ) {}
 }

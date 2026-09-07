@@ -36,6 +36,8 @@ class AdminWebhookLogController extends Controller
                     'provider' => $log->provider,
                     'event_type' => $log->event_type,
                     'external_id' => $log->external_id,
+                    // The provider's delivery id - what a redelivery is matched on.
+                    'request_id' => $log->request_id,
                     'signature_valid' => $log->signature_valid,
                     'status' => $log->status,
                     'error' => $log->error,
