@@ -15,10 +15,18 @@ use App\Payments\Gateways\SandboxGateway;
 use Illuminate\Contracts\Cache\Repository as Cache;
 use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Http\Client\Factory as Http;
-use RuntimeException;
 
 class PaymentGatewayManager
 {
+    /**
+     * What a participant sees when the gateway itself is misconfigured.
+     *
+     * They cannot act on the real reason and must never be shown it, but a
+     * plain 500 tells them nothing either. The cause travels as $previous so
+     * it still reaches the log.
+     */
+    private const UNAVAILABLE = 'Pembayaran belum bisa dibuat sekarang. Coba lagi beberapa saat lagi.';
+
     /** @var array<string, PaymentGateway> */
     private array $resolved = [];
 
@@ -40,7 +48,10 @@ class PaymentGatewayManager
             'doku' => $this->makeDoku(),
             'midtrans' => $this->makeMidtrans(),
             'sandbox' => $this->makeSandbox(),
-            default => throw new RuntimeException("Payment gateway [{$name}] is not supported."),
+            default => throw new PaymentGatewayException(
+                self::UNAVAILABLE,
+                previous: new \RuntimeException("Payment gateway [{$name}] is not supported."),
+            ),
         };
     }
 
@@ -72,7 +83,10 @@ class PaymentGatewayManager
         $serverKey = $this->config->get('patungan.midtrans.server_key');
 
         if (blank($serverKey)) {
-            throw new RuntimeException('MIDTRANS_SERVER_KEY is not configured.');
+            throw new PaymentGatewayException(
+                self::UNAVAILABLE,
+                previous: new \RuntimeException('MIDTRANS_SERVER_KEY is not configured.'),
+            );
         }
 
         return new MidtransGateway($serverKey, (bool) $this->config->get('patungan.midtrans.production'));
@@ -81,9 +95,12 @@ class PaymentGatewayManager
     private function makeSandbox(): SandboxGateway
     {
         if (! in_array($this->environment, ['local', 'testing'], true)) {
-            throw new RuntimeException(
-                'The sandbox payment driver simulates payments and cannot run outside local/testing. '.
-                'Set PAYMENT_GATEWAY=midtrans and provide real credentials.'
+            throw new PaymentGatewayException(
+                self::UNAVAILABLE,
+                previous: new \RuntimeException(
+                    'The sandbox payment driver simulates payments and cannot run outside local/testing. '.
+                    'Set PAYMENT_GATEWAY to a real driver and provide credentials.'
+                ),
             );
         }
 
