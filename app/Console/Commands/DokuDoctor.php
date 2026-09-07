@@ -101,24 +101,36 @@ class DokuDoctor extends Command
     private function checkToken(DokuCredentials $credentials, Http $http): bool
     {
         $this->line('');
-        $succeeded = false;
 
-        $this->components->task('Requesting a B2B access token', function () use ($credentials, $http, &$succeeded) {
-            try {
-                $succeeded = (new DokuAccessToken($credentials, cache()->store(), $http))->refresh() !== '';
-            } catch (Throwable $e) {
-                $this->newLine();
-                $this->error($e instanceof DokuException
-                    ? ($e->context['reason'] ?? $e->getMessage())
-                    : $e->getMessage());
-            }
+        try {
+            $token = (new DokuAccessToken($credentials, cache()->store(), $http))->refresh();
+        } catch (Throwable $e) {
+            $reason = $e instanceof DokuException ? ($e->context['reason'] ?? $e->getMessage()) : $e->getMessage();
 
-            return $succeeded;
-        });
+            $this->components->error('B2B access token: '.$reason);
+            $this->hintForTokenFailure();
 
-        // The exit code has to reflect the real outcome: a script that gates a
-        // deploy on this command must fail when the credentials do not work.
-        return $succeeded;
+            return false;
+        }
+
+        $this->components->info('B2B access token received. The credentials and the signing key both work.');
+
+        return $token !== '';
+    }
+
+    /**
+     * The token request fails in only a few ways, and the log line alone rarely
+     * tells someone which one they are in.
+     */
+    private function hintForTokenFailure(): void
+    {
+        $this->line('  <fg=gray>Most likely causes, in order:</>');
+        $this->line('  <fg=gray>1. The Merchant Public Key is not saved in the DOKU dashboard yet.</>');
+        $this->line('  <fg=gray>   DOKU cannot verify our signature without it and reports an unknown client.</>');
+        $this->line('  <fg=gray>2. DOKU_CLIENT_ID does not match the environment in DOKU_BASE_URL.</>');
+        $this->line('  <fg=gray>3. The public key uploaded to DOKU is not the pair of DOKU_PRIVATE_KEY_PATH.</>');
+        $this->newLine();
+        $this->line('  <fg=gray>The exact provider response is in storage/logs/doku-*.log.</>');
     }
 
     /** Shows enough to recognise a value, never enough to use it. */

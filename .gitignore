@@ -12,7 +12,9 @@
 /.zed
 /bootstrap/ssr
 /node_modules
-/public/build
+# public/build IS committed on purpose: the shared host that serves this app
+# has Composer but no Node, so `git pull` has to deliver ready-made assets.
+# Run `npm run build` before every deploy commit.
 /public/hot
 /public/storage
 /storage/*.key
