@@ -37,7 +37,9 @@ class DokuDoctor extends Command
         $this->components->twoColumnDetail('Base URL', $credentials->baseUrl);
         $this->components->twoColumnDetail('Client ID', $this->mask($credentials->clientId));
         $this->components->twoColumnDetail('Client secret', '<fg=green>set</>');
-        $this->components->twoColumnDetail('Merchant ID', $this->mask($credentials->merchantId));
+        $this->components->twoColumnDetail('Merchant ID (Mall ID)', $credentials->hasMerchantId()
+            ? $this->mask($credentials->merchantId())
+            : '<fg=yellow>not set - needed to generate a QR, not to fetch a token</>');
         $this->components->twoColumnDetail('Terminal ID', $credentials->terminalId);
         $this->components->twoColumnDetail('Channel ID', $credentials->channelId);
         $this->components->twoColumnDetail('Notification URL', $credentials->notificationUrl ?? '<fg=red>not set</>');

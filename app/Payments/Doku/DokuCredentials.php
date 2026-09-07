@@ -21,7 +21,7 @@ final class DokuCredentials
         public readonly string $baseUrl,
         public readonly string $clientId,
         private readonly string $clientSecret,
-        public readonly string $merchantId,
+        private readonly ?string $merchantId,
         public readonly string $terminalId,
         public readonly string $channelId,
         public readonly ?string $privateKeyPath,
@@ -38,7 +38,13 @@ final class DokuCredentials
     {
         $get = static fn (string $key, $default = null) => $config->get("doku.{$key}", $default);
 
-        foreach (['client_id', 'client_secret', 'merchant_id'] as $required) {
+        /*
+         * Only what authentication needs is required up front. The Mall ID is
+         * checked at the point a QR is generated instead, so someone can prove
+         * their key and secret work while DOKU is still telling them what their
+         * Mall ID is.
+         */
+        foreach (['client_id', 'client_secret'] as $required) {
             if (blank($get($required))) {
                 throw new DokuAuthenticationException(context: [
                     'reason' => 'DOKU_'.strtoupper($required).' is not configured.',
@@ -52,7 +58,7 @@ final class DokuCredentials
             baseUrl: rtrim((string) $get('base_url'), '/'),
             clientId: (string) $get('client_id'),
             clientSecret: (string) $get('client_secret'),
-            merchantId: (string) $get('merchant_id'),
+            merchantId: $get('merchant_id'),
             terminalId: (string) $get('terminal_id', 'PTGN01'),
             channelId: (string) $get('channel_id', 'H2H'),
             privateKeyPath: $get('private_key_path'),
@@ -69,6 +75,24 @@ final class DokuCredentials
     public function clientSecret(): string
     {
         return $this->clientSecret;
+    }
+
+    /** The Mall ID DOKU issues per merchant. Required by every QRIS call. */
+    public function merchantId(): string
+    {
+        if (blank($this->merchantId)) {
+            throw new DokuAuthenticationException(context: [
+                'reason' => 'DOKU_MERCHANT_ID (Mall ID) is not configured.',
+            ]);
+        }
+
+        return $this->merchantId;
+    }
+
+    /** Whether a Mall ID is present, without throwing - for diagnostics. */
+    public function hasMerchantId(): bool
+    {
+        return filled($this->merchantId);
     }
 
     public function privateKey(): string

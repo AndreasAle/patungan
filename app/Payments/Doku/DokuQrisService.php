@@ -42,7 +42,7 @@ final class DokuQrisService
                 'value' => DokuStatusMapper::rupiahToAmount($request->amount),
                 'currency' => 'IDR',
             ],
-            'merchantId' => $this->credentials->merchantId,
+            'merchantId' => $this->credentials->merchantId(),
             'terminalId' => $this->credentials->terminalId,
             'validityPeriod' => $expiresAt->format('Y-m-d\TH:i:sP'),
             'additionalInfo' => [
@@ -104,7 +104,7 @@ final class DokuQrisService
         $body = [
             'originalPartnerReferenceNo' => $payment->gateway_reference,
             'serviceCode' => self::SERVICE_CODE,
-            'merchantId' => $this->credentials->merchantId,
+            'merchantId' => $this->credentials->merchantId(),
         ];
 
         if (filled($payment->gateway_transaction_id)) {

@@ -6,6 +6,7 @@ use App\Enums\ParticipantStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Payment;
 use App\Payments\Doku\DokuAccessToken;
+use App\Payments\Doku\DokuCredentials;
 use App\Payments\Doku\DokuQrisService;
 use App\Payments\Doku\DokuSignature;
 use App\Payments\PaymentGatewayException;
@@ -245,6 +246,38 @@ class DokuQrisPaymentTest extends TestCase
         $this->expectException(PaymentGatewayException::class);
 
         app(PaymentService::class)->createForParticipant($participant->fresh());
+    }
+
+    public function test_the_credentials_resolve_without_a_mall_id_so_the_token_can_be_proven_first(): void
+    {
+        // DOKU issues the Mall ID separately and often later. Authentication does
+        // not use it, so waiting for it must not block verifying the key pair.
+        config(['doku.merchant_id' => null]);
+
+        $credentials = DokuCredentials::fromConfig(app('config'));
+
+        $this->assertFalse($credentials->hasMerchantId());
+        $this->assertSame($this->dokuClientId, $credentials->clientId);
+    }
+
+    public function test_generating_a_qr_without_a_mall_id_fails_where_it_is_actually_needed(): void
+    {
+        $this->fakeDokuQrisGenerate();
+        config(['doku.merchant_id' => null]);
+
+        $patungan = $this->makePatungan($this->organizer(), ['Andreas']);
+
+        try {
+            app(PaymentService::class)->createForParticipant($patungan->participants->first());
+            $this->fail('The charge should have been refused without a Mall ID.');
+        } catch (PaymentGatewayException $e) {
+            // The participant still sees a safe message, never the config detail.
+            $this->assertStringNotContainsString('DOKU_MERCHANT_ID', $e->getMessage());
+        }
+
+        // Nothing was sent to DOKU and no invoice was left hanging.
+        Http::assertNotSent(fn (Request $request) => str_ends_with($request->url(), DokuQrisService::GENERATE));
+        $this->assertSame(0, Payment::query()->where('status', PaymentStatus::Pending->value)->count());
     }
 
     public function test_the_provider_response_is_never_exposed_to_the_browser(): void
