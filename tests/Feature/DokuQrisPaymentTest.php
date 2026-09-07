@@ -9,6 +9,7 @@ use App\Payments\Doku\DokuAccessToken;
 use App\Payments\Doku\DokuCredentials;
 use App\Payments\Doku\DokuQrisService;
 use App\Payments\Doku\DokuSignature;
+use App\Payments\Doku\Exceptions\DokuAuthenticationException;
 use App\Payments\PaymentGatewayException;
 use App\Services\PaymentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -278,6 +279,43 @@ class DokuQrisPaymentTest extends TestCase
         // Nothing was sent to DOKU and no invoice was left hanging.
         Http::assertNotSent(fn (Request $request) => str_ends_with($request->url(), DokuQrisService::GENERATE));
         $this->assertSame(0, Payment::query()->where('status', PaymentStatus::Pending->value)->count());
+    }
+
+    public function test_a_sandbox_environment_pointed_at_the_live_host_is_refused(): void
+    {
+        // The dangerous one: every payment would be real while the operator, and
+        // the doctor output they read, both say "sandbox".
+        config(['doku.environment' => 'sandbox', 'doku.base_url' => 'https://api.doku.com']);
+
+        $this->expectException(DokuAuthenticationException::class);
+
+        DokuCredentials::fromConfig(app('config'));
+    }
+
+    public function test_a_production_environment_pointed_at_the_sandbox_host_is_refused(): void
+    {
+        config(['doku.environment' => 'production', 'doku.base_url' => 'https://api-sandbox.doku.com']);
+
+        $this->expectException(DokuAuthenticationException::class);
+
+        DokuCredentials::fromConfig(app('config'));
+    }
+
+    public function test_matching_environments_are_accepted(): void
+    {
+        config(['doku.environment' => 'production', 'doku.base_url' => 'https://api.doku.com']);
+        $this->assertTrue(DokuCredentials::fromConfig(app('config'))->production);
+
+        config(['doku.environment' => 'sandbox', 'doku.base_url' => 'https://api-sandbox.doku.com']);
+        $this->assertFalse(DokuCredentials::fromConfig(app('config'))->production);
+    }
+
+    public function test_an_unrecognised_host_is_left_alone(): void
+    {
+        // A proxy or a mock in front of DOKU is legitimate; we cannot judge it.
+        config(['doku.environment' => 'sandbox', 'doku.base_url' => 'https://doku-proxy.internal']);
+
+        $this->assertSame('https://doku-proxy.internal', DokuCredentials::fromConfig(app('config'))->baseUrl);
     }
 
     public function test_the_provider_response_is_never_exposed_to_the_browser(): void

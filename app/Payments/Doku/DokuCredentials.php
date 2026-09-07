@@ -53,9 +53,12 @@ final class DokuCredentials
         }
 
         $environment = (string) $get('environment', 'sandbox');
+        $baseUrl = rtrim((string) $get('base_url'), '/');
+
+        self::guardEnvironmentMatchesHost($environment, $baseUrl);
 
         return new self(
-            baseUrl: rtrim((string) $get('base_url'), '/'),
+            baseUrl: $baseUrl,
             clientId: (string) $get('client_id'),
             clientSecret: (string) $get('client_secret'),
             merchantId: $get('merchant_id'),
@@ -70,6 +73,35 @@ final class DokuCredentials
             splitSettlementEnabled: (bool) $get('split_settlement.enabled', false),
             payoutEnabled: (bool) $get('payout.enabled', false),
         );
+    }
+
+    /**
+     * Stops the one combination that quietly moves real money.
+     *
+     * DOKU_ENV is what the operator believes they are running, and what the
+     * doctor prints back at them. If it says sandbox while the host is the
+     * live one, every payment is real while everyone thinks it is a test - so
+     * the mismatch is refused rather than reported. A host we do not recognise
+     * is left alone, because it may legitimately be a proxy.
+     */
+    private static function guardEnvironmentMatchesHost(string $environment, string $baseUrl): void
+    {
+        $host = parse_url($baseUrl, PHP_URL_HOST);
+        $production = $environment === 'production';
+
+        if ($host === 'api.doku.com' && ! $production) {
+            throw new DokuAuthenticationException(context: [
+                'reason' => 'DOKU_BASE_URL points at production but DOKU_ENV is "'.$environment.'". '
+                    .'Set DOKU_ENV=production if that is intended - real payments would otherwise run under a sandbox label.',
+            ]);
+        }
+
+        if ($host === 'api-sandbox.doku.com' && $production) {
+            throw new DokuAuthenticationException(context: [
+                'reason' => 'DOKU_ENV is production but DOKU_BASE_URL points at the sandbox host. '
+                    .'No live payment can succeed with this combination.',
+            ]);
+        }
     }
 
     public function clientSecret(): string

@@ -16,7 +16,15 @@ return [
     // "sandbox" or "production". Nothing else selects the live host.
     'environment' => env('DOKU_ENV', 'sandbox'),
 
-    'base_url' => rtrim((string) env('DOKU_BASE_URL', 'https://api-sandbox.doku.com'), '/'),
+    /*
+    | Defaults to the host that matches DOKU_ENV, so setting the environment is
+    | enough. An explicit DOKU_BASE_URL still wins, but DokuCredentials refuses
+    | a value that contradicts DOKU_ENV.
+    */
+    'base_url' => rtrim((string) env(
+        'DOKU_BASE_URL',
+        env('DOKU_ENV') === 'production' ? 'https://api.doku.com' : 'https://api-sandbox.doku.com',
+    ), '/'),
 
     'client_id' => env('DOKU_CLIENT_ID'),
 
