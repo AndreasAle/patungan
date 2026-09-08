@@ -3,6 +3,7 @@ import AppLogoIcon from '@/components/app-logo-icon';
 import { CountUp } from '@/components/landing/count-up';
 import { Rail } from '@/components/landing/rail';
 import { CategoryIcon } from '@/components/patungan/category-icon';
+import { HelpBubble } from '@/components/patungan/help-bubble';
 import { Eyebrow } from '@/components/patungan/section-heading';
 import { Button } from '@/components/ui/button';
 import { rupiah, rupiahShort } from '@/lib/format';
@@ -691,6 +692,7 @@ export default function Welcome({ fee_examples, max_participants }: WelcomeProps
                         Patungan
                     </p>
                 </footer>
+                <HelpBubble />
             </div>
         </>
     );

@@ -1,6 +1,7 @@
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { FlashToast } from '@/components/patungan/flash-toast';
+import { HelpBubble } from '@/components/patungan/help-bubble';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { SharedData } from '@/types';
@@ -145,6 +146,9 @@ export default function PatunganLayout({ children, title, back, action, hero, wi
                     {children}
                 </main>
             </div>
+
+            {/* Sits above the mobile tab bar, which owns the bottom of the screen. */}
+            <HelpBubble className="bottom-24 lg:bottom-4" />
 
             {/* Mobile tab bar: a floating pill that clears the home indicator. */}
             <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 px-3 lg:hidden">

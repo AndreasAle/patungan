@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminPatunganController;
 use App\Http\Controllers\Admin\AdminPaymentController;
 use App\Http\Controllers\Admin\AdminSettlementController;
+use App\Http\Controllers\Admin\AdminSupportMessageController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminWebhookLogController;
 use App\Http\Controllers\DashboardController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\Public\InvoiceController;
 use App\Http\Controllers\Public\PublicPatunganController;
 use App\Http\Controllers\Public\PublicPaymentController;
 use App\Http\Controllers\Public\RoomAccessController;
+use App\Http\Controllers\SupportMessageController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\Webhooks\PaymentWebhookController;
 use App\Http\Controllers\Webhooks\SandboxSimulatorController;
@@ -38,6 +40,14 @@ Route::get('/', fn () => Inertia::render('welcome', [
     'invoice_minutes' => (int) round(((int) config('patungan.invoice_ttl')) / 60),
     'max_participants' => (int) config('patungan.limits.max_participants'),
 ]))->name('home');
+
+/*
+| Help bubble. Open to anyone - the people most likely to need it are payers
+| with no account - so it is rate limited rather than gated.
+*/
+Route::post('bantuan/pesan', [SupportMessageController::class, 'store'])
+    ->middleware('throttle:5,10')
+    ->name('support.store');
 
 /*
 |--------------------------------------------------------------------------
@@ -127,6 +137,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('settlements/{settlement}', [AdminSettlementController::class, 'update'])->name('settlements.update');
 
     Route::get('webhooks', [AdminWebhookLogController::class, 'index'])->name('webhooks');
+
+    Route::get('bantuan', [AdminSupportMessageController::class, 'index'])->name('support');
+    Route::post('bantuan/{message}', [AdminSupportMessageController::class, 'update'])->name('support.update');
 });
 
 /*
