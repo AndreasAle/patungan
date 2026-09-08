@@ -45,7 +45,7 @@ export default function ConfirmPassword() {
                     </div>
 
                     <div className="flex items-center">
-                        <Button className="w-full" disabled={processing}>
+                        <Button className="h-12 w-full rounded-full text-sm font-semibold" disabled={processing}>
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                             Ulangi password
                         </Button>

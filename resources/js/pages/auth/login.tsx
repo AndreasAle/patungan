@@ -59,7 +59,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
                             placeholder="email@kamu.com"
-                            className="h-11 rounded-xl"
+                            className="h-12 rounded-xl"
                         />
                         <InputError message={errors.email} />
                     </div>
@@ -82,7 +82,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             value={data.password}
                             onChange={(e) => setData('password', e.target.value)}
                             placeholder="Password"
-                            className="h-11 rounded-xl"
+                            className="h-12 rounded-xl"
                         />
                         <InputError message={errors.password} />
                     </div>
@@ -94,7 +94,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                         </Label>
                     </div>
 
-                    <Button type="submit" className="h-11 w-full rounded-xl text-sm font-semibold" tabIndex={4} disabled={processing}>
+                    <Button type="submit" className="h-12 w-full rounded-full text-sm font-semibold" tabIndex={4} disabled={processing}>
                         {processing && <LoaderCircle className="size-4 animate-spin" />}
                         Masuk
                     </Button>

@@ -38,13 +38,13 @@ export function GoogleButton({ label = 'Lanjut dengan Google' }: { label?: strin
         <div>
             <a
                 href={route('google.redirect')}
-                className="border-input bg-background hover:bg-surface text-foreground flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border text-sm font-semibold transition"
+                className="border-input bg-background hover:bg-surface text-foreground flex h-12 w-full items-center justify-center gap-2.5 rounded-full border text-sm font-semibold transition"
             >
                 <GoogleMark />
                 {label}
             </a>
 
-            <div className="my-4 flex items-center gap-3">
+            <div className="my-5 flex items-center gap-3">
                 <span className="bg-border h-px flex-1" />
                 <span className="text-muted-foreground text-[11px] font-medium">atau pakai email</span>
                 <span className="bg-border h-px flex-1" />

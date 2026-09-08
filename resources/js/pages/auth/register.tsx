@@ -58,7 +58,7 @@ export default function Register() {
                             onChange={(e) => setData('name', e.target.value)}
                             disabled={processing}
                             placeholder="Nama lengkap"
-                            className="h-11 rounded-xl"
+                            className="h-12 rounded-xl"
                         />
                         <InputError message={errors.name} className="mt-2" />
                     </div>
@@ -75,7 +75,7 @@ export default function Register() {
                             onChange={(e) => setData('email', e.target.value)}
                             disabled={processing}
                             placeholder="email@kamu.com"
-                            className="h-11 rounded-xl"
+                            className="h-12 rounded-xl"
                         />
                         <InputError message={errors.email} />
 
@@ -102,7 +102,7 @@ export default function Register() {
                             onChange={(e) => setData('password', e.target.value)}
                             disabled={processing}
                             placeholder="Password"
-                            className="h-11 rounded-xl"
+                            className="h-12 rounded-xl"
                         />
                         <InputError message={errors.password} />
                     </div>
@@ -119,12 +119,12 @@ export default function Register() {
                             onChange={(e) => setData('password_confirmation', e.target.value)}
                             disabled={processing}
                             placeholder="Ulangi password"
-                            className="h-11 rounded-xl"
+                            className="h-12 rounded-xl"
                         />
                         <InputError message={errors.password_confirmation} />
                     </div>
 
-                    <Button type="submit" className="h-11 w-full rounded-xl text-sm font-semibold" tabIndex={5} disabled={processing}>
+                    <Button type="submit" className="h-12 w-full rounded-full text-sm font-semibold" tabIndex={5} disabled={processing}>
                         {processing && <LoaderCircle className="size-4 animate-spin" />}
                         Daftar
                     </Button>

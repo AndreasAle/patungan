@@ -76,7 +76,7 @@ export default function VerifyEmail({ email, cooldown, minutes, status }: Verify
                 />
                 {errors.code && <p className="text-destructive mt-2 text-center text-xs font-medium">{errors.code}</p>}
 
-                <Button type="submit" className="mt-4 h-11 w-full rounded-xl text-sm font-semibold" disabled={processing || data.code.length < 6}>
+                <Button type="submit" className="mt-5 h-12 w-full rounded-full text-sm font-semibold" disabled={processing || data.code.length < 6}>
                     {processing && <LoaderCircle className="size-4 animate-spin" />}
                     Verifikasi
                 </Button>
