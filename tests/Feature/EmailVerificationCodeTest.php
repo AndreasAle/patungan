@@ -186,6 +186,47 @@ class EmailVerificationCodeTest extends TestCase
         $this->assertCount(1, $sent->getAttachments());
     }
 
+    public function test_the_email_is_sent_as_both_text_and_html(): void
+    {
+        $user = $this->unverified();
+        $user->forceFill(['name' => 'Andreas'])->save();
+
+        $sent = null;
+        Event::listen(MessageSending::class, function ($event) use (&$sent) {
+            $sent = $event->message;
+        });
+
+        $user->notify(new VerifyEmailWithCode('123456'));
+
+        /*
+         * HTML-only mail scores worse with spam filters, and a verification
+         * code that lands in Spam is a signup that never finishes.
+         */
+        $text = $sent->getTextBody();
+
+        $this->assertNotEmpty($text, 'The message carries no plain-text part.');
+        $this->assertStringContainsString('123456', $text);
+        $this->assertStringContainsString('Andreas', $text);
+        $this->assertStringNotContainsString('<', $text, 'The text part still contains markup.');
+
+        $this->assertNotEmpty($sent->getHtmlBody());
+    }
+
+    public function test_the_email_is_marked_as_machine_generated(): void
+    {
+        $user = $this->unverified();
+
+        $sent = null;
+        Event::listen(MessageSending::class, function ($event) use (&$sent) {
+            $sent = $event->message;
+        });
+
+        $user->notify(new VerifyEmailWithCode('123456'));
+
+        // Keeps out-of-office replies quiet and reads as transactional, not bulk.
+        $this->assertSame('auto-generated', $sent->getHeaders()->get('Auto-Submitted')?->getBodyAsString());
+    }
+
     public function test_a_mail_outage_does_not_lose_the_signup(): void
     {
         // Every send attempt blows up, as if SMTP were unreachable.
