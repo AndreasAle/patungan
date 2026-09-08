@@ -30,7 +30,9 @@ class FeeCalculator
         // the organizer regardless of who ends up carrying it.
         $platformFee = $this->component('platform', $amount);
 
-        $chargedAmount = $this->bearer() === 'payer'
+        $payerCarries = $this->bearer() === 'payer';
+
+        $chargedAmount = $payerCarries
             ? $this->grossUp($amount, $platformFee)
             : $amount;
 
@@ -40,6 +42,17 @@ class FeeCalculator
          * the ledger would credit the organizer more than actually arrived.
          */
         $gatewayFee = $this->component('gateway', $chargedAmount);
+
+        if ($payerCarries) {
+            /*
+             * Rounding the charge up leaves a rupiah or two spare. Our own fee
+             * absorbs it rather than handing the organizer an odd surplus, so a
+             * Rp50.000 bill settles at exactly Rp50.000 instead of Rp50.001.
+             * This only ever moves the platform fee up, never below its rate.
+             */
+            $platformFee = $chargedAmount - $gatewayFee - $amount;
+        }
+
         $totalFee = $gatewayFee + $platformFee;
 
         return new FeeBreakdown(

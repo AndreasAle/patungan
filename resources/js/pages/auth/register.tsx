@@ -4,6 +4,7 @@ import { useMemo, type FormEventHandler } from 'react';
 
 import InputError from '@/components/input-error';
 import { GoogleButton } from '@/components/patungan/google-button';
+import { PasswordInput } from '@/components/patungan/password-input';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -92,26 +93,24 @@ export default function Register() {
 
                     <div className="grid gap-1.5">
                         <Label htmlFor="password">Password</Label>
-                        <Input
+                        <PasswordInput
                             id="password"
-                            type="password"
                             required
+                            showStrength
                             tabIndex={3}
                             autoComplete="new-password"
                             value={data.password}
                             onChange={(e) => setData('password', e.target.value)}
                             disabled={processing}
                             placeholder="Password"
-                            className="h-12 rounded-xl"
                         />
                         <InputError message={errors.password} />
                     </div>
 
                     <div className="grid gap-1.5">
                         <Label htmlFor="password_confirmation">Ulangi password</Label>
-                        <Input
+                        <PasswordInput
                             id="password_confirmation"
-                            type="password"
                             required
                             tabIndex={4}
                             autoComplete="new-password"
@@ -119,7 +118,6 @@ export default function Register() {
                             onChange={(e) => setData('password_confirmation', e.target.value)}
                             disabled={processing}
                             placeholder="Ulangi password"
-                            className="h-12 rounded-xl"
                         />
                         <InputError message={errors.password_confirmation} />
                     </div>

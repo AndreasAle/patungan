@@ -4,6 +4,7 @@ import { FormEventHandler } from 'react';
 
 import InputError from '@/components/input-error';
 import { GoogleButton } from '@/components/patungan/google-button';
+import { PasswordInput } from '@/components/patungan/password-input';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -73,16 +74,14 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                 </TextLink>
                             )}
                         </div>
-                        <Input
+                        <PasswordInput
                             id="password"
-                            type="password"
                             required
                             tabIndex={2}
                             autoComplete="current-password"
                             value={data.password}
                             onChange={(e) => setData('password', e.target.value)}
                             placeholder="Password"
-                            className="h-12 rounded-xl"
                         />
                         <InputError message={errors.password} />
                     </div>

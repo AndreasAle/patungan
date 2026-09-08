@@ -26,19 +26,15 @@ use Inertia\Inertia;
 
 // The landing page quotes the real fee configuration, never hardcoded numbers.
 Route::get('/', fn () => Inertia::render('welcome', [
-    'fees' => [
-        'platform_flat' => (int) config('patungan.fees.platform.flat'),
-        'platform_bps' => (int) config('patungan.fees.platform.bps'),
-        'gateway_flat' => (int) config('patungan.fees.gateway.flat'),
-        'gateway_bps' => (int) config('patungan.fees.gateway.bps'),
-        'bearer' => config('patungan.fees.bearer'),
-    ],
     /*
-     | The worked example on the pricing section is computed by the same
+     | The worked examples on the pricing section are computed by the same
      | calculator that prices real invoices, so the page cannot drift from what
-     | an organizer actually receives.
+     | an organizer actually receives. Several amounts are sent so the reader can
+     | switch between them without the browser ever doing the arithmetic itself.
      */
-    'fee_example' => app(FeeCalculator::class)->for(25000)->toArray(),
+    'fee_examples' => collect([25000, 50000, 100000, 250000])
+        ->map(fn (int $amount) => app(FeeCalculator::class)->for($amount)->toArray())
+        ->all(),
     'invoice_minutes' => (int) round(((int) config('patungan.invoice_ttl')) / 60),
     'max_participants' => (int) config('patungan.limits.max_participants'),
 ]))->name('home');

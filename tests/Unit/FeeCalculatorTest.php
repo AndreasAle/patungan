@@ -88,21 +88,21 @@ class FeeCalculatorTest extends TestCase
         $this->assertGreaterThan(intdiv(25000 * 70 + 5000, 10000), $breakdown->gatewayFee);
     }
 
-    public function test_the_organizer_is_never_short_at_any_bill_size(): void
+    public function test_the_organizer_receives_exactly_the_bill_at_any_size(): void
     {
         $calculator = $this->calculator('payer');
 
         foreach ([1000, 5000, 25000, 49999, 100000, 1234567, 10000000] as $amount) {
             $breakdown = $calculator->for($amount);
 
-            $this->assertGreaterThanOrEqual(
-                $amount,
-                $breakdown->netAmount,
-                "Organizer would receive less than {$amount}",
-            );
+            // Not "at least" - exactly. Rounding the charge up leaves a spare
+            // rupiah, and our own fee absorbs it rather than handing the
+            // organizer an odd surplus they never asked anyone for.
+            $this->assertSame($amount, $breakdown->netAmount, "Organizer did not receive exactly {$amount}");
 
-            // And never overcharged into a windfall either.
-            $this->assertLessThanOrEqual($amount + 2, $breakdown->netAmount);
+            // Absorbing the rounding may raise our fee, never lower it.
+            $this->assertGreaterThanOrEqual(250, $breakdown->platformFee);
+            $this->assertLessThanOrEqual(252, $breakdown->platformFee);
         }
     }
 

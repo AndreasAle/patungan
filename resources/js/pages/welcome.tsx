@@ -1,26 +1,20 @@
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
+import { CountUp } from '@/components/landing/count-up';
 import { Rail } from '@/components/landing/rail';
 import { CategoryIcon } from '@/components/patungan/category-icon';
 import { Eyebrow } from '@/components/patungan/section-heading';
 import { Button } from '@/components/ui/button';
-import { rupiah } from '@/lib/format';
+import { rupiah, rupiahShort } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import type { SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { ArrowRight, ArrowUpRight, BellRing, Check, ChevronDown, DoorClosed, Lock, QrCode, ReceiptText, Wallet, type LucideIcon } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 
 interface WelcomeProps {
-    fees: {
-        platform_flat: number;
-        platform_bps: number;
-        gateway_flat: number;
-        gateway_bps: number;
-        bearer: string;
-    };
     /** Computed server-side by the same calculator that prices real invoices. */
-    fee_example: {
+    fee_examples: {
         amount: number;
         service_fee: number;
         charged_amount: number;
@@ -28,7 +22,7 @@ interface WelcomeProps {
         platform_fee: number;
         fee: number;
         net_amount: number;
-    };
+    }[];
     invoice_minutes: number;
     max_participants: number;
 }
@@ -75,6 +69,19 @@ const useCases = [
     { category: 'KAS', title: 'Kas bulanan', body: 'Iuran rutin komunitas atau angkatan, siapa belum bayar langsung kelihatan.' },
 ];
 
+/*
+ * Card tints for the two rails. Drawn from the existing tokens rather than new
+ * colours, so the rails stay on brand and follow the theme into dark mode.
+ */
+const tones = [
+    { card: 'bg-brand-soft/70 border-primary/15', mark: 'bg-primary text-primary-foreground' },
+    { card: 'bg-lime/15 border-lime/40', mark: 'bg-lime text-lime-foreground' },
+    { card: 'bg-warning-soft/70 border-warning/20', mark: 'bg-warning text-warning-foreground' },
+    { card: 'bg-success-soft/70 border-success/20', mark: 'bg-success text-success-foreground' },
+] as const;
+
+const toneAt = (index: number) => tones[index % tones.length];
+
 const faqs = [
     {
         q: 'Teman saya harus daftar akun dulu?',
@@ -110,13 +117,15 @@ function Shell({ id, className, children }: { id?: string; className?: string; c
     );
 }
 
-export default function Welcome({ fees, fee_example, max_participants }: WelcomeProps) {
+export default function Welcome({ fee_examples, max_participants }: WelcomeProps) {
     const user = usePage<SharedData>().props.auth.user;
     const startHref = user ? route('patungan.create') : route('register');
 
-    const platformFee =
-        fees.platform_bps > 0 ? `${rupiah(fees.platform_flat)} + ${(fees.platform_bps / 100).toFixed(2)}%` : rupiah(fees.platform_flat);
-    const gatewayFee = fees.gateway_bps > 0 ? `${(fees.gateway_bps / 100).toFixed(2)}%` : rupiah(fees.gateway_flat);
+    // Every figure below comes from the server; picking an amount only chooses
+    // which precomputed breakdown to show, so the browser never does the maths.
+    const [exampleIndex, setExampleIndex] = useState(0);
+    const example = fee_examples[exampleIndex] ?? fee_examples[0];
+    const payerCarries = example.service_fee > 0;
 
     return (
         <>
@@ -385,13 +394,24 @@ export default function Welcome({ fees, fee_example, max_participants }: Welcome
                             </>
                         }
                     >
-                        {advantages.map((advantage, index) => (
-                            <article key={advantage.title} className="border-border bg-card w-[74vw] rounded-3xl border p-6 sm:w-[21rem]">
-                                <span className="text-muted-foreground/40 text-xs font-bold tabular-nums">{String(index + 1).padStart(2, '0')}</span>
-                                <h3 className="mt-4 text-lg font-bold tracking-tight">{advantage.title}</h3>
-                                <p className="text-muted-foreground mt-2 text-sm leading-relaxed">{advantage.body}</p>
-                            </article>
-                        ))}
+                        {advantages.map((advantage, index) => {
+                            const tone = toneAt(index);
+
+                            return (
+                                <article
+                                    key={advantage.title}
+                                    className={cn('w-[74vw] rounded-3xl border p-6 transition hover:-translate-y-0.5 sm:w-[21rem]', tone.card)}
+                                >
+                                    <span
+                                        className={cn('flex size-9 items-center justify-center rounded-xl text-xs font-bold tabular-nums', tone.mark)}
+                                    >
+                                        {String(index + 1).padStart(2, '0')}
+                                    </span>
+                                    <h3 className="mt-5 text-lg font-bold tracking-tight">{advantage.title}</h3>
+                                    <p className="text-muted-foreground mt-2 text-sm leading-relaxed">{advantage.body}</p>
+                                </article>
+                            );
+                        })}
                     </Rail>
                 </Shell>
 
@@ -406,13 +426,20 @@ export default function Welcome({ fees, fee_example, max_participants }: Welcome
                                 </>
                             }
                         >
-                            {useCases.map((useCase) => (
-                                <article key={useCase.title} className="border-border bg-card w-[74vw] rounded-3xl border p-6 sm:w-[19rem]">
-                                    <CategoryIcon category={useCase.category} size="lg" />
-                                    <h3 className="mt-5 text-lg font-bold tracking-tight">{useCase.title}</h3>
-                                    <p className="text-muted-foreground mt-2 text-sm leading-relaxed">{useCase.body}</p>
-                                </article>
-                            ))}
+                            {useCases.map((useCase, index) => {
+                                const tone = toneAt(index);
+
+                                return (
+                                    <article
+                                        key={useCase.title}
+                                        className={cn('w-[74vw] rounded-3xl border p-6 transition hover:-translate-y-0.5 sm:w-[19rem]', tone.card)}
+                                    >
+                                        <CategoryIcon category={useCase.category} size="lg" className={tone.mark} />
+                                        <h3 className="mt-5 text-lg font-bold tracking-tight">{useCase.title}</h3>
+                                        <p className="text-muted-foreground mt-2 text-sm leading-relaxed">{useCase.body}</p>
+                                    </article>
+                                );
+                            })}
                         </Rail>
                     </Shell>
                 </div>
@@ -458,65 +485,85 @@ export default function Welcome({ fees, fee_example, max_participants }: Welcome
 
                         <div>
                             <div className="grid gap-3 sm:grid-cols-3">
-                                {[
-                                    { label: 'Bikin patungan', value: 'Rp0', note: 'Berapa pun pesertanya' },
-                                    { label: 'Biaya layanan', value: platformFee, note: 'Per pembayaran berhasil' },
-                                    { label: 'Payment gateway', value: gatewayFee, note: 'Diteruskan apa adanya' },
-                                ].map((tier, index) => (
-                                    <div
-                                        key={tier.label}
-                                        className={cn(
-                                            'rounded-3xl border p-5',
-                                            index === 1 ? 'border-primary/40 bg-brand-soft' : 'border-border bg-card',
-                                        )}
-                                    >
-                                        <p className="text-muted-foreground text-[11px] font-semibold">{tier.label}</p>
-                                        <p className="display text-primary mt-2 text-2xl">{tier.value}</p>
-                                        <p className="text-muted-foreground mt-2 text-[11px] leading-relaxed">{tier.note}</p>
-                                    </div>
-                                ))}
+                                <div className="border-border bg-card rounded-3xl border p-5">
+                                    <p className="text-muted-foreground text-[11px] font-semibold">Bikin patungan</p>
+                                    <p className="display text-primary mt-2 text-2xl">Rp0</p>
+                                    <p className="text-muted-foreground mt-2 text-[11px] leading-relaxed">Berapa pun pesertanya</p>
+                                </div>
+
+                                <div className="border-primary/40 bg-brand-soft rounded-3xl border p-5">
+                                    <p className="text-muted-foreground text-[11px] font-semibold">Biaya layanan</p>
+                                    <CountUp value={example.fee} className="display text-primary mt-2 block text-2xl tabular-nums" />
+                                    <p className="text-muted-foreground mt-2 text-[11px] leading-relaxed">
+                                        Sudah termasuk biaya pembayaran. Hanya saat ada yang benar-benar bayar.
+                                    </p>
+                                </div>
+
+                                <div className="border-lime/50 bg-lime/15 rounded-3xl border p-5">
+                                    <p className="text-muted-foreground text-[11px] font-semibold">
+                                        {payerCarries ? 'Kamu terima' : 'Masuk ke saldo'}
+                                    </p>
+                                    <p className="display text-primary mt-2 text-2xl">{payerCarries ? 'Penuh' : rupiah(example.net_amount)}</p>
+                                    <p className="text-muted-foreground mt-2 text-[11px] leading-relaxed">
+                                        {payerCarries ? 'Tagihanmu utuh, tanpa potongan' : 'Setelah biaya layanan'}
+                                    </p>
+                                </div>
                             </div>
 
                             <div className="border-border bg-card mt-3 rounded-3xl border p-6">
-                                <p className="text-sm font-bold tracking-tight">Contohnya begini</p>
-                                <dl className="mt-4 space-y-2.5 text-sm">
-                                    <div className="flex justify-between">
+                                <div className="flex flex-wrap items-center justify-between gap-3">
+                                    <p className="text-sm font-bold tracking-tight">Contohnya begini</p>
+
+                                    {/* Switches between breakdowns the server already computed. */}
+                                    <div className="bg-muted flex gap-1 rounded-full p-1">
+                                        {fee_examples.map((option, index) => (
+                                            <button
+                                                key={option.amount}
+                                                type="button"
+                                                onClick={() => setExampleIndex(index)}
+                                                aria-pressed={index === exampleIndex}
+                                                className={cn(
+                                                    'rounded-full px-3 py-1.5 text-[11px] font-semibold tabular-nums transition',
+                                                    index === exampleIndex
+                                                        ? 'bg-card text-foreground shadow-sm'
+                                                        : 'text-muted-foreground hover:text-foreground',
+                                                )}
+                                            >
+                                                {rupiahShort(option.amount)}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <dl className="mt-5 space-y-3 text-sm">
+                                    <div className="flex items-baseline justify-between gap-4">
                                         <dt className="text-muted-foreground">Tagihan per orang</dt>
-                                        <dd className="font-semibold tabular-nums">{rupiah(fee_example.amount)}</dd>
+                                        <CountUp value={example.amount} className="font-semibold tabular-nums" />
                                     </div>
 
-                                    {/* Only shown when the payer carries the fees, because only then is
-                                        the participant charged more than the bill. */}
-                                    {fee_example.service_fee > 0 && (
-                                        <>
-                                            <div className="flex justify-between">
-                                                <dt className="text-muted-foreground">Biaya ditambahkan</dt>
-                                                <dd className="tabular-nums">+{rupiah(fee_example.service_fee)}</dd>
-                                            </div>
-                                            <div className="border-border flex justify-between border-t pt-2.5">
-                                                <dt className="font-semibold">Peserta membayar</dt>
-                                                <dd className="font-semibold tabular-nums">{rupiah(fee_example.charged_amount)}</dd>
-                                            </div>
-                                        </>
-                                    )}
-
-                                    <div className="flex justify-between">
-                                        <dt className="text-muted-foreground">Biaya payment gateway</dt>
-                                        <dd className="tabular-nums">−{rupiah(fee_example.gateway_fee)}</dd>
-                                    </div>
-                                    <div className="flex justify-between">
+                                    <div className="flex items-baseline justify-between gap-4">
                                         <dt className="text-muted-foreground">Biaya layanan</dt>
-                                        <dd className="tabular-nums">−{rupiah(fee_example.platform_fee)}</dd>
+                                        <dd className="text-warning font-semibold tabular-nums">
+                                            {payerCarries ? '+' : '−'}
+                                            <CountUp value={example.fee} />
+                                        </dd>
                                     </div>
-                                    <div className="border-border flex justify-between border-t pt-2.5">
-                                        <dt className="font-bold">Masuk ke saldo kamu</dt>
-                                        <dd className="text-primary font-bold tabular-nums">{rupiah(fee_example.net_amount)}</dd>
+
+                                    <div className="border-border flex items-baseline justify-between gap-4 border-t pt-3">
+                                        <dt className="font-semibold">Peserta membayar</dt>
+                                        <CountUp value={example.charged_amount} className="display text-lg tabular-nums" />
+                                    </div>
+
+                                    <div className="bg-brand-soft -mx-2 flex items-baseline justify-between gap-4 rounded-2xl px-4 py-3">
+                                        <dt className="text-primary font-bold">Masuk ke saldo kamu</dt>
+                                        <CountUp value={example.net_amount} className="display text-primary text-xl tabular-nums" />
                                     </div>
                                 </dl>
+
                                 <p className="text-muted-foreground mt-4 text-[11px] leading-relaxed">
-                                    {fees.bearer === 'payer'
-                                        ? 'Saat ini biaya ditambahkan ke tagihan peserta, jadi kamu menerima penuh.'
-                                        : 'Saat ini biaya ditanggung penyelenggara, jadi peserta membayar persis sebesar tagihannya.'}
+                                    {payerCarries
+                                        ? 'Biaya ditambahkan ke tagihan peserta, jadi kamu menerima persis sebesar yang kamu tagihkan.'
+                                        : 'Biaya ditanggung penyelenggara, jadi peserta membayar persis sebesar tagihannya.'}
                                 </p>
                             </div>
                         </div>

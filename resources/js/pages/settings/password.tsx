@@ -1,11 +1,11 @@
 import InputError from '@/components/input-error';
+import { PasswordInput } from '@/components/patungan/password-input';
 import SettingsLayout, { SettingsCard } from '@/layouts/settings/layout';
 import { Transition } from '@headlessui/react';
 import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export default function Password() {
@@ -47,13 +47,12 @@ export default function Password() {
                     <div>
                         <Label htmlFor="current_password">Password sekarang</Label>
 
-                        <Input
+                        <PasswordInput
                             id="current_password"
                             ref={currentPasswordInput}
                             value={data.current_password}
                             onChange={(e) => setData('current_password', e.target.value)}
-                            type="password"
-                            className="mt-1.5 h-11 rounded-xl"
+                            className="mt-1.5"
                             autoComplete="current-password"
                             placeholder="Password sekarang"
                         />
@@ -64,13 +63,13 @@ export default function Password() {
                     <div>
                         <Label htmlFor="password">Password baru</Label>
 
-                        <Input
+                        <PasswordInput
                             id="password"
                             ref={passwordInput}
+                            showStrength
                             value={data.password}
                             onChange={(e) => setData('password', e.target.value)}
-                            type="password"
-                            className="mt-1.5 h-11 rounded-xl"
+                            className="mt-1.5"
                             autoComplete="new-password"
                             placeholder="Password baru"
                         />
@@ -81,12 +80,11 @@ export default function Password() {
                     <div>
                         <Label htmlFor="password_confirmation">Ulangi password</Label>
 
-                        <Input
+                        <PasswordInput
                             id="password_confirmation"
                             value={data.password_confirmation}
                             onChange={(e) => setData('password_confirmation', e.target.value)}
-                            type="password"
-                            className="mt-1.5 h-11 rounded-xl"
+                            className="mt-1.5"
                             autoComplete="new-password"
                             placeholder="Ulangi password"
                         />
