@@ -107,7 +107,8 @@ class DokuWebhookTest extends TestCase
             ->count();
 
         $this->assertSame(1, $credits);
-        $this->assertSame(24575, app(LedgerService::class)->availableBalance($payment->organizer_id));
+        // The payer carries the fees, so the organizer nets the full bill.
+        $this->assertSame(25000, app(LedgerService::class)->availableBalance($payment->organizer_id));
     }
 
     public function test_a_redelivered_notification_never_credits_twice(): void
@@ -127,7 +128,8 @@ class DokuWebhookTest extends TestCase
             ->where('type', LedgerType::PaymentReceived->value)
             ->count());
 
-        $this->assertSame(24575, app(LedgerService::class)->availableBalance($payment->organizer_id));
+        // The payer carries the fees, so the organizer nets the full bill.
+        $this->assertSame(25000, app(LedgerService::class)->availableBalance($payment->organizer_id));
     }
 
     public function test_a_redelivery_with_a_fresh_delivery_id_still_credits_only_once(): void

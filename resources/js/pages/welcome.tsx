@@ -19,6 +19,16 @@ interface WelcomeProps {
         gateway_bps: number;
         bearer: string;
     };
+    /** Computed server-side by the same calculator that prices real invoices. */
+    fee_example: {
+        amount: number;
+        service_fee: number;
+        charged_amount: number;
+        gateway_fee: number;
+        platform_fee: number;
+        fee: number;
+        net_amount: number;
+    };
     invoice_minutes: number;
     max_participants: number;
 }
@@ -100,7 +110,7 @@ function Shell({ id, className, children }: { id?: string; className?: string; c
     );
 }
 
-export default function Welcome({ fees, max_participants }: WelcomeProps) {
+export default function Welcome({ fees, fee_example, max_participants }: WelcomeProps) {
     const user = usePage<SharedData>().props.auth.user;
     const startHref = user ? route('patungan.create') : route('register');
 
@@ -472,19 +482,35 @@ export default function Welcome({ fees, max_participants }: WelcomeProps) {
                                 <dl className="mt-4 space-y-2.5 text-sm">
                                     <div className="flex justify-between">
                                         <dt className="text-muted-foreground">Tagihan per orang</dt>
-                                        <dd className="font-semibold tabular-nums">Rp25.000</dd>
+                                        <dd className="font-semibold tabular-nums">{rupiah(fee_example.amount)}</dd>
                                     </div>
+
+                                    {/* Only shown when the payer carries the fees, because only then is
+                                        the participant charged more than the bill. */}
+                                    {fee_example.service_fee > 0 && (
+                                        <>
+                                            <div className="flex justify-between">
+                                                <dt className="text-muted-foreground">Biaya ditambahkan</dt>
+                                                <dd className="tabular-nums">+{rupiah(fee_example.service_fee)}</dd>
+                                            </div>
+                                            <div className="border-border flex justify-between border-t pt-2.5">
+                                                <dt className="font-semibold">Peserta membayar</dt>
+                                                <dd className="font-semibold tabular-nums">{rupiah(fee_example.charged_amount)}</dd>
+                                            </div>
+                                        </>
+                                    )}
+
                                     <div className="flex justify-between">
                                         <dt className="text-muted-foreground">Biaya payment gateway</dt>
-                                        <dd className="tabular-nums">−Rp175</dd>
+                                        <dd className="tabular-nums">−{rupiah(fee_example.gateway_fee)}</dd>
                                     </div>
                                     <div className="flex justify-between">
                                         <dt className="text-muted-foreground">Biaya layanan</dt>
-                                        <dd className="tabular-nums">−Rp250</dd>
+                                        <dd className="tabular-nums">−{rupiah(fee_example.platform_fee)}</dd>
                                     </div>
                                     <div className="border-border flex justify-between border-t pt-2.5">
                                         <dt className="font-bold">Masuk ke saldo kamu</dt>
-                                        <dd className="text-primary font-bold tabular-nums">Rp24.575</dd>
+                                        <dd className="text-primary font-bold tabular-nums">{rupiah(fee_example.net_amount)}</dd>
                                     </div>
                                 </dl>
                                 <p className="text-muted-foreground mt-4 text-[11px] leading-relaxed">

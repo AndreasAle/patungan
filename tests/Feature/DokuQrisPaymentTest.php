@@ -93,16 +93,23 @@ class DokuQrisPaymentTest extends TestCase
             'charged_amount' => 1,
         ])->assertRedirect();
 
-        Http::assertSent(function (Request $request) {
+        $payment = Payment::query()->firstOrFail();
+
+        // The bill is untouched by what the client sent.
+        $this->assertSame(25000, $payment->amount);
+
+        Http::assertSent(function (Request $request) use ($payment) {
             if (! str_ends_with($request->url(), DokuQrisService::GENERATE)) {
                 return false;
             }
 
-            // DOKU requires the two-decimal string form of the real bill.
-            return $request->data()['amount']['value'] === '25000.00';
+            /*
+             * What DOKU is told to charge is exactly what we stored - the two
+             * decimal string form DOKU requires - and neither number came from
+             * the request body.
+             */
+            return $request->data()['amount']['value'] === number_format($payment->charged_amount, 2, '.', '');
         });
-
-        $this->assertSame(25000, Payment::query()->firstOrFail()->charged_amount);
     }
 
     public function test_the_b2b_token_is_cached_across_charges(): void

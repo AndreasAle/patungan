@@ -19,6 +19,7 @@ use App\Http\Controllers\Public\RoomAccessController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\Webhooks\PaymentWebhookController;
 use App\Http\Controllers\Webhooks\SandboxSimulatorController;
+use App\Services\FeeCalculator;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -32,6 +33,12 @@ Route::get('/', fn () => Inertia::render('welcome', [
         'gateway_bps' => (int) config('patungan.fees.gateway.bps'),
         'bearer' => config('patungan.fees.bearer'),
     ],
+    /*
+     | The worked example on the pricing section is computed by the same
+     | calculator that prices real invoices, so the page cannot drift from what
+     | an organizer actually receives.
+     */
+    'fee_example' => app(FeeCalculator::class)->for(25000)->toArray(),
     'invoice_minutes' => (int) round(((int) config('patungan.invoice_ttl')) / 60),
     'max_participants' => (int) config('patungan.limits.max_participants'),
 ]))->name('home');

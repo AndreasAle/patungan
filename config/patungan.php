@@ -26,7 +26,12 @@ return [
     |         "payer" (added on top of the participant bill).
     */
     'fees' => [
-        'bearer' => env('PATUNGAN_FEE_BEARER', 'organizer'),
+        /*
+        | "payer" adds the fees on top of the bill, so the organizer receives
+        | exactly what they asked each participant for. "organizer" takes them
+        | out of what was collected instead.
+        */
+        'bearer' => env('PATUNGAN_FEE_BEARER', 'payer'),
         'platform' => [
             'flat' => (int) env('PLATFORM_FEE_FLAT', 250),
             'bps' => (int) env('PLATFORM_FEE_BPS', 0),

@@ -45,7 +45,9 @@ class PaymentFlowTest extends TestCase
         $payment = Payment::query()->firstOrFail();
 
         $this->assertSame(25000, $payment->amount);
-        $this->assertSame(25000, $payment->charged_amount);
+        // Charged is the bill plus the service fee the payer carries - never the 1 sent.
+        $this->assertSame($payment->amount + $payment->service_fee, $payment->charged_amount);
+        $this->assertGreaterThan(25000, $payment->charged_amount);
     }
 
     public function test_fees_are_calculated_in_whole_rupiah(): void
@@ -55,11 +57,15 @@ class PaymentFlowTest extends TestCase
 
         $payment = app(PaymentService::class)->createForParticipant($participant);
 
-        // 0.70% of 25.000 = 175, plus a flat platform fee of 250.
-        $this->assertSame(175, $payment->gateway_fee);
+        /*
+         * The payer carries the fees, so 25.428 is charged: 0.70% of that is 178,
+         * plus the flat 250, leaving the organizer exactly the 25.000 they billed.
+         */
+        $this->assertSame(25428, $payment->charged_amount);
+        $this->assertSame(178, $payment->gateway_fee);
         $this->assertSame(250, $payment->platform_fee);
-        $this->assertSame(425, $payment->fee);
-        $this->assertSame(24575, $payment->net_amount);
+        $this->assertSame(428, $payment->fee);
+        $this->assertSame(25000, $payment->net_amount);
     }
 
     public function test_a_participant_can_hold_only_one_active_invoice(): void

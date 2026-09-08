@@ -36,7 +36,7 @@ class PaymentWebhookTest extends TestCase
         $this->assertSame(1, $patungan->paid_participant_count);
 
         // Ledger: one credit plus the two fee debits.
-        $this->assertSame(24575, app(LedgerService::class)->availableBalance($organizer));
+        $this->assertSame(25000, app(LedgerService::class)->availableBalance($organizer));
         $this->assertSame(3, WalletLedger::query()->count());
     }
 
@@ -51,7 +51,7 @@ class PaymentWebhookTest extends TestCase
             $this->postJson(route('webhooks.payments', 'sandbox'), $payload)->assertOk();
         }
 
-        $this->assertSame(24575, app(LedgerService::class)->availableBalance($organizer));
+        $this->assertSame(25000, app(LedgerService::class)->availableBalance($organizer));
         $this->assertSame(3, WalletLedger::query()->count());
         $this->assertSame(25000, $patungan->fresh()->collected_amount);
         $this->assertSame(1, WebhookLog::query()->where('status', WebhookLog::STATUS_PROCESSED)->count());
@@ -117,7 +117,7 @@ class PaymentWebhookTest extends TestCase
         $this->assertSame(PatunganStatus::Completed, $patungan->status);
         $this->assertNotNull($patungan->completed_at);
         $this->assertSame(50000, $patungan->collected_amount);
-        $this->assertSame(49150, app(LedgerService::class)->availableBalance($organizer));
+        $this->assertSame(50000, app(LedgerService::class)->availableBalance($organizer));
         $this->assertSame(500, (int) WalletLedger::query()->where('type', LedgerType::PlatformFee->value)->sum('amount'));
     }
 

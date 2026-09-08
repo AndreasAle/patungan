@@ -43,7 +43,7 @@ class PayoutTest extends TestCase
         $this->assertSame(20000, $settlement->amount);
         $this->assertSame(SettlementStatus::Pending, $settlement->status);
         // The debit lands with the request, so the balance drops immediately.
-        $this->assertSame(4575, app(LedgerService::class)->availableBalance($organizer));
+        $this->assertSame(5000, app(LedgerService::class)->availableBalance($organizer));
         $this->assertSame(20000, app(LedgerService::class)->totalPaidOut($organizer));
     }
 
@@ -57,7 +57,7 @@ class PayoutTest extends TestCase
             ->assertSessionHasErrors('amount');
 
         $this->assertSame(0, Settlement::query()->count());
-        $this->assertSame(24575, app(LedgerService::class)->availableBalance($organizer));
+        $this->assertSame(25000, app(LedgerService::class)->availableBalance($organizer));
     }
 
     public function test_an_organizer_cannot_pay_out_to_someone_elses_destination(): void
@@ -88,7 +88,7 @@ class PayoutTest extends TestCase
 
         $this->assertSame(SettlementStatus::Completed, $settlement->status);
         $this->assertSame('TRF-123', $settlement->provider_reference);
-        $this->assertSame(4575, app(LedgerService::class)->availableBalance($organizer));
+        $this->assertSame(5000, app(LedgerService::class)->availableBalance($organizer));
     }
 
     public function test_a_failed_payout_returns_the_funds_to_the_organizer(): void
@@ -104,7 +104,7 @@ class PayoutTest extends TestCase
             ->assertRedirect();
 
         $this->assertSame(SettlementStatus::Failed, $settlement->fresh()->status);
-        $this->assertSame(24575, app(LedgerService::class)->availableBalance($organizer));
+        $this->assertSame(25000, app(LedgerService::class)->availableBalance($organizer));
         $this->assertSame(0, app(LedgerService::class)->totalPaidOut($organizer));
     }
 
