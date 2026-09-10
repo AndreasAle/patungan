@@ -42,11 +42,11 @@ export function BalanceHero({ name, balance, unreadCount }: BalanceHeroProps) {
                 </Link>
             </div>
 
-            <div className="mt-7 grid gap-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:gap-10">
+            <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:gap-10">
                 <div className="min-w-0">
                     <Eyebrow onDeep>Saldo tersedia</Eyebrow>
 
-                    <p className="display text-brand-deep-foreground mt-3 text-[29px] tabular-nums sm:text-5xl lg:text-[56px]">
+                    <p className="display text-brand-deep-foreground mt-3 text-[29px] tabular-nums sm:text-[40px] lg:text-[44px]">
                         {rupiah(balance.available)}
                     </p>
 

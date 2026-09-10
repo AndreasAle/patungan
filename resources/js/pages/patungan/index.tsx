@@ -41,7 +41,7 @@ export default function PatunganIndex({ patungans }: { patungans: Paginated<Patu
                 />
             ) : (
                 <>
-                    <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                         {patungans.data.map((patungan) => (
                             <PatunganCard key={patungan.uuid} patungan={patungan} />
                         ))}

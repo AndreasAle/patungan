@@ -42,7 +42,7 @@ export default function Dashboard({ balance, stats, active, history, notificatio
             </div>
 
             {/* The list carries the page; the aside holds what you only glance at. */}
-            <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_19rem] lg:gap-12">
+            <div className="mt-9 grid gap-9 lg:grid-cols-[minmax(0,1fr)_19rem] lg:gap-10 xl:grid-cols-[minmax(0,1fr)_22rem]">
                 <div className="min-w-0">
                     <section>
                         <SectionHeading
@@ -64,7 +64,7 @@ export default function Dashboard({ balance, stats, active, history, notificatio
                                 }
                             />
                         ) : (
-                            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                            <div className="mt-5 grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
                                 {active.map((patungan) => (
                                     <PatunganCard key={patungan.uuid} patungan={patungan} />
                                 ))}
@@ -76,7 +76,7 @@ export default function Dashboard({ balance, stats, active, history, notificatio
                         <section className="mt-12">
                             <SectionHeading eyebrow="Arsip" title="Sudah selesai" />
 
-                            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                            <div className="mt-5 grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
                                 {history.map((patungan) => (
                                     <PatunganCard key={patungan.uuid} patungan={patungan} />
                                 ))}

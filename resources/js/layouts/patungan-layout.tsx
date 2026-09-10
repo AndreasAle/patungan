@@ -49,7 +49,12 @@ export default function PatunganLayout({ children, title, back, action, hero, wi
     const page = usePage<SharedData>();
     const user = page.props.auth.user;
     const pathname = new URL(page.url, 'http://localhost').pathname;
-    const measure = wide ? 'max-w-6xl' : 'max-w-4xl';
+    /*
+     * On a 1920px screen the old 1152px column left 500px of empty margin on
+     * either side while the content below it stayed cramped. A finance screen
+     * should use the width it is given.
+     */
+    const measure = wide ? 'max-w-6xl xl:max-w-[84rem]' : 'max-w-4xl xl:max-w-5xl';
 
     return (
         <div className="bg-background min-h-screen">
@@ -121,7 +126,7 @@ export default function PatunganLayout({ children, title, back, action, hero, wi
             <div className="lg:pl-60">
                 {hero ? (
                     /* Deep green "money" panel; page content overlaps its lower edge. */
-                    <header className="surface-deep rounded-b-[28px] px-4 pt-4 pb-16 lg:rounded-b-3xl lg:px-8 lg:pt-6 lg:pb-20">
+                    <header className="surface-deep rounded-b-[28px] px-4 pt-4 pb-16 lg:rounded-b-3xl lg:px-8 lg:pt-5 lg:pb-14">
                         <div className={cn('mx-auto w-full', measure)}>{hero}</div>
                     </header>
                 ) : (

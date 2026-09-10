@@ -62,7 +62,7 @@ export default function Pencairan({ balance, destinations, settlements, payout }
                 <div>
                     <Eyebrow onDeep>Saldo tersedia</Eyebrow>
 
-                    <p className="display text-brand-deep-foreground mt-3 text-[29px] tabular-nums sm:text-5xl lg:text-[56px]">
+                    <p className="display text-brand-deep-foreground mt-3 text-[29px] tabular-nums sm:text-[40px] lg:text-[44px]">
                         {rupiah(balance.available)}
                     </p>
 
