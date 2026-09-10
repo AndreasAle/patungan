@@ -37,7 +37,7 @@ echo "==> Running database migrations"
 php artisan migrate --force
 
 echo "==> Linking storage"
-php artisan storage:link 2>/dev/null || true
+php scripts/link-storage.php
 
 echo "==> Rebuilding caches"
 php artisan config:clear
