@@ -255,7 +255,7 @@ export default function Welcome({ fee_examples, max_participants }: WelcomeProps
                 </div>
 
                 {/* How it works */}
-                <div className="surface-deep py-16 lg:py-24" id="cara-kerja">
+                <div className="real-flow-surface py-16 lg:py-20" id="cara-kerja">
                     <Shell>
                         <RealFlow startHref={startHref} />
                     </Shell>

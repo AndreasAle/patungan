@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
-import { ArrowRight, Check, ClipboardPaste, MessageCircle, Search, Trophy } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, ClipboardPaste, MessageCircle, Search, Trophy } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 
@@ -280,67 +280,87 @@ const screens = [DetailScreen, SplitScreen, ParticipantScreen, ShareScreen, Publ
 
 export function RealFlow({ startHref }: { startHref: string }) {
     const [activeStep, setActiveStep] = useState(0);
+    const railRef = useRef<HTMLDivElement | null>(null);
     const stepRefs = useRef<(HTMLElement | null)[]>([]);
 
     useEffect(() => {
-        const observer = new IntersectionObserver(
-            (entries) => {
-                const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-                if (visible) setActiveStep(Number((visible.target as HTMLElement).dataset.step));
-            },
-            { rootMargin: '-25% 0px -35% 0px', threshold: [0.15, 0.45, 0.75] },
-        );
+        const rail = railRef.current;
+        if (!rail) return;
 
-        stepRefs.current.forEach((node) => node && observer.observe(node));
-        return () => observer.disconnect();
+        let frame = 0;
+        const updateActiveStep = () => {
+            cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(() => {
+                if (rail.scrollLeft < 8) {
+                    setActiveStep(0);
+                    return;
+                }
+
+                const center = rail.scrollLeft + rail.clientWidth / 2;
+                const closest = stepRefs.current.reduce(
+                    (best, node, index) => {
+                        if (!node) return best;
+                        const distance = Math.abs(node.offsetLeft + node.offsetWidth / 2 - center);
+                        return distance < best.distance ? { index, distance } : best;
+                    },
+                    { index: 0, distance: Number.POSITIVE_INFINITY },
+                );
+                setActiveStep(closest.index);
+            });
+        };
+
+        rail.addEventListener('scroll', updateActiveStep, { passive: true });
+        return () => {
+            cancelAnimationFrame(frame);
+            rail.removeEventListener('scroll', updateActiveStep);
+        };
     }, []);
 
-    const active = flowSteps[activeStep];
+    const goToStep = (index: number) => {
+        const next = Math.max(0, Math.min(flowSteps.length - 1, index));
+        stepRefs.current[next]?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        setActiveStep(next);
+    };
 
     return (
-        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-12 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-16">
-            <div className="min-w-0 lg:sticky lg:top-28 lg:self-start">
-                <p className="text-lime flex items-center gap-2 text-[11px] font-bold tracking-[0.18em] uppercase before:h-px before:w-6 before:bg-current">
-                    Cara kerja
-                </p>
-                <h2 className="display text-brand-deep-foreground mt-5 text-[32px] sm:text-5xl">Lihat flow aslinya. Sesimpel itu.</h2>
-                <p className="text-brand-deep-muted mt-5 max-w-sm text-sm leading-relaxed">
-                    Dari bikin sampai lunas, semua orang langsung tahu harus melakukan apa.
-                </p>
-
-                <div className="mt-8 hidden lg:block" aria-live="polite">
-                    <p className="text-lime text-[10px] font-bold tracking-[0.16em] uppercase">{active.eyebrow}</p>
-                    <p className="text-brand-deep-foreground mt-2 text-xl font-bold tracking-tight">{active.title}</p>
-                    <p className="text-brand-deep-muted mt-2 text-sm leading-relaxed">{active.body}</p>
+        <div className="w-full max-w-full min-w-0 overflow-hidden">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p className="text-lime flex items-center gap-2 text-[11px] font-bold tracking-[0.18em] uppercase before:h-px before:w-6 before:bg-current">
+                        Cara kerja
+                    </p>
+                    <h2 className="display text-brand-deep-foreground mt-4 max-w-xl text-[32px] sm:text-5xl">Lihat flow aslinya. Sesimpel itu.</h2>
+                    <p className="text-brand-deep-muted mt-4 max-w-lg text-sm leading-relaxed">
+                        Geser ke samping untuk melihat alur nyata dari bikin Patungan sampai pembayaran tercatat.
+                    </p>
                 </div>
 
-                <ol className="mt-7 hidden items-center gap-2 lg:flex" aria-label="Tahapan membuat Patungan">
-                    {flowSteps.map((step, index) => (
-                        <li key={step.title}>
-                            <a
-                                href={`#flow-step-${index + 1}`}
-                                aria-label={`Langkah ${index + 1}: ${step.title}`}
-                                aria-current={activeStep === index ? 'step' : undefined}
-                                className={cn(
-                                    'flex size-8 items-center justify-center rounded-full text-[10px] font-bold transition',
-                                    activeStep === index ? 'bg-lime text-lime-foreground scale-110' : 'bg-white/10 text-white/55 hover:bg-white/20',
-                                )}
-                            >
-                                {index + 1}
-                            </a>
-                        </li>
-                    ))}
-                </ol>
-
-                <Link
-                    href={startHref}
-                    className="bg-lime text-lime-foreground mt-8 inline-flex h-11 items-center gap-2 rounded-full px-6 text-sm font-bold"
-                >
-                    Coba bikin sendiri <ArrowRight className="size-4" />
-                </Link>
+                <div className="flex shrink-0 items-center gap-3">
+                    <button
+                        type="button"
+                        onClick={() => goToStep(activeStep - 1)}
+                        disabled={activeStep === 0}
+                        aria-label="Langkah sebelumnya"
+                        className="flow-nav-button"
+                    >
+                        <ArrowLeft className="size-4" />
+                    </button>
+                    <span className="text-brand-deep-foreground min-w-12 text-center text-xs font-bold tabular-nums">
+                        {String(activeStep + 1).padStart(2, '0')} / {String(flowSteps.length).padStart(2, '0')}
+                    </span>
+                    <button
+                        type="button"
+                        onClick={() => goToStep(activeStep + 1)}
+                        disabled={activeStep === flowSteps.length - 1}
+                        aria-label="Langkah berikutnya"
+                        className="flow-nav-button"
+                    >
+                        <ArrowRight className="size-4" />
+                    </button>
+                </div>
             </div>
 
-            <div className="min-w-0 space-y-16 lg:space-y-8">
+            <div ref={railRef} className="real-flow-rail mt-9" aria-label="Alur penggunaan Patungan">
                 {flowSteps.map((step, index) => {
                     const Screen = screens[index];
                     return (
@@ -351,24 +371,48 @@ export function RealFlow({ startHref }: { startHref: string }) {
                                 stepRefs.current[index] = node;
                             }}
                             data-step={index}
-                            className={cn(
-                                'scroll-mt-28 motion-reduce:transition-none lg:flex lg:min-h-[72vh] lg:items-center lg:justify-center lg:transition-all lg:duration-500',
-                                activeStep === index ? 'lg:scale-100 lg:opacity-100' : 'lg:scale-[0.94] lg:opacity-35',
-                            )}
+                            className="real-flow-card"
                         >
-                            <div className="w-full">
-                                <div className="mb-6 lg:hidden">
-                                    <p className="text-lime text-[10px] font-bold tracking-[0.16em] uppercase">
-                                        {String(index + 1).padStart(2, '0')} · {step.eyebrow}
-                                    </p>
-                                    <h3 className="text-brand-deep-foreground mt-2 text-xl font-bold tracking-tight">{step.title}</h3>
-                                    <p className="text-brand-deep-muted mt-2 text-sm leading-relaxed">{step.body}</p>
-                                </div>
-                                <Screen />
+                            <div className="mb-5 min-h-[7.25rem] px-1">
+                                <p className="text-lime text-[10px] font-bold tracking-[0.16em] uppercase">
+                                    {String(index + 1).padStart(2, '0')} · {step.eyebrow}
+                                </p>
+                                <h3 className="text-brand-deep-foreground mt-2 text-xl font-bold tracking-tight">{step.title}</h3>
+                                <p className="text-brand-deep-muted mt-2 text-sm leading-relaxed">{step.body}</p>
                             </div>
+                            <Screen />
                         </article>
                     );
                 })}
+                <div className="w-1 shrink-0" aria-hidden="true" />
+            </div>
+
+            <div className="mt-7 flex flex-wrap items-center justify-between gap-5">
+                <ol className="flex items-center gap-2" aria-label="Tahapan membuat Patungan">
+                    {flowSteps.map((step, index) => (
+                        <li key={step.title}>
+                            <button
+                                type="button"
+                                onClick={() => goToStep(index)}
+                                aria-label={`Langkah ${index + 1}: ${step.title}`}
+                                aria-current={activeStep === index ? 'step' : undefined}
+                                className={cn(
+                                    'flex size-8 items-center justify-center rounded-full text-[10px] font-bold transition',
+                                    activeStep === index ? 'bg-lime text-lime-foreground scale-110' : 'bg-white/10 text-white/55 hover:bg-white/20',
+                                )}
+                            >
+                                {index + 1}
+                            </button>
+                        </li>
+                    ))}
+                </ol>
+
+                <Link
+                    href={startHref}
+                    className="bg-lime text-lime-foreground inline-flex h-11 items-center gap-2 rounded-full px-6 text-sm font-bold transition hover:-translate-y-0.5"
+                >
+                    Coba bikin sendiri <ArrowRight className="size-4" />
+                </Link>
             </div>
         </div>
     );
