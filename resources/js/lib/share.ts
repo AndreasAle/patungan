@@ -73,3 +73,32 @@ export async function copyText(value: string): Promise<boolean> {
         return false;
     }
 }
+
+/**
+ * Records a share without asking Inertia to navigate anywhere.
+ *
+ * The endpoint intentionally returns JSON. Sending this through Inertia's
+ * router makes Inertia reject that perfectly valid JSON response and paint an
+ * error overlay over the page, so analytics uses a plain background request.
+ * A failed analytics write is deliberately silent and never blocks sharing.
+ */
+export async function recordShareEvent(uuid: string, type: string, channel = 'whatsapp'): Promise<void> {
+    const csrf = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/)?.[1];
+
+    try {
+        await fetch(route('share.record', uuid), {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                ...(csrf ? { 'X-XSRF-TOKEN': decodeURIComponent(csrf) } : {}),
+            },
+            credentials: 'same-origin',
+            keepalive: true,
+            body: JSON.stringify({ type, channel }),
+        });
+    } catch {
+        // Analytics must never interrupt or obscure the share flow.
+    }
+}

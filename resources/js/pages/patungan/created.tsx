@@ -2,9 +2,9 @@ import { CategoryIcon } from '@/components/patungan/category-icon';
 import { Button } from '@/components/ui/button';
 import PatunganLayout from '@/layouts/patungan-layout';
 import { rupiah } from '@/lib/format';
-import { copyText, shareMessage } from '@/lib/share';
+import { copyText, recordShareEvent, shareMessage } from '@/lib/share';
 import { cn } from '@/lib/utils';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { ArrowRight, Check, Copy, Users } from 'lucide-react';
 import { useState } from 'react';
 
@@ -34,7 +34,7 @@ export default function PatunganCreated({ patungan, share }: Props) {
     const [copied, setCopied] = useState(false);
 
     const record = (type: string, channel = 'whatsapp') => {
-        router.post(route('share.record', patungan.uuid), { type, channel }, { preserveState: true, preserveScroll: true, only: [] });
+        void recordShareEvent(patungan.uuid, type, channel);
     };
 
     const sendToWhatsApp = async () => {

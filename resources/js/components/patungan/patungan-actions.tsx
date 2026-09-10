@@ -1,8 +1,7 @@
 import { ShareSheet } from '@/components/patungan/share-sheet';
 import { Button } from '@/components/ui/button';
-import { copyText, shareMessage } from '@/lib/share';
+import { copyText, recordShareEvent, shareMessage } from '@/lib/share';
 import { cn } from '@/lib/utils';
-import { router } from '@inertiajs/react';
 import { BellRing, Check, Copy, Share2, TrendingUp, Users } from 'lucide-react';
 import { useState } from 'react';
 
@@ -29,7 +28,7 @@ export function PatunganActions({ uuid, share, className }: { uuid: string; shar
     const [copied, setCopied] = useState(false);
 
     const record = (type: string, channel = 'whatsapp') => {
-        router.post(route('share.record', uuid), { type, channel }, { preserveState: true, preserveScroll: true, only: [] });
+        void recordShareEvent(uuid, type, channel);
     };
 
     const shareInvite = async () => {
