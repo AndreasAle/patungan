@@ -27,6 +27,7 @@ npm-debug.log
 yarn-error.log
 
 # Payment provider key material - never committed.
+/storage/app/dana
 /storage/app/doku
 *.pem
 *.key

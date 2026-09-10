@@ -3,6 +3,12 @@
 namespace App\Payments;
 
 use App\Contracts\PaymentGateway;
+use App\Payments\Dana\DanaClient;
+use App\Payments\Dana\DanaCredentials;
+use App\Payments\Dana\DanaExternalIdGenerator;
+use App\Payments\Dana\DanaGateway;
+use App\Payments\Dana\DanaNotificationVerifier;
+use App\Payments\Dana\DanaQrisService;
 use App\Payments\Doku\DokuAccessToken;
 use App\Payments\Doku\DokuClient;
 use App\Payments\Doku\DokuCredentials;
@@ -45,6 +51,7 @@ class PaymentGatewayManager
     public function driver(string $name): PaymentGateway
     {
         return $this->resolved[$name] ??= match ($name) {
+            'dana' => $this->makeDana(),
             'doku' => $this->makeDoku(),
             'midtrans' => $this->makeMidtrans(),
             'sandbox' => $this->makeSandbox(),
@@ -53,6 +60,26 @@ class PaymentGatewayManager
                 previous: new \RuntimeException("Payment gateway [{$name}] is not supported."),
             ),
         };
+    }
+
+    /**
+     * DANA SNAP QRIS MPM. Credentials are validated as the driver is built, so
+     * a misconfiguration surfaces here rather than when a participant taps
+     * Bayar.
+     *
+     * There is no access token to construct: DANA's QRIS Acquirer APIs are
+     * authenticated by the RSA signature on each request.
+     */
+    private function makeDana(): DanaGateway
+    {
+        $credentials = DanaCredentials::fromConfig($this->config);
+        $externalIds = new DanaExternalIdGenerator;
+
+        return new DanaGateway(
+            new DanaQrisService(new DanaClient($credentials, $externalIds, $this->http), $credentials),
+            new DanaNotificationVerifier($credentials),
+            $externalIds,
+        );
     }
 
     /**

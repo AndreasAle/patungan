@@ -62,6 +62,19 @@ return [
         | DOKU integration trail: endpoints, external ids, response codes and
         | latency. Never tokens, signatures, secrets or key material.
         */
+        /*
+         | Every DANA request and notification, kept apart from the application
+         | log so a payment dispute can be answered without reading around
+         | unrelated traffic. Nothing written here contains a key or a signature.
+         */
+        'dana' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/dana.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => env('DANA_LOG_DAYS', 30),
+            'replace_placeholders' => true,
+        ],
+
         'doku' => [
             'driver' => 'daily',
             'path' => storage_path('logs/doku.log'),

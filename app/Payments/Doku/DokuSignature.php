@@ -3,7 +3,7 @@
 namespace App\Payments\Doku;
 
 use App\Payments\Doku\Exceptions\DokuSignatureException;
-use Carbon\CarbonImmutable;
+use App\Payments\Snap\SnapJson;
 
 /**
  * The two SNAP signature schemes, kept free of HTTP and config so they can be
@@ -32,19 +32,17 @@ final class DokuSignature
      */
     public static function hashBody(string $body): string
     {
-        return strtolower(hash('sha256', self::minify($body)));
+        return SnapJson::hashBody($body);
     }
 
     /** @param array<string, mixed> $body */
     public static function hashArrayBody(array $body): string
     {
-        $encoded = json_encode($body, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-
-        if ($encoded === false) {
-            throw new DokuSignatureException(context: ['reason' => 'Request body could not be encoded.']);
+        try {
+            return self::hashBody(SnapJson::encode($body));
+        } catch (\InvalidArgumentException $e) {
+            throw new DokuSignatureException(context: ['reason' => 'Request body could not be encoded.'], previous: $e);
         }
-
-        return self::hashBody($encoded);
     }
 
     /**
@@ -53,40 +51,7 @@ final class DokuSignature
      */
     public static function minify(string $json): string
     {
-        $out = '';
-        $inString = false;
-        $escaped = false;
-
-        foreach (str_split($json) as $char) {
-            if ($inString) {
-                $out .= $char;
-
-                if ($escaped) {
-                    $escaped = false;
-                } elseif ($char === '\\') {
-                    $escaped = true;
-                } elseif ($char === '"') {
-                    $inString = false;
-                }
-
-                continue;
-            }
-
-            if ($char === '"') {
-                $inString = true;
-                $out .= $char;
-
-                continue;
-            }
-
-            if ($char === ' ' || $char === "\n" || $char === "\r" || $char === "\t") {
-                continue;
-            }
-
-            $out .= $char;
-        }
-
-        return $out;
+        return SnapJson::minify($json);
     }
 
     /** The exact string DOKU expects to be signed for a transaction request. */
@@ -165,10 +130,6 @@ final class DokuSignature
      */
     public static function timestamp(?\DateTimeInterface $at = null): string
     {
-        $moment = $at !== null
-            ? CarbonImmutable::instance(CarbonImmutable::parse($at))
-            : CarbonImmutable::now();
-
-        return $moment->format('Y-m-d\TH:i:sP');
+        return SnapJson::timestamp($at);
     }
 }
