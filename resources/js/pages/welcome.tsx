@@ -3,6 +3,7 @@ import AppLogoIcon from '@/components/app-logo-icon';
 import { CountUp } from '@/components/landing/count-up';
 import { PaymentLogoMarquee } from '@/components/landing/payment-logo-marquee';
 import { Rail } from '@/components/landing/rail';
+import { RealFlow } from '@/components/landing/real-flow';
 import { CategoryIcon } from '@/components/patungan/category-icon';
 import { HelpBubble } from '@/components/patungan/help-bubble';
 import { Eyebrow } from '@/components/patungan/section-heading';
@@ -34,13 +35,6 @@ const navLinks = [
     { label: 'Fitur', href: '#fitur' },
     { label: 'Biaya', href: '#biaya' },
     { label: 'FAQ', href: '#faq' },
-];
-
-const steps = [
-    { title: 'Bikin patungan', body: 'Tulis judulnya, tempel daftar nama langsung dari grup, tentukan nominalnya.' },
-    { title: 'Share satu link', body: 'Satu link untuk satu grup. Lempar ke WhatsApp, selesai urusan kamu.' },
-    { title: 'Teman bayar QRIS', body: 'Mereka cari namanya sendiri lalu scan. Tanpa daftar, tanpa login, tanpa aplikasi.' },
-    { title: 'Kamu tinggal pantau', body: 'Status berubah sendiri begitu uangnya masuk. Nggak ada acara nagih.' },
 ];
 
 const features: { icon: LucideIcon; title: string; body: string }[] = [
@@ -263,39 +257,7 @@ export default function Welcome({ fee_examples, max_participants }: WelcomeProps
                 {/* How it works */}
                 <div className="surface-deep py-16 lg:py-24" id="cara-kerja">
                     <Shell>
-                        <div className="grid gap-12 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-16">
-                            <div>
-                                <Eyebrow onDeep>Cara kerja</Eyebrow>
-                                <h2 className="display text-brand-deep-foreground mt-5 text-[32px] sm:text-5xl">
-                                    Empat langkah, beres malam itu juga.
-                                </h2>
-                                <p className="text-brand-deep-muted mt-5 max-w-sm text-sm leading-relaxed">
-                                    Nggak ada aplikasi yang harus diunduh teman kamu, nggak ada nomor rekening yang harus disalin, nggak ada
-                                    screenshot bukti transfer yang harus dicek satu per satu.
-                                </p>
-
-                                <Button
-                                    asChild
-                                    className="bg-lime text-lime-foreground hover:bg-lime/90 mt-8 h-11 rounded-full px-6 text-sm font-semibold"
-                                >
-                                    <Link href={startHref}>Mulai sekarang</Link>
-                                </Button>
-                            </div>
-
-                            <ol className="divide-brand-deep-muted/20 divide-y">
-                                {steps.map((step, index) => (
-                                    <li key={step.title} className="flex gap-5 py-6 first:pt-0 last:pb-0 sm:gap-8">
-                                        <span className="text-lime/25 w-10 shrink-0 text-3xl font-extrabold tabular-nums sm:w-16 sm:text-5xl">
-                                            {String(index + 1).padStart(2, '0')}
-                                        </span>
-                                        <div className="min-w-0 pt-1">
-                                            <h3 className="text-brand-deep-foreground text-base font-bold tracking-tight sm:text-lg">{step.title}</h3>
-                                            <p className="text-brand-deep-muted mt-1.5 text-sm leading-relaxed">{step.body}</p>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ol>
-                        </div>
+                        <RealFlow startHref={startHref} />
                     </Shell>
                 </div>
 
