@@ -41,12 +41,17 @@ main() {
 
     # Anything that fails from here still lifts maintenance mode on the way out.
     trap 'php artisan up || true' EXIT
+    # set -e otherwise ends the deploy in silence, which is indistinguishable
+    # from a step that simply printed nothing.
+    trap 'echo "" >&2; echo "DEPLOY FAILED at line $LINENO: $BASH_COMMAND" >&2' ERR
 
     echo "==> Running database migrations"
     php artisan migrate --force
 
     echo "==> Linking storage"
-    php scripts/link-storage.php
+    # Never fatal: a missing public link is a broken image, not a broken
+    # ledger, and aborting here would skip the cache rebuild below.
+    php scripts/link-storage.php || echo "    storage link step failed - continuing"
 
     echo "==> Rebuilding caches"
     php artisan config:clear
