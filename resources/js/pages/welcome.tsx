@@ -1,6 +1,7 @@
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { CountUp } from '@/components/landing/count-up';
+import { PaymentLogoMarquee } from '@/components/landing/payment-logo-marquee';
 import { Rail } from '@/components/landing/rail';
 import { CategoryIcon } from '@/components/patungan/category-icon';
 import { HelpBubble } from '@/components/patungan/help-bubble';
@@ -34,9 +35,6 @@ const navLinks = [
     { label: 'Biaya', href: '#biaya' },
     { label: 'FAQ', href: '#faq' },
 ];
-
-/** QRIS is one standard, so every one of these apps can scan the same code. */
-const payMethods = ['GoPay', 'OVO', 'DANA', 'ShopeePay', 'LinkAja', 'BCA mobile', 'Livin', 'BRImo', 'Jenius', 'blu'];
 
 const steps = [
     { title: 'Bikin patungan', body: 'Tulis judulnya, tempel daftar nama langsung dari grup, tentukan nominalnya.' },
@@ -256,18 +254,9 @@ export default function Welcome({ fee_examples, max_participants }: WelcomeProps
                     </Shell>
                 </div>
                 {/* Payment rail */}
-                <div className="border-border bg-surface border-y py-7">
+                <div className="border-border bg-surface border-y py-5 sm:py-6">
                     <Shell>
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-10">
-                            <p className="text-muted-foreground shrink-0 text-[11px] font-bold tracking-[0.18em] uppercase">Satu kode QRIS</p>
-                            <div className="rail sm:gap-9">
-                                {payMethods.map((method) => (
-                                    <span key={method} className="text-foreground/40 text-base font-bold tracking-tight whitespace-nowrap">
-                                        {method}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
+                        <PaymentLogoMarquee />
                     </Shell>
                 </div>
 

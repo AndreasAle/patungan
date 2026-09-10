@@ -283,6 +283,71 @@
         flex: 0 0 auto;
     }
 
+    /* Infinite payment-logo ribbon on the landing page. */
+    .payment-logo-marquee {
+        position: relative;
+        min-width: 0;
+        overflow: hidden;
+        mask-image: linear-gradient(to right, transparent, black 7%, black 93%, transparent);
+        -webkit-mask-image: linear-gradient(to right, transparent, black 7%, black 93%, transparent);
+    }
+
+    .payment-logo-track {
+        display: flex;
+        width: max-content;
+        will-change: transform;
+        animation: payment-logo-scroll 28s linear infinite;
+    }
+
+    .payment-logo-marquee:hover .payment-logo-track,
+    .payment-logo-marquee:focus-within .payment-logo-track {
+        animation-play-state: paused;
+    }
+
+    .payment-logo-group {
+        display: flex;
+        flex: none;
+        align-items: center;
+        gap: 1rem;
+        padding-right: 1rem;
+    }
+
+    .payment-logo-card {
+        display: flex;
+        width: 4.25rem;
+        height: 4.25rem;
+        flex: none;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border: 1px solid color-mix(in oklab, var(--border) 76%, transparent);
+        border-radius: 1.25rem;
+        background: white;
+        box-shadow: 0 8px 24px color-mix(in oklab, var(--brand-deep) 8%, transparent);
+        transition:
+            transform 180ms ease,
+            box-shadow 180ms ease,
+            border-color 180ms ease;
+    }
+
+    .payment-logo-card:hover {
+        transform: translateY(-3px) scale(1.035);
+        border-color: color-mix(in oklab, var(--primary) 32%, var(--border));
+        box-shadow: 0 12px 28px color-mix(in oklab, var(--brand-deep) 14%, transparent);
+    }
+
+    .payment-logo-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    @keyframes payment-logo-scroll {
+        to {
+            transform: translateX(-50%);
+        }
+    }
+
     /*
       A rail that gives way to a normal grid once there is room for one.
 
@@ -328,6 +393,28 @@
         font-size: 11px;
         font-weight: 600;
         line-height: 1.4;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .payment-logo-marquee {
+        overflow-x: auto;
+        mask-image: none;
+        -webkit-mask-image: none;
+        scrollbar-width: none;
+    }
+
+    .payment-logo-marquee::-webkit-scrollbar {
+        display: none;
+    }
+
+    .payment-logo-track {
+        animation: none;
+        transform: none;
+    }
+
+    .payment-logo-group[aria-hidden='true'] {
+        display: none;
     }
 }
 
