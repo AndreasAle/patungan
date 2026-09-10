@@ -83,67 +83,76 @@ export default function PatunganLayout({ children, title, back, action, hero, wi
 
             <div className="lg:bg-background lg:shadow-brand-deep/40 lg:flex lg:min-h-[calc(100vh-1.5rem)] lg:overflow-clip lg:rounded-[28px] lg:shadow-2xl xl:min-h-[calc(100vh-2rem)] xl:rounded-[32px]">
                 {/* Desktop rail */}
-                <aside className="border-sidebar-border bg-sidebar fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r px-3 py-5 lg:sticky lg:top-3 lg:flex lg:h-[calc(100vh-1.5rem)] lg:shrink-0 xl:top-4 xl:h-[calc(100vh-2rem)]">
-                    <Link href={route('dashboard')} className="px-2">
-                        <AppLogo tone="onDeep" />
-                    </Link>
-
-                    <Button asChild className="bg-lime text-lime-foreground hover:bg-lime/90 mt-6 h-11 rounded-xl text-sm font-semibold">
-                        <Link href={route('patungan.create')}>
-                            <Plus className="size-4" />
-                            Buat Patungan
+                {/*
+                    Two elements, not one, and the outer is the whole point.
+                    A sticky sidebar slides down its own column as the page
+                    scrolls, and whatever it uncovers shows the frame behind it
+                    - which is white. The column carries the dark background and
+                    stands the full height of the frame; only its contents stick.
+                */}
+                <div className="bg-sidebar border-sidebar-border hidden shrink-0 border-r lg:block lg:w-60">
+                    <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col px-3 py-5 lg:sticky lg:top-3 lg:flex lg:h-[calc(100vh-1.5rem)] xl:top-4 xl:h-[calc(100vh-2rem)]">
+                        <Link href={route('dashboard')} className="px-2">
+                            <AppLogo tone="onDeep" />
                         </Link>
-                    </Button>
 
-                    <nav className="mt-6 flex flex-1 flex-col gap-1">
-                        {primaryNav.map((link) => {
-                            const active = isActive(link, pathname);
+                        <Button asChild className="bg-lime text-lime-foreground hover:bg-lime/90 mt-6 h-11 rounded-xl text-sm font-semibold">
+                            <Link href={route('patungan.create')}>
+                                <Plus className="size-4" />
+                                Buat Patungan
+                            </Link>
+                        </Button>
 
-                            return (
+                        <nav className="mt-6 flex flex-1 flex-col gap-1">
+                            {primaryNav.map((link) => {
+                                const active = isActive(link, pathname);
+
+                                return (
+                                    <Link
+                                        key={link.href}
+                                        href={route(link.href)}
+                                        className={cn(
+                                            'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition',
+                                            active
+                                                ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                                                : 'text-sidebar-foreground hover:bg-sidebar-accent/50',
+                                        )}
+                                    >
+                                        <link.icon className="size-[18px]" />
+                                        {link.label}
+                                    </Link>
+                                );
+                            })}
+                        </nav>
+
+                        <div className="border-sidebar-border flex flex-col gap-1 border-t pt-3">
+                            {user?.is_admin && (
                                 <Link
-                                    key={link.href}
-                                    href={route(link.href)}
-                                    className={cn(
-                                        'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition',
-                                        active
-                                            ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                                            : 'text-sidebar-foreground hover:bg-sidebar-accent/50',
-                                    )}
+                                    href={route('admin.dashboard')}
+                                    className="text-sidebar-foreground hover:bg-sidebar-accent/50 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition"
                                 >
-                                    <link.icon className="size-[18px]" />
-                                    {link.label}
+                                    <ShieldCheck className="size-[18px]" />
+                                    Admin
                                 </Link>
-                            );
-                        })}
-                    </nav>
-
-                    <div className="border-sidebar-border flex flex-col gap-1 border-t pt-3">
-                        {user?.is_admin && (
+                            )}
                             <Link
-                                href={route('admin.dashboard')}
+                                href={route('profile.index')}
                                 className="text-sidebar-foreground hover:bg-sidebar-accent/50 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition"
                             >
-                                <ShieldCheck className="size-[18px]" />
-                                Admin
+                                <Settings className="size-[18px]" />
+                                Profil & pengaturan
                             </Link>
-                        )}
-                        <Link
-                            href={route('profile.index')}
-                            className="text-sidebar-foreground hover:bg-sidebar-accent/50 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition"
-                        >
-                            <Settings className="size-[18px]" />
-                            Profil & pengaturan
-                        </Link>
-                        <button
-                            type="button"
-                            onClick={() => router.post(route('logout'))}
-                            className="text-sidebar-foreground hover:bg-sidebar-accent/50 flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition"
-                        >
-                            <LogOut className="size-[18px]" />
-                            Keluar
-                        </button>
-                    </div>
-                </aside>
+                            <button
+                                type="button"
+                                onClick={() => router.post(route('logout'))}
+                                className="text-sidebar-foreground hover:bg-sidebar-accent/50 flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition"
+                            >
+                                <LogOut className="size-[18px]" />
+                                Keluar
+                            </button>
+                        </div>
+                    </aside>
+                </div>
 
                 <div className="min-w-0 flex-1">
                     {hero ? (
