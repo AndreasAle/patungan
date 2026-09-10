@@ -377,8 +377,9 @@
         position: relative;
         min-width: 0;
         overflow: hidden;
-        mask-image: linear-gradient(to right, transparent, black 7%, black 93%, transparent);
-        -webkit-mask-image: linear-gradient(to right, transparent, black 7%, black 93%, transparent);
+        border-radius: 9999px;
+        mask-image: linear-gradient(to right, transparent 0, black 2.5rem, black calc(100% - 2.5rem), transparent 100%);
+        -webkit-mask-image: linear-gradient(to right, transparent 0, black 2.5rem, black calc(100% - 2.5rem), transparent 100%);
     }
 
     .payment-logo-track {
@@ -398,7 +399,7 @@
         flex: none;
         align-items: center;
         gap: 0.5rem;
-        padding-right: 0.5rem;
+        padding-inline: 0.75rem;
     }
 
     .payment-logo-card {
