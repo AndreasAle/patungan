@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Contracts\PaymentGateway;
 use App\Enums\ParticipantStatus;
+use App\Enums\PayerZone;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Events\ParticipantPaid;
@@ -19,6 +20,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Throwable;
 
 class PaymentService
 {
@@ -38,12 +40,13 @@ class PaymentService
      * A unique index on payments.active_participant_id guarantees a participant
      * can hold only one PENDING invoice, even when two devices race.
      */
-    public function createForParticipant(PatunganParticipant $participant, ?string $visitorKey = null): Payment
+    public function createForParticipant(PatunganParticipant $participant, ?string $visitorKey = null, ?PayerZone $zone = null): Payment
     {
         $gateway = $this->gateways->default();
         $participant->loadMissing('patungan');
 
         $payment = $this->reserveInvoice($participant, $gateway);
+        $this->rememberZone($payment, $zone);
 
         if ($payment->gateway_transaction_id !== null) {
             // An existing, still-valid invoice was reused.
@@ -217,6 +220,29 @@ class PaymentService
      * Creates the PENDING row that reserves the participant's single invoice slot,
      * or returns the still-valid invoice they already have.
      */
+    /**
+     * Files the payer's time zone against the invoice, once.
+     *
+     * Written only while it is still empty. A payer who reopens a pending
+     * invoice from a laptop in a different zone should not rewrite where the
+     * payment came from, and a browser that reports nothing on the second visit
+     * must not erase what the first one told us.
+     *
+     * Never throws. This is a chart, and a chart is not worth a failed payment.
+     */
+    private function rememberZone(Payment $payment, ?PayerZone $zone): void
+    {
+        if ($zone === null || $payment->payer_zone !== null) {
+            return;
+        }
+
+        try {
+            $payment->forceFill(['payer_zone' => $zone->value])->save();
+        } catch (Throwable $e) {
+            Log::warning('Could not record payer zone', ['payment' => $payment->id, 'error' => $e->getMessage()]);
+        }
+    }
+
     private function reserveInvoice(PatunganParticipant $participant, PaymentGateway $gateway): Payment
     {
         return DB::transaction(function () use ($participant, $gateway): Payment {

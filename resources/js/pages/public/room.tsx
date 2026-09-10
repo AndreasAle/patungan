@@ -35,6 +35,22 @@ interface RoomProps {
 
 const POLL_INTERVAL = 8000;
 
+/**
+ * The payer's IANA timezone, e.g. "Asia/Makassar".
+ *
+ * Wrapped because Intl is missing on a handful of old in-app browsers and
+ * throws rather than returning undefined. Nobody should lose a payment over a
+ * statistic, so anything unexpected becomes undefined and the server records
+ * no zone at all.
+ */
+function browserTimezone(): string | undefined {
+    try {
+        return Intl.DateTimeFormat().resolvedOptions().timeZone || undefined;
+    } catch {
+        return undefined;
+    }
+}
+
 export default function PrivateRoom({ patungan, fee_bearer }: RoomProps) {
     const participant = patungan.participant;
     const [now, setNow] = useState(() => Date.now());
@@ -75,7 +91,10 @@ export default function PrivateRoom({ patungan, fee_bearer }: RoomProps) {
 
         router.post(
             route('public.payment.store', [patungan.public_token, participant.uuid]),
-            {},
+            // Coarse geography for the organizer's dashboard, and the only
+            // location signal we take. Not a coordinate, not an address, and
+            // the server throws it away unless it names an actual timezone.
+            { tz: browserTimezone() },
             { onStart: () => setPaying(true), onFinish: () => setPaying(false) },
         );
     };

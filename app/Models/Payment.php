@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PayerZone;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Models\Concerns\HasUuid;
@@ -23,6 +24,7 @@ class Payment extends Model
         return [
             'status' => PaymentStatus::class,
             'payment_method' => PaymentMethod::class,
+            'payer_zone' => PayerZone::class,
             'amount' => 'integer',
             'service_fee' => 'integer',
             'charged_amount' => 'integer',

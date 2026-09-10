@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Enums\LedgerType;
 use App\Enums\ParticipantStatus;
 use App\Enums\PatunganStatus;
+use App\Enums\PayerZone;
+use App\Enums\PaymentStatus;
 use App\Models\Patungan;
 use App\Models\PatunganParticipant;
+use App\Models\Payment;
 use App\Models\User;
 use App\Models\WalletLedger;
 use App\Services\LedgerService;
@@ -50,6 +53,7 @@ class DashboardController extends Controller
                 'paid_out' => $this->ledger->totalPaidOut($user),
             ],
             'stats' => $this->stats($user),
+            'zones' => $this->zones($user),
             'active' => $active->map(fn (Patungan $p) => $this->presenter->card($p))->all(),
             'history' => $history->map(fn (Patungan $p) => $this->presenter->card($p))->all(),
             'notifications' => $user->unreadNotifications()->limit(5)->get()
@@ -86,6 +90,54 @@ class DashboardController extends Controller
                 ->where('created_at', '>=', now()->startOfMonth())
                 ->sum('amount'),
         ];
+    }
+
+    /**
+     * Where the organizer's money actually came from, by time zone.
+     *
+     * Counts settled payments only - a pending invoice is somebody who opened a
+     * QR code, not somebody who paid, and mixing the two would overstate every
+     * region that abandons checkout most.
+     *
+     * `unknown` is reported rather than hidden. Every payment taken before this
+     * column existed has no zone, and so does every payer whose browser would
+     * not say. Folding those into WIB because it is the biggest bucket would
+     * turn a gap in the data into a confident wrong answer.
+     *
+     * @return array{total: int, known: int, unknown: int, rows: list<array{zone: string, label: string, islands: string, count: int, amount: int, share: float}>}
+     */
+    private function zones(User $user): array
+    {
+        $rows = Payment::query()
+            ->where('organizer_id', $user->id)
+            ->where('status', PaymentStatus::Paid->value)
+            ->selectRaw('payer_zone, COUNT(*) as payments, SUM(amount) as amount')
+            ->groupBy('payer_zone')
+            ->get();
+
+        $total = (int) $rows->sum('payments');
+        $unknown = (int) $rows->firstWhere('payer_zone', null)?->payments;
+        $known = $total - $unknown;
+
+        $breakdown = [];
+
+        foreach ([...PayerZone::indonesian(), PayerZone::Overseas] as $zone) {
+            $row = $rows->firstWhere('payer_zone', $zone->value);
+            $count = (int) ($row->payments ?? 0);
+
+            $breakdown[] = [
+                'zone' => $zone->value,
+                'label' => $zone->label(),
+                'islands' => $zone->islands(),
+                'count' => $count,
+                'amount' => (int) ($row->amount ?? 0),
+                // Share of payments we can place, not of all payments. Dividing
+                // by the total would shrink every slice by the size of the gap.
+                'share' => $known > 0 ? round($count / $known * 100, 1) : 0.0,
+            ];
+        }
+
+        return ['total' => $total, 'known' => $known, 'unknown' => $unknown, 'rows' => $breakdown];
     }
 
     /** A fresh query each time, so callers can add to it without clashing. */

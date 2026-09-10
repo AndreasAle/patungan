@@ -1,10 +1,12 @@
 import { BalanceHero } from '@/components/patungan/balance-hero';
+import { CommunityBanner } from '@/components/patungan/community-banner';
 import { EmptyState } from '@/components/patungan/empty-state';
 import { PatunganCard } from '@/components/patungan/patungan-card';
 import { QuickActions } from '@/components/patungan/quick-actions';
 import { SectionHeading } from '@/components/patungan/section-heading';
 import { SummaryStrip } from '@/components/patungan/summary-strip';
 import { WelcomeDialog } from '@/components/patungan/welcome-dialog';
+import { ZoneMap, type ZoneBreakdown } from '@/components/patungan/zone-map';
 import { Button } from '@/components/ui/button';
 import PatunganLayout from '@/layouts/patungan-layout';
 import { formatDateTime, rupiah } from '@/lib/format';
@@ -25,9 +27,10 @@ interface DashboardProps {
     active: PatunganCardData[];
     history: PatunganCardData[];
     notifications: NotificationItem[];
+    zones: ZoneBreakdown;
 }
 
-export default function Dashboard({ balance, stats, active, history, notifications }: DashboardProps) {
+export default function Dashboard({ balance, stats, active, history, notifications, zones }: DashboardProps) {
     const user = usePage<SharedData>().props.auth.user;
 
     return (
@@ -83,12 +86,14 @@ export default function Dashboard({ balance, stats, active, history, notificatio
                             </div>
                         </section>
                     )}
+                    <ZoneMap className="mt-9" breakdown={zones} />
                 </div>
 
                 <aside className="min-w-0 space-y-4">
                     <ActivityPanel notifications={notifications} />
                     {/* The hero already carries all three figures on a phone. */}
                     <WalletPanel className="hidden lg:block" balance={balance} />
+                    <CommunityBanner href={route('home')} members={`${zones.total > 0 ? zones.total : 200}+ pengguna`} />
                 </aside>
             </div>
         </PatunganLayout>

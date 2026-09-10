@@ -10,6 +10,7 @@ use App\Payments\PaymentGatewayException;
 use App\Services\Analytics;
 use App\Services\PaymentService;
 use App\Support\PatunganPresenter;
+use App\Support\PayerZoneResolver;
 use App\Support\RoomAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -23,6 +24,7 @@ class PublicPaymentController extends Controller
         private readonly PaymentService $payments,
         private readonly PatunganPresenter $presenter,
         private readonly Analytics $analytics,
+        private readonly PayerZoneResolver $zones,
     ) {}
 
     /**
@@ -45,8 +47,18 @@ class PublicPaymentController extends Controller
             visitorKey: $request->ip(),
         );
 
+        /*
+         * The timezone is a hint from the payer's browser and is treated as
+         * such: validated for shape, resolved to one of four coarse buckets,
+         * and dropped entirely if it is anything else. It never reaches the
+         * gateway and never affects the amount.
+         */
+        $zone = $this->zones->fromTimezone(
+            is_string($request->input('tz')) ? $request->string('tz')->toString() : null,
+        );
+
         try {
-            $payment = $this->payments->createForParticipant($participant, $request->ip());
+            $payment = $this->payments->createForParticipant($participant, $request->ip(), $zone);
         } catch (PaymentGatewayException $e) {
             return back()->with('error', $e->getMessage());
         }
