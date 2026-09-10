@@ -1,9 +1,13 @@
+import { BalanceCard } from '@/components/patungan/balance-card';
 import { BalanceHero } from '@/components/patungan/balance-hero';
+import { ChaseList, type ChaseRow } from '@/components/patungan/chase-list';
+import { CollectionGauge, type Collection } from '@/components/patungan/collection-gauge';
 import { CommunityBanner } from '@/components/patungan/community-banner';
 import { EmptyState } from '@/components/patungan/empty-state';
 import { PatunganCard } from '@/components/patungan/patungan-card';
 import { QuickActions } from '@/components/patungan/quick-actions';
 import { SectionHeading } from '@/components/patungan/section-heading';
+import { StatCard, type MetricSeries } from '@/components/patungan/stat-card';
 import { SummaryStrip } from '@/components/patungan/summary-strip';
 import { WelcomeDialog } from '@/components/patungan/welcome-dialog';
 import { ZoneMap, type ZoneBreakdown } from '@/components/patungan/zone-map';
@@ -13,12 +17,20 @@ import { formatDateTime, rupiah } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import type { Balance, DashboardStats, PatunganCard as PatunganCardData, SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowUpRight, Bell, Wallet } from 'lucide-react';
+import { ArrowUpRight, Bell, CircleCheck, Plus, TrendingUp, Wallet } from 'lucide-react';
 
 interface NotificationItem {
     id: string;
     data: { title?: string; body?: string };
     created_at: string;
+}
+
+interface Metrics {
+    collected: MetricSeries;
+    settled: MetricSeries;
+    created: MetricSeries;
+    collection: Collection;
+    chase: ChaseRow[];
 }
 
 interface DashboardProps {
@@ -28,24 +40,75 @@ interface DashboardProps {
     history: PatunganCardData[];
     notifications: NotificationItem[];
     zones: ZoneBreakdown;
+    metrics: Metrics;
 }
 
-export default function Dashboard({ balance, stats, active, history, notifications, zones }: DashboardProps) {
+export default function Dashboard({ balance, stats, active, history, notifications, zones, metrics }: DashboardProps) {
     const user = usePage<SharedData>().props.auth.user;
 
     return (
-        <PatunganLayout wide title="Home" hero={<BalanceHero name={user?.name ?? ''} balance={balance} unreadCount={notifications.length} />}>
+        <PatunganLayout
+            wide
+            heroMobileOnly
+            title="Home"
+            hero={<BalanceHero name={user?.name ?? ''} balance={balance} unreadCount={notifications.length} />}
+        >
             <Head title="Dashboard" />
             <WelcomeDialog />
 
-            <SummaryStrip stats={stats} />
+            {/* Desktop gets a title row instead of the green panel; the panel is
+                a phone pattern, and on a wide screen it spends a third of the
+                fold on one number. */}
+            <div className="hidden items-end justify-between gap-4 lg:flex">
+                <div>
+                    <p className="text-muted-foreground text-[11px] font-bold tracking-[0.14em] uppercase">Selamat datang, {user?.name}</p>
+                    <h1 className="display mt-2 text-3xl">Dashboard</h1>
+                </div>
 
-            <div className="mt-4">
-                <QuickActions />
+                <Button asChild className="h-11 rounded-full px-6 text-sm font-semibold">
+                    <Link href={route('patungan.create')}>
+                        <Plus className="size-4" />
+                        Buat Patungan
+                    </Link>
+                </Button>
             </div>
 
-            {/* The list carries the page; the aside holds what you only glance at. */}
-            <div className="mt-9 grid gap-9 lg:grid-cols-[minmax(0,1fr)_19rem] lg:gap-10 xl:grid-cols-[minmax(0,1fr)_22rem]">
+            {/* The phone keeps the compact strip; the three stat cards below
+                carry the same figures with their history on desktop. */}
+            <div className="lg:hidden">
+                <SummaryStrip stats={stats} />
+
+                <div className="mt-4">
+                    <QuickActions />
+                </div>
+            </div>
+
+            <div className="mt-0 hidden gap-4 lg:mt-7 lg:grid lg:grid-cols-3">
+                <StatCard icon={TrendingUp} label="Masuk bulan ini" value={rupiah(metrics.collected.value)} metric={metrics.collected} />
+                <StatCard icon={CircleCheck} label="Peserta lunas" value={`${metrics.settled.value}`} suffix="orang" metric={metrics.settled} />
+                <StatCard
+                    icon={Wallet}
+                    label="Patungan dibuat"
+                    value={`${metrics.created.value}`}
+                    suffix={`bulan ini · ${stats.active_count} aktif`}
+                    metric={metrics.created}
+                />
+            </div>
+
+            {/* Gauge, chase list and map: the three things worth looking at
+                before scrolling to the patungan themselves. */}
+            <div className="mt-5 grid gap-4 lg:mt-4 lg:grid-cols-2 xl:grid-cols-[19rem_minmax(0,1fr)_minmax(0,1.15fr)]">
+                <CollectionGauge collection={metrics.collection} />
+                <ChaseList rows={metrics.chase} />
+                <ZoneMap className="lg:col-span-2 xl:col-span-1" breakdown={zones} />
+            </div>
+
+            <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+                <BalanceCard className="hidden lg:block" balance={balance} />
+                <CommunityBanner href={route('home')} members={`${zones.total > 0 ? zones.total : 200}+ pengguna`} />
+            </div>
+
+            <div className="mt-9 grid gap-9 lg:grid-cols-[minmax(0,1fr)_19rem] lg:gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
                 <div className="min-w-0">
                     <section>
                         <SectionHeading
@@ -86,14 +149,12 @@ export default function Dashboard({ balance, stats, active, history, notificatio
                             </div>
                         </section>
                     )}
-                    <ZoneMap className="mt-9" breakdown={zones} />
                 </div>
 
                 <aside className="min-w-0 space-y-4">
                     <ActivityPanel notifications={notifications} />
                     {/* The hero already carries all three figures on a phone. */}
                     <WalletPanel className="hidden lg:block" balance={balance} />
-                    <CommunityBanner href={route('home')} members={`${zones.total > 0 ? zones.total : 200}+ pengguna`} />
                 </aside>
             </div>
         </PatunganLayout>

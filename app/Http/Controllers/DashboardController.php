@@ -13,6 +13,7 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Models\WalletLedger;
 use App\Services\LedgerService;
+use App\Support\DashboardMetrics;
 use App\Support\PatunganPresenter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -27,6 +28,7 @@ class DashboardController extends Controller
     public function __construct(
         private readonly LedgerService $ledger,
         private readonly PatunganPresenter $presenter,
+        private readonly DashboardMetrics $metrics,
     ) {}
 
     public function __invoke(Request $request): Response
@@ -53,6 +55,13 @@ class DashboardController extends Controller
                 'paid_out' => $this->ledger->totalPaidOut($user),
             ],
             'stats' => $this->stats($user),
+            'metrics' => [
+                'collected' => $this->metrics->collected($user),
+                'settled' => $this->metrics->settled($user),
+                'created' => $this->metrics->created($user),
+                'collection' => $this->metrics->collection($user),
+                'chase' => $this->metrics->chase($user),
+            ],
             'zones' => $this->zones($user),
             'active' => $active->map(fn (Patungan $p) => $this->presenter->card($p))->all(),
             'history' => $history->map(fn (Patungan $p) => $this->presenter->card($p))->all(),
