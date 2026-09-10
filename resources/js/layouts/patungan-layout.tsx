@@ -53,8 +53,13 @@ export default function PatunganLayout({ children, title, back, action, hero, wi
      * On a 1920px screen the old 1152px column left 500px of empty margin on
      * either side while the content below it stayed cramped. A finance screen
      * should use the width it is given.
+     *
+     * The cap keeps climbing past xl because people run wide monitors at 90%
+     * zoom, which hands the page 2100+ CSS pixels - a single cap tuned for 1920
+     * leaves half a column of nothing there. It is still a cap and not a plain
+     * full width: past roughly 1600px a row of text stops being readable.
      */
-    const measure = wide ? 'max-w-6xl xl:max-w-[84rem]' : 'max-w-4xl xl:max-w-5xl';
+    const measure = wide ? 'max-w-6xl xl:max-w-[84rem] 2xl:max-w-[100rem]' : 'max-w-4xl xl:max-w-5xl 2xl:max-w-6xl';
 
     return (
         <div className="bg-background min-h-screen">
