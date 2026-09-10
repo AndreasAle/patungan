@@ -30,7 +30,7 @@ class PatunganManagementTest extends TestCase
 
         $patungan = Patungan::query()->firstOrFail();
 
-        $response->assertRedirect(route('patungan.show', $patungan));
+        $response->assertRedirect(route('patungan.created', $patungan));
 
         $this->assertSame('Badminton Minggu Malam', $patungan->title);
         $this->assertSame(8, $patungan->participant_count);

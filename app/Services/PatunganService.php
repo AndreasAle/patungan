@@ -25,6 +25,54 @@ class PatunganService
     /**
      * @param  array{title: string, description?: ?string, category: string, split_type: string, equal_amount?: ?int, event_date?: ?string, expires_at?: ?string, name_privacy?: ?string, privacy_mode?: ?string, participants: array<int, array{name: string, amount?: ?int, note?: ?string}>}  $data
      */
+    /**
+     * Starts a fresh patungan from a finished one.
+     *
+     * This is the retention feature: the same futsal group splits the same
+     * court fee every week, and re-typing eight names every time is what makes
+     * people stop bothering.
+     *
+     * What carries over is only what describes the arrangement - title,
+     * category, split, who is in the group and what each of them owes. What
+     * does not carry over is everything that records money having moved:
+     * payments, paid flags, ledger entries, settlements, invoice numbers,
+     * gateway references, timestamps. A copied paid flag would show an
+     * organizer money they never received, which is the single worst thing this
+     * feature could do, so the new participants are built from names and
+     * amounts alone rather than by cloning rows.
+     *
+     * A brand new public token is issued as well. Reusing the old one would
+     * mean last week's WhatsApp message silently starts collecting for this
+     * week's patungan.
+     */
+    public function repeat(Patungan $original, ?string $title = null): Patungan
+    {
+        $original->loadMissing('participants');
+
+        return $this->create($original->organizer, [
+            'title' => $title ?: $original->title,
+            'description' => $original->description,
+            'category' => $original->category->value,
+            'split_type' => $original->split_type->value,
+            'equal_amount' => $original->equal_amount,
+            'name_privacy' => $original->name_privacy->value,
+            'privacy_mode' => $original->privacy_mode->value,
+            /*
+             * Deliberately not copied: event_date and expires_at. A repeat is a
+             * new occasion, and inheriting last week's deadline would produce a
+             * patungan that has already expired the moment it is created.
+             */
+            'participants' => $original->participants
+                ->map(fn (PatunganParticipant $participant): array => [
+                    'name' => $participant->name,
+                    'note' => $participant->note,
+                    'amount' => (int) $participant->amount_due,
+                ])
+                ->values()
+                ->all(),
+        ]);
+    }
+
     public function create(User $organizer, array $data): Patungan
     {
         $splitType = SplitType::from($data['split_type']);

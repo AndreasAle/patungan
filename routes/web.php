@@ -15,8 +15,11 @@ use App\Http\Controllers\PayoutDestinationController;
 use App\Http\Controllers\ProfileHubController;
 use App\Http\Controllers\Public\InvoiceController;
 use App\Http\Controllers\Public\PublicPatunganController;
+use App\Http\Controllers\Public\PersonalPaymentController;
 use App\Http\Controllers\Public\PublicPaymentController;
+use App\Http\Controllers\Public\ShareImageController;
 use App\Http\Controllers\Public\RoomAccessController;
+use App\Http\Controllers\ShareController;
 use App\Http\Controllers\SupportMessageController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\Webhooks\PaymentWebhookController;
@@ -72,6 +75,20 @@ Route::prefix('p/{token}')->name('public.')->group(function () {
 
     Route::get('invoice/{participant}', [InvoiceController::class, 'show'])->name('invoice.show');
 
+    /*
+     | A participant's own payment link, sent to one person over WhatsApp.
+     | Throttled harder than the group page: the token is the only thing
+     | protecting it, so an attempt to walk the space should be slow.
+     */
+    Route::get('pay/{payToken}', [PersonalPaymentController::class, 'show'])
+        ->middleware('throttle:30,1')
+        ->name('payment.personal');
+
+    // The Open Graph image WhatsApp fetches when the link is pasted.
+    Route::get('share.png', [ShareImageController::class, 'show'])
+        ->middleware('throttle:60,1')
+        ->name('patungan.share-image');
+
     Route::get('pembayaran/{payment}', [PublicPaymentController::class, 'show'])->name('payment.show');
     Route::get('pembayaran/{payment}/status', [PublicPaymentController::class, 'status'])
         ->middleware('throttle:120,1')
@@ -90,6 +107,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('patungan', [PatunganController::class, 'index'])->name('patungan.index');
     Route::get('patungan/{patungan}', [PatunganController::class, 'show'])->name('patungan.show');
+    // The screen shown straight after creating, whose only job is sharing.
+    Route::get('patungan/{patungan}/berhasil', [PatunganController::class, 'created'])->name('patungan.created');
+
+    // Composing a message is not sending one: these only ever return text.
+    Route::post('patungan/{patungan}/peserta/{participant}/tagih', [ShareController::class, 'personalReminder'])
+        ->middleware('throttle:60,1')
+        ->name('share.personal');
+    Route::post('patungan/{patungan}/bagikan', [ShareController::class, 'record'])
+        ->middleware('throttle:120,1')
+        ->name('share.record');
 
     Route::get('pencairan', [PayoutController::class, 'index'])->name('payout.index');
     Route::get('pencairan/tujuan', [PayoutDestinationController::class, 'index'])->name('payout.destinations');
@@ -102,6 +129,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('patungan/{patungan}', [PatunganController::class, 'update'])->name('patungan.update');
         Route::post('patungan/{patungan}/tutup', [PatunganController::class, 'close'])->name('patungan.close');
         Route::post('patungan/{patungan}/buka', [PatunganController::class, 'reopen'])->name('patungan.reopen');
+        Route::post('patungan/{patungan}/ulang', [PatunganController::class, 'repeat'])->name('patungan.repeat');
 
         Route::post('patungan/{patungan}/peserta', [ParticipantController::class, 'store'])->name('participant.store');
         Route::patch('patungan/{patungan}/peserta/{participant}', [ParticipantController::class, 'update'])->name('participant.update');

@@ -1,10 +1,11 @@
 import { CategoryIcon } from '@/components/patungan/category-icon';
 import { ConfirmDialog } from '@/components/patungan/confirm-dialog';
 import { PasteNamesSheet } from '@/components/patungan/paste-names-sheet';
+import { PatunganActions, type ShareBundle } from '@/components/patungan/patungan-actions';
 import { ProgressBar } from '@/components/patungan/progress-bar';
 import { Eyebrow, PanelHeading } from '@/components/patungan/section-heading';
-import { SharePatungan } from '@/components/patungan/share-patungan';
 import { ShareRoomInvite } from '@/components/patungan/share-room-invite';
+import { ShareSheet } from '@/components/patungan/share-sheet';
 import { StatusBadge } from '@/components/patungan/status-badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +15,7 @@ import type { ParsedName } from '@/lib/parse-names';
 import { cn } from '@/lib/utils';
 import type { OrganizerParticipant, PatunganDetail } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { Check, ClipboardPaste, Clock, DoorClosed, Lock, LockOpen, Plus, ReceiptText, Settings2, Trash2 } from 'lucide-react';
+import { BellRing, Check, ClipboardPaste, Clock, DoorClosed, Lock, LockOpen, Plus, ReceiptText, Repeat2, Settings2, Trash2 } from 'lucide-react';
 import { useMemo, useState, type FormEvent } from 'react';
 
 type Filter = 'ALL' | 'PAID' | 'UNPAID';
@@ -22,7 +23,7 @@ type Filter = 'ALL' | 'PAID' | 'UNPAID';
 interface ShowProps {
     patungan: PatunganDetail;
     can: { manage: boolean; close: boolean };
-    share_message: string;
+    share: ShareBundle;
     organizer_name: string;
 }
 
@@ -32,13 +33,42 @@ const filters: [Filter, string][] = [
     ['UNPAID', 'Belum bayar'],
 ];
 
-export default function PatunganShow({ patungan, can, share_message, organizer_name }: ShowProps) {
+export default function PatunganShow({ patungan, can, share, organizer_name }: ShowProps) {
     const [filter, setFilter] = useState<Filter>('ALL');
     const [closing, setClosing] = useState(false);
     const [removing, setRemoving] = useState<OrganizerParticipant | null>(null);
     const [newName, setNewName] = useState('');
     const [addingParticipant, setAddingParticipant] = useState(false);
     const [pasting, setPasting] = useState(false);
+    const [personal, setPersonal] = useState<{ name: string; message: string } | null>(null);
+
+    /**
+     * Asks the server for this participant's own payment link.
+     *
+     * Fetched rather than shipped with the page because issuing the token is a
+     * side effect: a participant nobody ever chases never gets one, and a
+     * credential that was never minted cannot leak.
+     */
+    const chase = async (participant: OrganizerParticipant) => {
+        try {
+            const response = await fetch(route('share.personal', [patungan.uuid, participant.uuid]), {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-XSRF-TOKEN': decodeURIComponent(document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/)?.[1] ?? ''),
+                },
+                credentials: 'same-origin',
+            });
+
+            if (!response.ok) return;
+
+            const body = await response.json();
+            setPersonal({ name: body.participant, message: body.message });
+        } catch {
+            // A dropped connection: the organizer can tap again.
+        }
+    };
 
     const filtered = useMemo(() => {
         if (filter === 'PAID') return patungan.participants.filter((p) => p.status === 'PAID');
@@ -156,7 +186,7 @@ export default function PatunganShow({ patungan, can, share_message, organizer_n
                             </div>
                         </div>
                     ) : (
-                        <SharePatungan url={patungan.public_url} message={share_message} />
+                        <PatunganActions uuid={patungan.uuid} share={share} />
                     )}
                 </div>
 
@@ -189,6 +219,7 @@ export default function PatunganShow({ patungan, can, share_message, organizer_n
                         <ul className="mt-3 space-y-2">
                             {filtered.map((participant) => {
                                 const paid = participant.status === 'PAID';
+                                const remindable = share.remindable.includes(participant.uuid);
 
                                 return (
                                     <li
@@ -231,6 +262,18 @@ export default function PatunganShow({ patungan, can, share_message, organizer_n
                                                   )
                                                 : can.manage && (
                                                       <div className="flex shrink-0 items-center gap-1">
+                                                          {/* Chasing one person is the common case; marking
+                                                              them paid by hand is the exception. */}
+                                                          {remindable && (
+                                                              <button
+                                                                  type="button"
+                                                                  onClick={() => chase(participant)}
+                                                                  className="border-primary/30 text-primary hover:bg-brand-soft inline-flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-[11px] font-semibold transition"
+                                                              >
+                                                                  <BellRing className="size-3.5" />
+                                                                  Tagih
+                                                              </button>
+                                                          )}
                                                           <button
                                                               type="button"
                                                               onClick={() =>
@@ -298,6 +341,27 @@ export default function PatunganShow({ patungan, can, share_message, organizer_n
                         )}
                     </section>
 
+                    {/*
+                        Repeat is above the close/reopen row and looks like a
+                        primary action, because for a group that splits the same
+                        court fee every week this is the button they came for.
+                    */}
+                    {!isOpen && (
+                        <div className="border-border bg-card mt-6 rounded-3xl border p-4">
+                            <p className="text-sm font-bold tracking-tight">Patungan lagi?</p>
+                            <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+                                Bikin yang baru dengan peserta dan nominal yang sama. Pembayaran lama nggak ikut kebawa.
+                            </p>
+                            <Button
+                                className="mt-3.5 h-12 w-full rounded-2xl text-sm font-bold"
+                                onClick={() => router.post(route('patungan.repeat', patungan.uuid))}
+                            >
+                                <Repeat2 className="size-4" />
+                                Patungan Lagi
+                            </Button>
+                        </div>
+                    )}
+
                     {can.close && (
                         <div className="mt-6">
                             {isOpen ? (
@@ -349,6 +413,14 @@ export default function PatunganShow({ patungan, can, share_message, organizer_n
                         onFinish: () => setRemoving(null),
                     });
                 }}
+            />
+            {/* The personal reminder, previewed before it is sent like every
+                other message here. */}
+            <ShareSheet
+                open={personal !== null}
+                onClose={() => setPersonal(null)}
+                title={personal ? `Tagih ${personal.name}` : 'Tagih'}
+                message={personal?.message ?? null}
             />
         </PatunganLayout>
     );

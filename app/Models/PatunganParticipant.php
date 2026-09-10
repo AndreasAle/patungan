@@ -39,8 +39,71 @@ class PatunganParticipant extends Model
         ];
     }
 
-    /** Never serialise the room PIN or its lookup hash by accident. */
-    protected $hidden = ['access_pin', 'access_pin_lookup'];
+    /**
+     * Never serialise the room PIN, its lookup hash, or the personal pay token
+     * by accident.
+     *
+     * The pay token is the credential for one participant's bill. It has to
+     * reach exactly one person through a link the organizer sends, and it must
+     * not ride along inside any payload that lists participants - the public
+     * patungan page lists every one of them.
+     */
+    protected $hidden = ['access_pin', 'access_pin_lookup', 'pay_token'];
+
+    /**
+     * The personal payment token, created the first time it is needed.
+     *
+     * Generated lazily on purpose: most participants are never chased
+     * individually, and a token that was never issued cannot leak.
+     */
+    public function payToken(): string
+    {
+        if (filled($this->pay_token)) {
+            return $this->pay_token;
+        }
+
+        $token = static::generatePayToken();
+        $this->forceFill(['pay_token' => $token])->save();
+
+        return $token;
+    }
+
+    /** Replace a link that may have been forwarded or exposed. */
+    public function rotatePayToken(): string
+    {
+        $token = static::generatePayToken();
+        $this->forceFill(['pay_token' => $token])->save();
+
+        return $token;
+    }
+
+    /** Revoke the personal link without affecting the participant or payments. */
+    public function revokePayToken(): void
+    {
+        $this->forceFill(['pay_token' => null])->save();
+    }
+
+    /**
+     * 16 characters from an unambiguous upper-case alphabet.
+     *
+     * Roughly 80 bits of entropy from random_bytes, which is not guessable, and
+     * the alphabet drops the characters people misread when a link is typed by
+     * hand from a screenshot.
+     */
+    public static function generatePayToken(): string
+    {
+        $alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+
+        do {
+            $token = '';
+
+            for ($i = 0; $i < 16; $i++) {
+                $token .= $alphabet[random_int(0, strlen($alphabet) - 1)];
+            }
+        } while (static::query()->where('pay_token', $token)->exists());
+
+        return $token;
+    }
 
     public function hasInvoice(): bool
     {

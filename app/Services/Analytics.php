@@ -28,6 +28,28 @@ class Analytics
 
     public const PAYOUT_COMPLETED = 'payout_completed';
 
+    /*
+     * WhatsApp-first events. These exist to answer one question: is the group
+     * flow actually being used, or is everybody still living in the dashboard?
+     *
+     * None of them ever carries an amount, a phone number or a message body.
+     */
+    public const WHATSAPP_SHARE_CLICKED = 'whatsapp_share_clicked';
+
+    public const SHARE_LINK_COPIED = 'share_link_copied';
+
+    public const REMINDER_CLICKED = 'reminder_clicked';
+
+    public const PROGRESS_SHARED = 'progress_shared';
+
+    public const PERSONAL_REMINDER_CLICKED = 'personal_reminder_clicked';
+
+    public const PERSONAL_LINK_OPENED = 'personal_link_opened';
+
+    public const PAYMENT_STARTED = 'payment_started';
+
+    public const PATUNGAN_REPEATED = 'patungan_repeated';
+
     /** @param  array<string, mixed>  $properties */
     public function record(string $name, array $properties = [], ?int $userId = null, ?int $patunganId = null, ?int $paymentId = null, ?string $visitorKey = null): void
     {

@@ -10,6 +10,7 @@ use App\Payments\PaymentGatewayException;
 use App\Services\Analytics;
 use App\Services\PaymentService;
 use App\Support\PatunganPresenter;
+use App\Support\PatunganShareService;
 use App\Support\PayerZoneResolver;
 use App\Support\RoomAccess;
 use Illuminate\Http\JsonResponse;
@@ -25,6 +26,7 @@ class PublicPaymentController extends Controller
         private readonly PatunganPresenter $presenter,
         private readonly Analytics $analytics,
         private readonly PayerZoneResolver $zones,
+        private readonly PatunganShareService $share,
     ) {}
 
     /**
@@ -63,6 +65,14 @@ class PublicPaymentController extends Controller
             return back()->with('error', $e->getMessage());
         }
 
+        $this->analytics->record(
+            Analytics::PAYMENT_STARTED,
+            [],
+            patunganId: $patungan->id,
+            paymentId: $payment->id,
+            visitorKey: $request->ip(),
+        );
+
         return redirect()->route('public.payment.show', [
             'token' => $token,
             'payment' => $payment->uuid,
@@ -88,6 +98,7 @@ class PublicPaymentController extends Controller
                     : null,
             ],
             'payment' => $this->presenter->publicPayment($payment),
+            'success_message' => $this->share->paymentSuccess($patungan, $payment->participant),
         ]);
     }
 

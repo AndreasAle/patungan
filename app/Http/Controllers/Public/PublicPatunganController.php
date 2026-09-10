@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Patungan;
 use App\Services\Analytics;
 use App\Services\FeeCalculator;
+use App\Support\Money;
 use App\Support\PatunganPresenter;
 use App\Support\RoomAccess;
 use Illuminate\Http\JsonResponse;
@@ -43,7 +44,49 @@ class PublicPatunganController extends Controller
         return Inertia::render('public/patungan', [
             'patungan' => $this->presenter->publicView($patungan),
             'fee_bearer' => $this->fees->bearer(),
+            'meta' => $this->meta($patungan),
         ]);
+    }
+
+    /**
+     * What WhatsApp shows when this link is pasted into a group.
+     *
+     * Only the facts the group page already displays: the title, the per-person
+     * amount and how many have paid. No organizer name, no participant names -
+     * a link preview is rendered by whoever receives the message, including in
+     * groups the organizer never meant to reach.
+     *
+     * A private room gets a deliberately blank description. Its whole premise is
+     * that a vendor only ever learns about their own bill, and a preview
+     * announcing "3 of 12 have paid" would undo that from the outside.
+     *
+     * @return array<string, string>
+     */
+    private function meta(Patungan $patungan): array
+    {
+        $description = $patungan->isPrivateRoom()
+            ? 'Buka link untuk lihat tagihan kamu.'
+            : $this->publicDescription($patungan);
+
+        return [
+            'title' => $patungan->title,
+            'description' => $description,
+            'url' => $patungan->publicUrl(),
+            'image' => route('public.patungan.share-image', ['token' => $patungan->public_token]),
+        ];
+    }
+
+    private function publicDescription(Patungan $patungan): string
+    {
+        $parts = [];
+
+        if (filled($patungan->equal_amount)) {
+            $parts[] = Money::format((int) $patungan->equal_amount).'/orang';
+        }
+
+        $parts[] = $patungan->paid_participant_count.' dari '.$patungan->participant_count.' sudah bayar';
+
+        return implode(' • ', $parts);
     }
 
     /** Lightweight polling endpoint so the page can reflect payments as they land. */

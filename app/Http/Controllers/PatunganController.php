@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Enums\PatunganCategory;
-use App\Enums\SplitType;
 use App\Http\Requests\StorePatunganRequest;
 use App\Http\Requests\UpdatePatunganRequest;
 use App\Models\Patungan;
+use App\Services\Analytics;
 use App\Services\FeeCalculator;
 use App\Services\PatunganService;
-use App\Support\Money;
 use App\Support\PatunganPresenter;
+use App\Support\PatunganShareService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -22,6 +22,8 @@ class PatunganController extends Controller
         private readonly PatunganService $service,
         private readonly PatunganPresenter $presenter,
         private readonly FeeCalculator $fees,
+        private readonly PatunganShareService $share,
+        private readonly Analytics $analytics,
     ) {}
 
     public function index(Request $request): Response
@@ -55,9 +57,68 @@ class PatunganController extends Controller
     {
         $patungan = $this->service->create($request->user(), $request->validated());
 
-        return redirect()
-            ->route('patungan.show', $patungan)
-            ->with('success', 'Patungan berhasil dibuat. Tinggal bagikan linknya!');
+        /*
+         * Straight to the share screen, not the detail page. The next thing an
+         * organizer needs to do is put the link in a WhatsApp group; the
+         * administrative view is where they go later, if a problem comes up.
+         */
+        return redirect()->route('patungan.created', $patungan);
+    }
+
+    /**
+     * The screen between creating a patungan and sharing it.
+     *
+     * Deliberately almost empty: one headline figure and one dominant button.
+     */
+    public function created(Request $request, Patungan $patungan): Response
+    {
+        $this->authorize('view', $patungan);
+
+        $patungan->loadMissing('participants');
+
+        return Inertia::render('patungan/created', [
+            'patungan' => [
+                'uuid' => $patungan->uuid,
+                'title' => $patungan->title,
+                'category' => $patungan->category->value,
+                'category_label' => $patungan->category->label(),
+                'participant_count' => (int) $patungan->participant_count,
+                'equal_amount' => $patungan->equal_amount,
+                'target_amount' => (int) $patungan->target_amount,
+                'split_type' => $patungan->split_type->value,
+            ],
+            'share' => [
+                'public_url' => $this->share->publicUrl($patungan),
+                'invite' => $this->share->groupInvite($patungan),
+            ],
+        ]);
+    }
+
+    /**
+     * Creates this week's patungan from last week's.
+     *
+     * Only for one that is finished. Repeating a live patungan would leave two
+     * links collecting for the same thing, and the group would have no way to
+     * tell which one to use.
+     */
+    public function repeat(Request $request, Patungan $patungan): RedirectResponse
+    {
+        $this->authorize('view', $patungan);
+
+        if ($patungan->status->acceptsPayment()) {
+            return back()->with('error', 'Patungan ini masih jalan. Tutup dulu sebelum bikin yang baru.');
+        }
+
+        $fresh = $this->service->repeat($patungan);
+
+        $this->analytics->record(
+            Analytics::PATUNGAN_REPEATED,
+            ['from' => $patungan->uuid],
+            userId: $request->user()->id,
+            patunganId: $fresh->id,
+        );
+
+        return redirect()->route('patungan.created', $fresh);
     }
 
     public function show(Request $request, Patungan $patungan): Response
@@ -72,7 +133,17 @@ class PatunganController extends Controller
                 'manage' => $request->user()->can('manageParticipants', $patungan),
                 'close' => $request->user()->can('close', $patungan),
             ],
-            'share_message' => $this->shareMessage($patungan),
+            'share' => [
+                'public_url' => $this->share->publicUrl($patungan),
+                'invite' => $this->share->groupInvite($patungan),
+                'progress' => $this->share->progress($patungan),
+                // Null when everybody has paid, so the button can say so
+                // instead of composing a reminder addressed to nobody.
+                'reminder' => $this->share->unpaidReminder($patungan),
+                'remindable' => $this->share->remindable($patungan)
+                    ->map(fn ($participant) => $participant->uuid)
+                    ->all(),
+            ],
             'organizer_name' => $patungan->organizer->name,
         ]);
     }
@@ -123,22 +194,5 @@ class PatunganController extends Controller
             fn (PatunganCategory $category) => ['value' => $category->value, 'label' => $category->label()],
             PatunganCategory::cases(),
         );
-    }
-
-    private function shareMessage(Patungan $patungan): string
-    {
-        $amount = $patungan->split_type === SplitType::Equal && $patungan->equal_amount
-            ? 'Patungan '.Money::format($patungan->equal_amount).'/orang.'
-            : 'Nominal tiap orang beda-beda, cek di link ya.';
-
-        return implode("\n", [
-            $patungan->title,
-            $amount,
-            '',
-            'Bayarnya lewat link ini ya:',
-            $patungan->publicUrl(),
-            '',
-            'Tinggal buka link, pilih nama kamu, bayar QRIS. Nggak perlu login.',
-        ]);
     }
 }

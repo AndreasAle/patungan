@@ -1,25 +1,28 @@
 import { PaymentStatus } from '@/components/patungan/payment-status';
 import { QrCodeCard } from '@/components/patungan/qr-code-card';
+import { ShareSheet } from '@/components/patungan/share-sheet';
 import { Button } from '@/components/ui/button';
 import PublicLayout from '@/layouts/public-layout';
 import { countdown, rupiah } from '@/lib/format';
 import type { PublicPayment } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { Check, ReceiptText } from 'lucide-react';
+import { Check, ReceiptText, Share2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface PaymentPageProps {
     patungan: { title: string; public_token: string; category_label: string };
     participant: { name: string; invoice_url: string | null };
     payment: PublicPayment;
+    success_message: string;
 }
 
 const POLL_INTERVAL = 4000;
 
-export default function PublicPaymentPage({ patungan, participant, payment }: PaymentPageProps) {
+export default function PublicPaymentPage({ patungan, participant, payment, success_message }: PaymentPageProps) {
     const [status, setStatus] = useState(payment.status);
     const [invoiceUrl, setInvoiceUrl] = useState(participant.invoice_url);
     const [now, setNow] = useState(() => Date.now());
+    const [shareOpen, setShareOpen] = useState(false);
 
     /*
      * The success state comes from our own payment record, polled from the
@@ -75,25 +78,31 @@ export default function PublicPaymentPage({ patungan, participant, payment }: Pa
                     </span>
 
                     <h1 className="display text-brand-deep-foreground mt-5 text-lg">Pembayaran berhasil</h1>
-                    <p className="display text-brand-deep-foreground mt-3 text-[29px] tabular-nums sm:text-4xl">{rupiah(payment.charged_amount)}</p>
+                    <p className="display text-brand-deep-foreground mt-3 text-[29px] tabular-nums sm:text-4xl">{rupiah(payment.amount)}</p>
                     <p className="text-brand-deep-muted mt-2 text-xs">
                         {participant.name} · {patungan.title}
                     </p>
                 </div>
 
                 <div className="mt-4 space-y-2.5">
+                    <Button asChild className="h-12 w-full rounded-full text-sm font-semibold">
+                        <Link href={route('public.patungan.show', patungan.public_token)}>Kembali ke Patungan</Link>
+                    </Button>
                     {invoiceUrl && (
-                        <Button asChild className="h-12 w-full rounded-full text-sm font-semibold">
+                        <Button asChild variant="outline" className="h-12 w-full rounded-full text-sm font-semibold">
                             <Link href={invoiceUrl}>
                                 <ReceiptText className="size-4" />
                                 Lihat invoice
                             </Link>
                         </Button>
                     )}
-                    <Button asChild variant="outline" className="h-12 w-full rounded-full text-sm font-semibold">
-                        <Link href={route('public.patungan.show', patungan.public_token)}>Kembali ke patungan</Link>
+                    <Button variant="ghost" className="h-11 w-full rounded-full text-sm font-semibold" onClick={() => setShareOpen(true)}>
+                        <Share2 className="size-4" />
+                        Bagikan ke Grup
                     </Button>
                 </div>
+
+                <ShareSheet open={shareOpen} onClose={() => setShareOpen(false)} title="Bagikan ke grup" message={success_message} />
             </PublicLayout>
         );
     }
