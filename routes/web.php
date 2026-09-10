@@ -14,11 +14,11 @@ use App\Http\Controllers\PayoutController;
 use App\Http\Controllers\PayoutDestinationController;
 use App\Http\Controllers\ProfileHubController;
 use App\Http\Controllers\Public\InvoiceController;
-use App\Http\Controllers\Public\PublicPatunganController;
 use App\Http\Controllers\Public\PersonalPaymentController;
+use App\Http\Controllers\Public\PublicPatunganController;
 use App\Http\Controllers\Public\PublicPaymentController;
-use App\Http\Controllers\Public\ShareImageController;
 use App\Http\Controllers\Public\RoomAccessController;
+use App\Http\Controllers\Public\ShareImageController;
 use App\Http\Controllers\ShareController;
 use App\Http\Controllers\SupportMessageController;
 use App\Http\Controllers\TransactionController;
@@ -179,6 +179,14 @@ Route::post('webhooks/payments/{provider}', PaymentWebhookController::class)
     ->withoutMiddleware([ValidateCsrfToken::class])
     ->middleware('throttle:240,1')
     ->name('webhooks.payments');
+
+/*
+| Public landing page for DANA's Finish Redirect URL. It deliberately trusts
+| no query-string status; the signed webhook and status reconciliation remain
+| the only sources of truth for whether money moved.
+*/
+Route::get('payment/dana/finish', fn () => Inertia::render('public/dana-finish'))
+    ->name('public.payment.dana.finish');
 
 // Local-only helper that fires a signed sandbox notification.
 if (app()->environment(['local', 'testing'])) {

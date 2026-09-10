@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Webhooks;
 use App\Contracts\AcknowledgesWebhooks;
 use App\Http\Controllers\Controller;
 use App\Models\WebhookLog;
+use App\Payments\Dana\DanaGateway;
 use App\Payments\InboundWebhook;
 use App\Payments\PaymentGatewayManager;
 use App\Services\WebhookProcessor;
@@ -20,6 +21,21 @@ class PaymentWebhookController extends Controller
 
     public function __invoke(Request $request, string $provider): JsonResponse
     {
+        /*
+         * Reject obviously unauthenticated DANA traffic before constructing
+         * the driver. Besides being cheaper, this keeps a public health probe
+         * from turning a missing server credential into an opaque 500. A real
+         * DANA notification always carries both required headers and will still
+         * fail closed if the configured key cannot verify it.
+         */
+        if ($provider === DanaGateway::NAME
+            && (! $request->hasHeader('X-SIGNATURE') || ! $request->hasHeader('X-TIMESTAMP'))) {
+            return response()->json([
+                'responseCode' => '4015600',
+                'responseMessage' => 'Unauthorized',
+            ], 401);
+        }
+
         $gateway = $this->gateways->driver($provider);
 
         $log = $this->processor->handle($gateway, InboundWebhook::fromRequest($request));

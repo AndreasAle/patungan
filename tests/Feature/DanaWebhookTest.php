@@ -71,6 +71,30 @@ class DanaWebhookTest extends TestCase
         return app(PaymentService::class)->createForParticipant($patungan->participants->first());
     }
 
+    public function test_an_unsigned_probe_is_rejected_without_loading_dana_credentials(): void
+    {
+        config()->set([
+            'dana.partner_id' => null,
+            'dana.base_url' => null,
+            'dana.private_key_path' => null,
+        ]);
+
+        $this->notify([], [])
+            ->assertUnauthorized()
+            ->assertJson([
+                'responseCode' => '4015600',
+                'responseMessage' => 'Unauthorized',
+            ]);
+    }
+
+    public function test_the_finish_redirect_page_is_public_and_does_not_claim_payment_succeeded(): void
+    {
+        $this->get(route('public.payment.dana.finish'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('public/dana-finish'))
+            ->assertDontSee('Pembayaran berhasil', false);
+    }
+
     public function test_a_signed_notification_settles_the_payment(): void
     {
         $payment = $this->pendingPayment();
