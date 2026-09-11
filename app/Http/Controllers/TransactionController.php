@@ -2,23 +2,39 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\LedgerDirection;
 use App\Models\WalletLedger;
+use App\Services\LedgerService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class TransactionController extends Controller
 {
+    public function __construct(private readonly LedgerService $ledger) {}
+
     public function __invoke(Request $request): Response
     {
+        $user = $request->user();
         $entries = WalletLedger::query()
-            ->where('user_id', $request->user()->id)
+            ->where('user_id', $user->id)
             ->with(['patungan:id,uuid,title'])
             ->latest('id')
             ->paginate(25)
             ->withQueryString();
 
+        $totals = WalletLedger::query()
+            ->where('user_id', $user->id)
+            ->selectRaw('direction, COALESCE(SUM(amount), 0) as total')
+            ->groupBy('direction')
+            ->pluck('total', 'direction');
+
         return Inertia::render('transaksi', [
+            'summary' => [
+                'balance' => $this->ledger->availableBalance($user),
+                'incoming' => (int) ($totals[LedgerDirection::Credit->value] ?? 0),
+                'outgoing' => (int) ($totals[LedgerDirection::Debit->value] ?? 0),
+            ],
             'entries' => [
                 'data' => collect($entries->items())->map(fn (WalletLedger $entry) => [
                     'uuid' => $entry->uuid,
