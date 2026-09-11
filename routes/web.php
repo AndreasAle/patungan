@@ -180,6 +180,13 @@ Route::post('webhooks/payments/{provider}', PaymentWebhookController::class)
     ->middleware('throttle:240,1')
     ->name('webhooks.payments');
 
+/* Standard SNAP/ASPI Finish Notify path used by DANA's QRIS UAT verifier. */
+Route::post('v1.0/debit/notify', PaymentWebhookController::class)
+    ->defaults('provider', 'dana')
+    ->withoutMiddleware([ValidateCsrfToken::class])
+    ->middleware('throttle:240,1')
+    ->name('webhooks.dana.notify');
+
 /*
 | Public landing page for DANA's Finish Redirect URL. It deliberately trusts
 | no query-string status; the signed webhook and status reconciliation remain

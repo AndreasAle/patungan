@@ -25,7 +25,7 @@ trait UsesDana
 
     protected string $danaBaseUrl = 'https://api-sandbox.dana.id';
 
-    protected string $danaNotificationPath = '/webhooks/payments/dana';
+    protected string $danaNotificationPath = '/v1.0/debit/notify';
 
     /** Our key pair: the private key signs the requests we send. */
     protected array $ourDanaKeys;

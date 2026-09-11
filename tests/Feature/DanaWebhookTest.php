@@ -43,7 +43,7 @@ class DanaWebhookTest extends TestCase
     {
         return $this->call(
             'POST',
-            route('webhooks.payments', 'dana'),
+            route('webhooks.dana.notify'),
             [],
             [],
             [],
