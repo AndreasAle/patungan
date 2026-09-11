@@ -211,7 +211,44 @@ class DanaUat extends Command
         $this->newLine();
         $this->line('<fg=gray>--- RESPONSE (HTTP '.$exchange['http_status'].') -------------------------------</>');
         $this->line($this->pretty((string) $exchange['response_body']));
+
+        $this->newLine();
+        $this->line('<fg=gray>--- CURL ------------------------------------------------------</>');
+        $this->line($this->curl($exchange));
         $this->line('<fg=gray>---------------------------------------------------------------</>');
+        $this->line('<fg=gray>Note: X-SIGNATURE is bound to X-TIMESTAMP. Re-running this curl</>');
+        $this->line('<fg=gray>later reproduces the request but the signature will be stale.</>');
+    }
+
+    /**
+     * The same request as a curl command, which is what a provider's support
+     * team asks for when they want to replay it on their side.
+     *
+     * The signature is not regenerated here and cannot be: it covers the
+     * timestamp in the header, so this reproduces one specific request rather
+     * than being a tool for making new ones.
+     *
+     * @param  array<string, mixed>  $exchange
+     */
+    private function curl(array $exchange): string
+    {
+        $lines = ["curl -i -X POST '".$exchange['url']."' \\"];
+        $lines[] = "  -H 'Content-Type: application/json' \\";
+        $lines[] = "  -H 'Accept: application/json' \\";
+
+        foreach ($exchange['headers'] as $name => $value) {
+            $lines[] = "  -H '".$name.': '.$this->shellSafe((string) $value)."' \\";
+        }
+
+        $lines[] = "  -d '".$this->shellSafe((string) $exchange['request_body'])."'";
+
+        return implode(PHP_EOL, $lines);
+    }
+
+    /** Closes a single-quoted shell string safely around any apostrophe. */
+    private function shellSafe(string $value): string
+    {
+        return str_replace("'", "'\''", $value);
     }
 
     /** Re-indents JSON for a human reading it in a chat window. */
