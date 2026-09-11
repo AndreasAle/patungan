@@ -39,8 +39,21 @@ const flowSteps = [
 
 function Phone({ children, dark = false }: { children: ReactNode; dark?: boolean }) {
     return (
-        <div className="relative mx-auto w-full max-w-[17rem] rounded-[2.5rem] bg-[#091612] p-[7px] shadow-[0_30px_80px_rgba(0,0,0,0.28)] ring-1 ring-white/15">
-            <div className={cn('relative h-[34rem] overflow-hidden rounded-[2.05rem]', dark ? 'bg-[#101413]' : 'bg-[#f3f7f5]')}>
+        <div className="relative mx-auto w-full max-w-[16rem] rounded-[2.25rem] bg-[#091612] p-[6px] shadow-[0_24px_60px_rgba(0,0,0,0.32)] ring-1 ring-white/15 sm:max-w-[17rem] sm:rounded-[2.5rem] sm:p-[7px]">
+            {/*
+                Shorter than it was, and the body is a flex column.
+                
+                At a fixed 34rem the shortest screen - the success step - ran out
+                of content two thirds of the way down and left a slab of empty
+                white inside the mockup, which read as a rendering bug rather
+                than as a phone.
+            */}
+            <div
+                className={cn(
+                    'relative flex h-[27.5rem] flex-col overflow-hidden rounded-[1.85rem] sm:h-[29rem] sm:rounded-[2.05rem]',
+                    dark ? 'bg-[#101413]' : 'bg-[#f3f7f5]',
+                )}
+            >
                 <div className="absolute top-2 left-1/2 z-20 h-4 w-20 -translate-x-1/2 rounded-full bg-[#09100e]" />
                 <div
                     className={cn(
@@ -51,7 +64,7 @@ function Phone({ children, dark = false }: { children: ReactNode; dark?: boolean
                     <span>00.03</span>
                     <span className="tracking-widest">● ᯤ ▰</span>
                 </div>
-                {children}
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</div>
             </div>
         </div>
     );
@@ -143,7 +156,7 @@ function SplitScreen() {
 }
 
 function ParticipantScreen() {
-    const names = ['Vincen', 'Nopit', 'Nicogay', 'Sangkat', 'Iucu'];
+    const names = ['Vincen', 'Nopit', 'Nicogay'];
 
     return (
         <Phone>
@@ -177,8 +190,8 @@ function ParticipantScreen() {
 function ShareScreen() {
     return (
         <Phone>
-            <div className="bg-[#0a5b3f] px-4 py-3 text-[10px] font-bold text-white">✓ Berhasil dibuat</div>
-            <div className="p-3 text-center">
+            <div className="bg-[#0a5b3f] px-4 py-2.5 text-[10px] font-bold text-white">✓ Berhasil dibuat</div>
+            <div className="flex flex-1 flex-col justify-center p-3 text-center">
                 <span className="mx-auto mt-2 flex size-12 items-center justify-center rounded-2xl bg-[#dff7eb] text-[#08734e]">
                     <Check className="size-6" strokeWidth={3} />
                 </span>
@@ -373,7 +386,7 @@ export function RealFlow({ startHref }: { startHref: string }) {
                             data-step={index}
                             className="real-flow-card"
                         >
-                            <div className="mb-5 min-h-[7.25rem] px-1">
+                            <div className="mb-4 px-1 sm:mb-5 sm:min-h-[7.25rem]">
                                 <p className="text-lime text-[10px] font-bold tracking-[0.16em] uppercase">
                                     {String(index + 1).padStart(2, '0')} · {step.eyebrow}
                                 </p>
