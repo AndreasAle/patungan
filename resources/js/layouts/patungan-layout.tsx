@@ -81,7 +81,17 @@ export default function PatunganLayout({ children, title, back, action, hero, wi
         <div className="bg-background lg:bg-brand-deep min-h-screen lg:p-3 xl:p-4">
             <FlashToast />
 
-            <div className="lg:bg-background lg:shadow-brand-deep/40 lg:flex lg:min-h-[calc(100vh-1.5rem)] lg:overflow-clip lg:rounded-[28px] lg:shadow-2xl xl:min-h-[calc(100vh-2rem)] xl:rounded-[32px]">
+            {/*
+                The frame carries no background of its own.
+
+                It used to be light, and a dark sidebar sitting inside its
+                rounded corner let that light colour show along the curve as a
+                pale arc - the clip and the child's square corner do not
+                anti-alias to the same pixels. Each column paints its own
+                corner instead, so there is never a second colour underneath
+                one to leak through.
+            */}
+            <div className="lg:shadow-brand-deep/40 lg:flex lg:min-h-[calc(100vh-1.5rem)] lg:overflow-clip lg:rounded-[28px] lg:shadow-2xl xl:min-h-[calc(100vh-2rem)] xl:rounded-[32px]">
                 {/* Desktop rail */}
                 {/*
                     Two elements, not one, and the outer is the whole point.
@@ -90,7 +100,7 @@ export default function PatunganLayout({ children, title, back, action, hero, wi
                     - which is white. The column carries the dark background and
                     stands the full height of the frame; only its contents stick.
                 */}
-                <div className="bg-sidebar border-sidebar-border hidden shrink-0 border-r lg:block lg:w-60">
+                <div className="bg-sidebar border-sidebar-border hidden shrink-0 border-r lg:block lg:w-60 lg:rounded-l-[28px] xl:rounded-l-[32px]">
                     <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col px-3 py-5 lg:sticky lg:top-3 lg:flex lg:h-[calc(100vh-1.5rem)] xl:top-4 xl:h-[calc(100vh-2rem)]">
                         <Link href={route('dashboard')} className="px-2">
                             <AppLogo tone="onDeep" />
@@ -154,7 +164,7 @@ export default function PatunganLayout({ children, title, back, action, hero, wi
                     </aside>
                 </div>
 
-                <div className="min-w-0 flex-1">
+                <div className="lg:bg-background min-w-0 flex-1 lg:rounded-r-[28px] xl:rounded-r-[32px]">
                     {hero ? (
                         /* Deep green "money" panel; page content overlaps its lower edge. */
                         <header
