@@ -41,17 +41,21 @@ class DanaDoctor extends Command
         $this->components->twoColumnDetail('Environment', $credentials->production ? '<fg=yellow>production</>' : 'sandbox');
         $this->components->twoColumnDetail('Base URL', $credentials->baseUrl);
         $this->components->twoColumnDetail('Partner ID (Client ID)', $this->mask($credentials->partnerId));
-        $this->components->twoColumnDetail('Merchant ID', $credentials->hasMerchantId()
+        $merchantReady = $credentials->hasMerchantId();
+        $storeReady = $credentials->hasStoreId();
+        $this->components->twoColumnDetail('Merchant ID', $merchantReady
             ? $this->mask($credentials->merchantId())
             : '<fg=red>not set - no QR can be generated without it</>');
-        $this->components->twoColumnDetail('Store ID', $credentials->storeId ?? '<fg=yellow>not set</>');
+        $this->components->twoColumnDetail('Store ID', $storeReady
+            ? $credentials->storeId()
+            : '<fg=red>not set - Generate QRIS requires it</>');
         $this->components->twoColumnDetail('Sub merchant ID', $credentials->subMerchantId ?? 'not set (optional)');
         $this->components->twoColumnDetail('Channel ID', $credentials->channelId);
         $this->components->twoColumnDetail('Origin', $credentials->origin ?? '<fg=yellow>not set</>');
         $this->components->twoColumnDetail('Notification URL', $credentials->notificationUrl ?? '<fg=red>not set</>');
         $this->components->twoColumnDetail('Notification path (signed)', $credentials->notificationPath() ?? '<fg=red>unknown</>');
 
-        $ok = true;
+        $ok = $merchantReady && $storeReady;
         $ok = $this->checkPrivateKey($credentials) && $ok;
         $ok = $this->checkDanaPublicKey($credentials) && $ok;
 

@@ -50,7 +50,7 @@ final class DanaQrisService
         $body = array_filter([
             'merchantId' => $this->credentials->merchantId(),
             'subMerchantId' => $this->credentials->subMerchantId,
-            'storeId' => $this->credentials->storeId,
+            'storeId' => $this->credentials->storeId(),
             'partnerReferenceNo' => $request->reference,
             'amount' => [
                 'value' => DanaStatusMapper::rupiahToAmount($request->amount),

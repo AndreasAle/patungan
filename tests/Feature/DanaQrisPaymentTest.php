@@ -110,8 +110,20 @@ class DanaQrisPaymentTest extends TestCase
             // was priced at - never anything supplied by the browser.
             return $body['amount']['value'] === number_format((int) $payment->charged_amount, 2, '.', '')
                 && $body['amount']['currency'] === 'IDR'
-                && $body['merchantId'] === $this->danaMerchantId;
+                && $body['merchantId'] === $this->danaMerchantId
+                && $body['storeId'] === 'STORE-TEST-01';
         });
+    }
+
+    public function test_it_refuses_to_generate_qris_without_the_required_store_id(): void
+    {
+        config(['dana.store_id' => null]);
+        Http::fake();
+
+        $this->expectException(PaymentGatewayException::class);
+        $this->expectExceptionMessage('Pembayaran belum bisa dibuat');
+
+        $this->openInvoice();
     }
 
     public function test_the_partner_reference_fits_dana_s_twenty_five_character_limit(): void

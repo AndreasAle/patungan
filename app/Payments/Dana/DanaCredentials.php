@@ -123,6 +123,23 @@ final class DanaCredentials
         return filled($this->merchantId);
     }
 
+    /** Store identifier is mandatory on every Generate QRIS request. */
+    public function storeId(): string
+    {
+        if (blank($this->storeId)) {
+            throw new DanaAuthenticationException(context: [
+                'reason' => 'DANA_STORE_ID is not configured. Generate QRIS requires a stable store identifier.',
+            ]);
+        }
+
+        return $this->storeId;
+    }
+
+    public function hasStoreId(): bool
+    {
+        return filled($this->storeId);
+    }
+
     public function privateKey(): string
     {
         return $this->privateKey ??= $this->readKey($this->privateKeyPath, 'DANA_PRIVATE_KEY_PATH');
