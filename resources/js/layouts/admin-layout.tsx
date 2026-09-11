@@ -13,6 +13,7 @@ const tabs = [
     { label: 'Pencairan', href: 'admin.settlements', path: '/admin/settlements' },
     { label: 'Webhook', href: 'admin.webhooks', path: '/admin/webhooks' },
     { label: 'Bantuan', href: 'admin.support', path: '/admin/bantuan' },
+    { label: 'Jejak audit', href: 'admin.audit', path: '/admin/audit' },
 ];
 
 export default function AdminLayout({ children }: { children: ReactNode }) {

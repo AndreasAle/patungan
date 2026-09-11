@@ -6,6 +6,7 @@ use App\Enums\SettlementStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Settlement;
 use App\Services\SettlementService;
+use App\Support\AdminAudit;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -74,6 +75,24 @@ class AdminSettlementController extends Controller
             'fail' => $this->settlements->markFailed($settlement, $actor, SettlementStatus::Failed, $validated['reason']),
             'reject' => $this->settlements->markFailed($settlement, $actor, SettlementStatus::Rejected, $validated['reason']),
         };
+
+        /*
+         * Recorded after the change, not before: an audit line for something
+         * that then threw would be a record of an event that never happened.
+         */
+        AdminAudit::record(
+            $actor,
+            AdminAudit::SETTLEMENT_PROCESSED,
+            $settlement->refresh(),
+            $settlement->destination_account_reference,
+            [
+                'action' => $validated['action'],
+                'amount' => (int) $settlement->net_amount,
+                'provider_reference' => $validated['provider_reference'] ?? null,
+                'reason' => $validated['reason'] ?? null,
+            ],
+            $request->ip(),
+        );
 
         return back()->with('success', 'Status pencairan diperbarui.');
     }

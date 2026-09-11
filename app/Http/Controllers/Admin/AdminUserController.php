@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\LedgerService;
+use App\Support\AdminAudit;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -53,12 +54,28 @@ class AdminUserController extends Controller
 
         $user->forceFill(['suspended_at' => now()])->save();
 
+        AdminAudit::record(
+            $request->user(),
+            AdminAudit::USER_SUSPENDED,
+            $user,
+            $user->email,
+            ip: $request->ip(),
+        );
+
         return back()->with('success', $user->name.' dibekukan.');
     }
 
-    public function restore(User $user): RedirectResponse
+    public function restore(Request $request, User $user): RedirectResponse
     {
         $user->forceFill(['suspended_at' => null])->save();
+
+        AdminAudit::record(
+            $request->user(),
+            AdminAudit::USER_RESTORED,
+            $user,
+            $user->email,
+            ip: $request->ip(),
+        );
 
         return back()->with('success', $user->name.' diaktifkan lagi.');
     }

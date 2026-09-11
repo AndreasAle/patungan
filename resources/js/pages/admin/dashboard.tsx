@@ -1,3 +1,4 @@
+import { HealthPanel, type Anomaly, type Integrity } from '@/components/admin/health-panel';
 import { PageHeader } from '@/components/patungan/section-heading';
 import AdminLayout from '@/layouts/admin-layout';
 import { rupiah } from '@/lib/format';
@@ -17,7 +18,7 @@ interface Stats {
     webhook_failures: number;
 }
 
-export default function AdminDashboard({ stats }: { stats: Stats }) {
+export default function AdminDashboard({ stats, integrity, anomalies }: { stats: Stats; integrity: Integrity; anomalies: Anomaly[] }) {
     const cards: { label: string; value: string; hint?: string }[] = [
         { label: 'GMV', value: rupiah(stats.gmv), hint: 'Total pembayaran berhasil' },
         { label: 'Pendapatan platform', value: rupiah(stats.platform_revenue), hint: 'Akumulasi biaya layanan' },
@@ -38,8 +39,10 @@ export default function AdminDashboard({ stats }: { stats: Stats }) {
             <PageHeader
                 eyebrow="Platform"
                 title="Ringkasan"
-                description="Angka agregat seluruh Patungan, dihitung ulang tiap kali halaman ini dibuka."
+                description="Kesehatan sistem lebih dulu, baru angka agregat. Semuanya dihitung ulang tiap kali halaman ini dibuka."
             />
+
+            <HealthPanel integrity={integrity} anomalies={anomalies} />
 
             <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {cards.map((card) => (

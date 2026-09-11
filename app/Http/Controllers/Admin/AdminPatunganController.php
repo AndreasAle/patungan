@@ -6,6 +6,7 @@ use App\Enums\PatunganStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Patungan;
 use App\Services\PatunganService;
+use App\Support\AdminAudit;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -58,9 +59,20 @@ class AdminPatunganController extends Controller
             'status' => ['required', Rule::in([PatunganStatus::Closed->value, PatunganStatus::Active->value])],
         ]);
 
+        $before = $patungan->status->value;
+
         $validated['status'] === PatunganStatus::Closed->value
             ? $this->service->close($patungan)
             : $this->service->reopen($patungan);
+
+        AdminAudit::record(
+            $request->user(),
+            AdminAudit::PATUNGAN_STATUS_CHANGED,
+            $patungan,
+            $patungan->title,
+            ['from' => $before, 'to' => $validated['status']],
+            $request->ip(),
+        );
 
         return back()->with('success', 'Status patungan diperbarui.');
     }

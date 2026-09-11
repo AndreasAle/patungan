@@ -13,12 +13,13 @@ use App\Models\Settlement;
 use App\Models\User;
 use App\Models\WalletLedger;
 use App\Models\WebhookLog;
+use App\Support\PlatformHealth;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class AdminDashboardController extends Controller
 {
-    public function __invoke(): Response
+    public function __invoke(PlatformHealth $health): Response
     {
         $paymentCounts = Payment::query()
             ->selectRaw('status, COUNT(*) as total')
@@ -26,6 +27,14 @@ class AdminDashboardController extends Controller
             ->pluck('total', 'status');
 
         return Inertia::render('admin/dashboard', [
+            /*
+             * Health comes first in the payload because it comes first on the
+             * page. Totals describe how the platform has done; these two
+             * describe whether it is working right now, which is the question
+             * an operator opens this page holding.
+             */
+            'integrity' => $health->ledgerIntegrity(),
+            'anomalies' => $health->anomalies(),
             'stats' => [
                 'users' => User::query()->count(),
                 'patungans' => Patungan::query()->count(),

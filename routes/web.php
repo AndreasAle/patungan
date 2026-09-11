@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminAuditLogController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminPatunganController;
 use App\Http\Controllers\Admin\AdminPaymentController;
@@ -182,6 +183,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('settlements/{settlement}', [AdminSettlementController::class, 'update'])->name('settlements.update');
 
     Route::get('webhooks', [AdminWebhookLogController::class, 'index'])->name('webhooks');
+
+    Route::get('audit', [AdminAuditLogController::class, 'index'])->name('audit');
 
     Route::get('bantuan', [AdminSupportMessageController::class, 'index'])->name('support');
     Route::post('bantuan/{message}', [AdminSupportMessageController::class, 'update'])->name('support.update');

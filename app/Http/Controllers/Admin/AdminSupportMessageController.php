@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\SupportMessageStatus;
 use App\Http\Controllers\Controller;
 use App\Models\SupportMessage;
+use App\Support\AdminAudit;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -70,6 +71,17 @@ class AdminSupportMessageController extends Controller
             'read_at' => $message->read_at ?? now(),
             'replied_at' => $status === SupportMessageStatus::Replied ? ($message->replied_at ?? now()) : $message->replied_at,
         ])->save();
+
+        AdminAudit::record(
+            $request->user(),
+            AdminAudit::SUPPORT_MESSAGE_UPDATED,
+            $message,
+            // The sender's contact, not the message body: an audit log is read
+            // by people investigating an action, not to re-read the complaint.
+            $message->contact,
+            ['status' => $status->value],
+            $request->ip(),
+        );
 
         return back()->with('success', 'Status pesan diperbarui.');
     }
