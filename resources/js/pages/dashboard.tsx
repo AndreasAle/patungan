@@ -4,6 +4,7 @@ import { ChaseList, type ChaseRow } from '@/components/patungan/chase-list';
 import { CollectionGauge, type Collection } from '@/components/patungan/collection-gauge';
 import { CommunityBanner } from '@/components/patungan/community-banner';
 import { EmptyState } from '@/components/patungan/empty-state';
+import { MascotGreeting } from '@/components/patungan/mascot-greeting';
 import { PatunganCard } from '@/components/patungan/patungan-card';
 import { QuickActions } from '@/components/patungan/quick-actions';
 import { SectionHeading } from '@/components/patungan/section-heading';
@@ -18,6 +19,7 @@ import { cn } from '@/lib/utils';
 import type { Balance, DashboardStats, PatunganCard as PatunganCardData, SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { ArrowUpRight, Bell, CircleCheck, Plus, TrendingUp, Wallet } from 'lucide-react';
+import type { CSSProperties } from 'react';
 
 interface NotificationItem {
     id: string;
@@ -56,6 +58,14 @@ export default function Dashboard({ balance, stats, active, history, notificatio
             <Head title="Dashboard" />
             <WelcomeDialog />
 
+            <MascotGreeting
+                className="rise-in mt-4 lg:mt-0 lg:mb-6"
+                name={user?.name ?? ''}
+                activeCount={stats.active_count}
+                awaitingCount={stats.awaiting_count}
+                collectedThisMonth={stats.collected_this_month}
+            />
+
             {/* Desktop gets a title row instead of the green panel; the panel is
                 a phone pattern, and on a wide screen it spends a third of the
                 fold on one number. */}
@@ -84,9 +94,26 @@ export default function Dashboard({ balance, stats, active, history, notificatio
             </div>
 
             <div className="mt-0 hidden gap-4 lg:mt-7 lg:grid lg:grid-cols-3">
-                <StatCard icon={TrendingUp} label="Masuk bulan ini" value={rupiah(metrics.collected.value)} metric={metrics.collected} />
-                <StatCard icon={CircleCheck} label="Peserta lunas" value={`${metrics.settled.value}`} suffix="orang" metric={metrics.settled} />
                 <StatCard
+                    className="rise-in"
+                    style={{ '--rise-index': 1 } as CSSProperties}
+                    icon={TrendingUp}
+                    label="Masuk bulan ini"
+                    value={rupiah(metrics.collected.value)}
+                    metric={metrics.collected}
+                />
+                <StatCard
+                    className="rise-in"
+                    style={{ '--rise-index': 2 } as CSSProperties}
+                    icon={CircleCheck}
+                    label="Peserta lunas"
+                    value={`${metrics.settled.value}`}
+                    suffix="orang"
+                    metric={metrics.settled}
+                />
+                <StatCard
+                    className="rise-in"
+                    style={{ '--rise-index': 3 } as CSSProperties}
                     icon={Wallet}
                     label="Patungan dibuat"
                     value={`${metrics.created.value}`}

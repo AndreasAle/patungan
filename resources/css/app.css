@@ -396,6 +396,169 @@
         flex: 0 0 auto;
     }
 
+    /*
+     * Tuni, the mascot.
+     *
+     * Idle motion is deliberately slow and small. A character that bounces
+     * hard next to somebody's balance reads as a game, and this is still a
+     * screen about money - the movement is there to make the page feel alive,
+     * not to compete with the number.
+     */
+    .mascot {
+        overflow: visible;
+    }
+
+    .mascot-body {
+        transform-origin: 60px 100px;
+        animation: mascot-float 4.5s ease-in-out infinite;
+    }
+
+    .mascot-shadow {
+        transform-origin: 60px 108px;
+        animation: mascot-shadow 4.5s ease-in-out infinite;
+    }
+
+    /* Blinking, on a prime-ish interval so it never syncs with the float. */
+    .mascot-eye {
+        transform-origin: center;
+        animation: mascot-blink 5.7s infinite;
+    }
+
+    .mascot-cheer .mascot-body {
+        animation: mascot-hop 1.1s ease-in-out infinite;
+    }
+
+    .mascot-coins circle {
+        transform-origin: 60px 60px;
+        animation: mascot-toss 1.6s ease-in-out infinite;
+    }
+
+    .mascot-coins circle:nth-child(2) {
+        animation-delay: 0.25s;
+    }
+
+    .mascot-coins circle:nth-child(3) {
+        animation-delay: 0.5s;
+    }
+
+    .mascot-think circle,
+    .mascot-zzz text {
+        animation: mascot-drift 2.4s ease-in-out infinite;
+    }
+
+    .mascot-think circle:nth-child(2),
+    .mascot-zzz text:nth-child(2) {
+        animation-delay: 0.3s;
+    }
+
+    .mascot-think circle:nth-child(3) {
+        animation-delay: 0.6s;
+    }
+
+    .mascot-sleepy .mascot-body {
+        animation: mascot-breathe 5.5s ease-in-out infinite;
+    }
+
+    @keyframes mascot-float {
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-5px);
+        }
+    }
+
+    @keyframes mascot-shadow {
+        0%,
+        100% {
+            transform: scaleX(1);
+            opacity: 0.16;
+        }
+        50% {
+            transform: scaleX(0.86);
+            opacity: 0.1;
+        }
+    }
+
+    @keyframes mascot-blink {
+        0%,
+        92%,
+        100% {
+            transform: scaleY(1);
+        }
+        95% {
+            transform: scaleY(0.12);
+        }
+    }
+
+    @keyframes mascot-hop {
+        0%,
+        100% {
+            transform: translateY(0) rotate(0deg);
+        }
+        40% {
+            transform: translateY(-9px) rotate(-3deg);
+        }
+        70% {
+            transform: translateY(-2px) rotate(2deg);
+        }
+    }
+
+    @keyframes mascot-toss {
+        0%,
+        100% {
+            transform: translateY(0) rotate(0deg);
+            opacity: 0.9;
+        }
+        50% {
+            transform: translateY(-10px) rotate(22deg);
+            opacity: 1;
+        }
+    }
+
+    @keyframes mascot-drift {
+        0%,
+        100% {
+            transform: translateY(0);
+            opacity: 0.45;
+        }
+        50% {
+            transform: translateY(-6px);
+            opacity: 1;
+        }
+    }
+
+    @keyframes mascot-breathe {
+        0%,
+        100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.03);
+        }
+    }
+
+    /*
+     * Cards arriving. Staggered with a custom property so a list can set its
+     * own order without a class per position.
+     */
+    .rise-in {
+        animation: rise-in 520ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+        animation-delay: calc(var(--rise-index, 0) * 70ms);
+    }
+
+    @keyframes rise-in {
+        from {
+            opacity: 0;
+            transform: translateY(14px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
     /* Infinite payment-logo ribbon on the landing page. */
     .payment-logo-marquee {
         position: relative;
@@ -521,6 +684,23 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+    /*
+     * Not softened - stopped. Somebody who set this has usually done so
+     * because motion makes them ill, and a page about their own money is the
+     * last place to negotiate with that.
+     */
+    .mascot-body,
+    .mascot-shadow,
+    .mascot-eye,
+    .mascot-coins circle,
+    .mascot-think circle,
+    .mascot-zzz text,
+    .rise-in {
+        animation: none !important;
+        transform: none !important;
+        opacity: 1 !important;
+    }
+
     .payment-logo-marquee {
         overflow-x: auto;
         mask-image: none;

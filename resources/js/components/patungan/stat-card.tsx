@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { TrendingDown, TrendingUp, type LucideIcon } from 'lucide-react';
+import type { CSSProperties } from 'react';
 
 export interface MetricSeries {
     value: number;
@@ -71,11 +72,13 @@ interface StatCardProps {
     metric: MetricSeries;
     tone?: 'primary' | 'warning';
     className?: string;
+    /** Carries the stagger index for the entrance animation. */
+    style?: CSSProperties;
 }
 
-export function StatCard({ icon: Icon, label, value, suffix, metric, tone = 'primary', className }: StatCardProps) {
+export function StatCard({ icon: Icon, label, value, suffix, metric, tone = 'primary', className, style }: StatCardProps) {
     return (
-        <section className={cn('border-border bg-card rounded-3xl border p-5', className)}>
+        <section className={cn('border-border bg-card rounded-3xl border p-5', className)} style={style}>
             <div className="flex items-start justify-between gap-3">
                 <p className="text-muted-foreground flex items-center gap-2 text-[11px] font-semibold tracking-[0.08em] uppercase">
                     <Icon className="text-primary size-3.5" strokeWidth={2.4} />
