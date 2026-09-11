@@ -743,6 +743,35 @@
     }
 }
 
+/*
+|------------------------------------------------------------------------------
+| iOS zoom guard
+|------------------------------------------------------------------------------
+|
+| Safari on iOS zooms the page whenever a focused form control has a font
+| smaller than 16px, and it does not zoom back out afterwards. The person is
+| left pinching their way back to a readable page in the middle of filling in a
+| form - which on the create-patungan flow means doing it once per field.
+|
+| The base Input component set text-sm, so this affected every field in the
+| product rather than one screen. The components are fixed too, but this net
+| stays because the next field somebody adds will not be thinking about iOS,
+| and a form that silently becomes unusable on a phone is not worth the risk.
+|
+| Deliberately unlayered: unlayered rules beat everything inside @layer, which
+| is how this wins against a Tailwind text-sm utility without !important.
+|
+| Phones only. On a pointer device there is no zoom behaviour to defend
+| against, and the denser type is wanted there.
+*/
+@media (max-width: 47.99rem) {
+    input:not([type='checkbox']):not([type='radio']):not([type='range']),
+    select,
+    textarea {
+        font-size: 16px;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     /*
      * Not softened - stopped. Somebody who set this has usually done so
