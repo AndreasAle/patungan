@@ -17,7 +17,7 @@ export function ParticipantSearch({ value, onChange, placeholder = 'Cari nama ka
                 onChange={(event) => onChange(event.target.value)}
                 placeholder={placeholder}
                 aria-label={placeholder}
-                className="h-11 rounded-xl pl-9"
+                className="bg-card focus-visible:border-primary h-12 rounded-2xl border-emerald-100 pl-10 shadow-[0_5px_18px_rgba(13,78,55,0.05)] dark:border-emerald-400/15"
             />
         </div>
     );

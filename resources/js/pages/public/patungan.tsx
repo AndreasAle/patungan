@@ -3,13 +3,12 @@ import { CategoryIcon } from '@/components/patungan/category-icon';
 import { ParticipantRow } from '@/components/patungan/participant-row';
 import { ParticipantSearch } from '@/components/patungan/participant-search';
 import { ProgressBar } from '@/components/patungan/progress-bar';
-import { Eyebrow } from '@/components/patungan/section-heading';
 import { Button } from '@/components/ui/button';
 import PublicLayout from '@/layouts/public-layout';
-import { rupiah, timeLeft } from '@/lib/format';
+import { percentage, rupiah, timeLeft } from '@/lib/format';
 import type { PublicParticipant, PublicPatungan } from '@/types';
 import { Head, router } from '@inertiajs/react';
-import { AlertCircle, Clock, SearchX } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Clock3, SearchX, ShieldCheck, UsersRound } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 interface PublicPatunganProps {
@@ -27,7 +26,7 @@ export default function PublicPatunganPage({ patungan, fee_bearer }: PublicPatun
     const [now, setNow] = useState(() => Date.now());
 
     const remaining = timeLeft(patungan.expires_at, now);
-    // The server is authoritative; this clock only keeps the copy honest.
+    const percent = percentage(patungan.collected_amount, patungan.target_amount);
     const canPay = patungan.accepts_payment && (patungan.expires_at === null || remaining !== null);
 
     useEffect(() => {
@@ -72,88 +71,135 @@ export default function PublicPatunganPage({ patungan, fee_bearer }: PublicPatun
         <PublicLayout>
             <Head title={patungan.title} />
 
-            {/* Deep green summary card - the one place money is stated up front. */}
-            <section className="surface-deep rounded-3xl px-5 py-6">
-                <div className="flex items-start gap-3">
-                    <CategoryIcon category={patungan.category} size="sm" className="bg-white/15 text-white" />
-                    <div className="min-w-0 flex-1">
-                        <h1 className="display text-brand-deep-foreground truncate text-lg sm:text-xl">{patungan.title}</h1>
-                        <p className="text-brand-deep-muted mt-0.5 text-xs">
+            <section className="surface-deep relative overflow-hidden rounded-[1.75rem] p-5 sm:p-6">
+                <span aria-hidden="true" className="absolute -top-12 -right-10 size-40 rounded-full border-[26px] border-white/5" />
+
+                <div className="relative flex items-start gap-3">
+                    <CategoryIcon category={patungan.category} size="md" className="text-lime bg-white/12" />
+                    <div className="min-w-0 flex-1 pt-0.5">
+                        <p className="text-lime text-[9px] font-extrabold tracking-[0.15em] uppercase">{patungan.category_label}</p>
+                        <h1 className="display text-brand-deep-foreground mt-1 truncate text-xl sm:text-2xl">{patungan.title}</h1>
+                        <p className="text-brand-deep-muted mt-1 text-[11px]">
                             {patungan.split_type === 'EQUAL' && patungan.equal_amount
-                                ? `${rupiah(patungan.equal_amount)} / orang`
-                                : 'Nominal tiap orang berbeda'}
+                                ? `${rupiah(patungan.equal_amount)} per orang`
+                                : 'Nominal setiap peserta berbeda'}
                         </p>
                     </div>
+                    <span className="text-brand-deep-foreground shrink-0 rounded-full bg-white/10 px-3 py-1.5 text-[9px] font-bold">
+                        {patungan.status_label}
+                    </span>
                 </div>
 
-                <div className="border-brand-deep-muted/25 mt-6 border-t pt-5">
-                    <Eyebrow onDeep>Terkumpul</Eyebrow>
-                    <p className="display text-brand-deep-foreground mt-3 text-[29px] tabular-nums sm:text-4xl">
-                        {rupiah(patungan.collected_amount)}
-                    </p>
-                    <p className="text-brand-deep-muted mt-2 text-[11px]">dari {rupiah(patungan.target_amount)}</p>
-
-                    <ProgressBar className="mt-3" value={patungan.collected_amount} total={patungan.target_amount} tone="onDeep" />
-
-                    <div className="text-brand-deep-muted mt-2 flex items-center justify-between text-[11px]">
-                        <span>
-                            <span className="text-brand-deep-foreground font-semibold">{patungan.paid_participant_count}</span> dari{' '}
-                            {patungan.participant_count} sudah bayar
+                <div className="relative mt-5 rounded-[1.35rem] bg-white/8 p-4 ring-1 ring-white/10">
+                    <div className="flex items-end justify-between gap-3">
+                        <div className="min-w-0">
+                            <p className="text-brand-deep-muted text-[9px] font-bold tracking-[0.13em] uppercase">Dana terkumpul</p>
+                            <p className="display text-brand-deep-foreground mt-1.5 truncate text-[30px] tabular-nums">
+                                {rupiah(patungan.collected_amount)}
+                            </p>
+                            <p className="text-brand-deep-muted mt-1 text-[10px] tabular-nums">Target {rupiah(patungan.target_amount)}</p>
+                        </div>
+                        <span className="bg-lime text-lime-foreground flex size-12 shrink-0 items-center justify-center rounded-full text-xs font-black tabular-nums">
+                            {percent}%
                         </span>
-                        {patungan.expires_at && canPay && remaining && (
-                            <span className="inline-flex items-center gap-1">
-                                <Clock className="size-3" />
-                                {remaining}
-                            </span>
-                        )}
+                    </div>
+
+                    <ProgressBar className="mt-3.5" value={patungan.collected_amount} total={patungan.target_amount} tone="onDeep" />
+                </div>
+
+                <div className="relative mt-3 grid grid-cols-2 gap-2">
+                    <div className="flex items-center gap-2.5 rounded-2xl bg-white/8 px-3 py-2.5">
+                        <UsersRound className="text-lime size-4 shrink-0" />
+                        <div>
+                            <p className="text-brand-deep-foreground text-xs font-bold tabular-nums">
+                                {patungan.paid_participant_count}/{patungan.participant_count}
+                            </p>
+                            <p className="text-brand-deep-muted text-[9px]">sudah bayar</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2.5 rounded-2xl bg-white/8 px-3 py-2.5">
+                        <Clock3 className="text-lime size-4 shrink-0" />
+                        <div className="min-w-0">
+                            <p className="text-brand-deep-foreground truncate text-xs font-bold">
+                                {patungan.expires_at ? (remaining ?? 'Waktu habis') : 'Tanpa batas'}
+                            </p>
+                            <p className="text-brand-deep-muted text-[9px]">{patungan.expires_at ? 'batas pembayaran' : 'tanpa tenggat'}</p>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            {patungan.description && <p className="text-muted-foreground mt-3 px-1 text-xs leading-relaxed">{patungan.description}</p>}
+            {patungan.description && (
+                <div className="mt-3 rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-3 dark:border-emerald-400/15 dark:bg-emerald-400/10">
+                    <p className="text-muted-foreground text-[9px] font-bold tracking-[0.12em] uppercase">Catatan penyelenggara</p>
+                    <p className="mt-1.5 text-xs leading-relaxed">{patungan.description}</p>
+                </div>
+            )}
 
             {patungan.status === 'COMPLETED' && (
-                <p className="bg-success-soft text-success mt-3 rounded-xl px-4 py-2.5 text-center text-xs font-semibold">Semua sudah lunas 🎉</p>
+                <p className="bg-success-soft text-success mt-3 flex items-center justify-center gap-1.5 rounded-2xl px-4 py-3 text-xs font-bold">
+                    <CheckCircle2 className="size-4" /> Semua peserta sudah lunas
+                </p>
             )}
 
             {patungan.expires_at && !canPay && patungan.status === 'ACTIVE' && (
-                <p className="bg-muted text-muted-foreground mt-3 flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-medium">
-                    <Clock className="size-3.5" />
-                    Batas waktu pembayaran sudah lewat.
+                <p className="bg-muted text-muted-foreground mt-3 flex items-center justify-center gap-1.5 rounded-2xl px-4 py-3 text-xs font-medium">
+                    <Clock3 className="size-3.5" /> Batas waktu pembayaran sudah lewat.
                 </p>
             )}
 
             {(patungan.status === 'CLOSED' || patungan.status === 'CANCELLED') && (
-                <p className="bg-muted text-muted-foreground mt-3 flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-medium">
-                    <AlertCircle className="size-3.5" />
-                    Patungan ini sudah ditutup.
+                <p className="bg-muted text-muted-foreground mt-3 flex items-center justify-center gap-1.5 rounded-2xl px-4 py-3 text-xs font-medium">
+                    <AlertCircle className="size-3.5" /> Patungan ini sudah ditutup.
                 </p>
             )}
 
-            <div className="mt-5">
-                <ParticipantSearch value={search} onChange={setSearch} />
-            </div>
-
-            {filtered.length === 0 ? (
-                <div className="border-border mt-3 flex flex-col items-center rounded-2xl border border-dashed px-5 py-8 text-center">
-                    <SearchX className="text-muted-foreground size-4" />
-                    <p className="mt-2.5 text-sm font-semibold">Nama tidak ditemukan.</p>
-                    <p className="text-muted-foreground mt-1 text-xs">Coba ketik sebagian nama kamu saja.</p>
+            <section className="mt-6">
+                <div className="flex items-end justify-between gap-3 px-1">
+                    <div>
+                        <p className="text-primary text-[10px] font-extrabold tracking-[0.14em] uppercase">Bayar bagianmu</p>
+                        <h2 className="display mt-1 text-xl">Pilih nama kamu</h2>
+                    </div>
+                    <span className="bg-brand-soft text-primary rounded-full px-3 py-1.5 text-[10px] font-bold tabular-nums">
+                        {patungan.participant_count} peserta
+                    </span>
                 </div>
-            ) : (
-                <ul className="mt-3 space-y-2">
-                    {filtered.map((participant) => (
-                        <ParticipantRow
-                            key={participant.uuid}
-                            participant={participant}
-                            onPay={canPay ? setSelected : undefined}
-                            disabled={!canPay}
-                        />
-                    ))}
-                </ul>
-            )}
 
-            <p className="text-muted-foreground mt-5 text-center text-[11px]">Dibuat oleh {patungan.organizer_name}</p>
+                <p className="text-muted-foreground mt-2 px-1 text-[11px]">Cari namamu, periksa nominalnya, lalu tekan Bayar.</p>
+
+                <div className="mt-3">
+                    <ParticipantSearch value={search} onChange={setSearch} />
+                </div>
+
+                {filtered.length === 0 ? (
+                    <div className="bg-card mt-3 flex flex-col items-center rounded-2xl border border-dashed border-emerald-100 px-5 py-8 text-center dark:border-emerald-400/15">
+                        <SearchX className="text-muted-foreground size-5" />
+                        <p className="mt-2.5 text-sm font-bold">Nama tidak ditemukan</p>
+                        <p className="text-muted-foreground mt-1 text-xs">Coba ketik sebagian nama kamu saja.</p>
+                    </div>
+                ) : (
+                    <ul className="mt-3 space-y-2">
+                        {filtered.map((participant) => (
+                            <ParticipantRow
+                                key={participant.uuid}
+                                participant={participant}
+                                onPay={canPay ? setSelected : undefined}
+                                disabled={!canPay}
+                            />
+                        ))}
+                    </ul>
+                )}
+            </section>
+
+            <div className="bg-card mt-5 flex items-center gap-3 rounded-2xl border border-emerald-100 px-4 py-3 dark:border-emerald-400/15">
+                <span className="bg-brand-soft text-primary flex size-9 shrink-0 items-center justify-center rounded-xl">
+                    <ShieldCheck className="size-4" />
+                </span>
+                <div className="min-w-0">
+                    <p className="text-[10px] font-bold">Dibuat oleh {patungan.organizer_name}</p>
+                    <p className="text-muted-foreground mt-0.5 text-[9px]">Pastikan nama dan nominal kamu sudah benar sebelum membayar.</p>
+                </div>
+            </div>
 
             <BottomSheet
                 open={selected !== null}

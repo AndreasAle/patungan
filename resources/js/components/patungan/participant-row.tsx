@@ -18,13 +18,13 @@ export function ParticipantRow({ participant, onPay, disabled = false }: Partici
     return (
         <li
             className={cn(
-                'flex items-center gap-3 rounded-2xl border px-3.5 py-3 transition',
-                paid ? 'border-success/20 bg-success-soft/50' : 'border-border bg-card',
+                'dashboard-card flex items-center gap-3 rounded-2xl border px-3 py-3 transition',
+                paid ? 'border-success/20 bg-success-soft/50' : 'bg-card border-emerald-100 dark:border-emerald-400/15',
             )}
         >
             <span
                 className={cn(
-                    'flex size-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold',
+                    'flex size-10 shrink-0 items-center justify-center rounded-2xl text-xs font-extrabold',
                     paid ? 'bg-success text-success-foreground' : 'bg-brand-soft text-primary',
                 )}
                 aria-hidden="true"
@@ -33,8 +33,8 @@ export function ParticipantRow({ participant, onPay, disabled = false }: Partici
             </span>
 
             <div className="min-w-0 flex-1">
-                <p className="text-foreground truncate text-sm font-semibold">{participant.name}</p>
-                <p className="text-muted-foreground mt-0.5 truncate text-xs">
+                <p className="text-foreground truncate text-sm font-bold tracking-tight">{participant.name}</p>
+                <p className="text-muted-foreground mt-0.5 truncate text-[11px]">
                     {rupiah(participant.amount_due)}
                     {paid && participant.paid_at && ` · ${formatTime(participant.paid_at)}`}
                     {!paid && participant.note && ` · ${participant.note}`}
@@ -46,7 +46,7 @@ export function ParticipantRow({ participant, onPay, disabled = false }: Partici
                     /* A settled share always has a receipt to open. */
                     <Link
                         href={participant.invoice_url}
-                        className="text-success border-success/30 hover:bg-success/10 inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition"
+                        className="text-success border-success/30 hover:bg-success/10 inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition"
                     >
                         <ReceiptText className="size-3.5" />
                         Invoice
@@ -57,7 +57,7 @@ export function ParticipantRow({ participant, onPay, disabled = false }: Partici
             ) : (
                 <Button
                     size="sm"
-                    className="h-9 shrink-0 rounded-xl px-4 text-xs font-semibold"
+                    className="h-9 shrink-0 rounded-full px-4 text-xs font-bold"
                     onClick={() => onPay?.(participant)}
                     disabled={disabled || !onPay}
                 >

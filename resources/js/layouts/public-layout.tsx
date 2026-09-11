@@ -1,4 +1,4 @@
-import AppLogo from '@/components/app-logo';
+import AppLogoIcon from '@/components/app-logo-icon';
 import { FlashToast } from '@/components/patungan/flash-toast';
 import { HelpBubble } from '@/components/patungan/help-bubble';
 import { Link } from '@inertiajs/react';
@@ -15,7 +15,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
 
             <header className="border-border bg-card/90 flex h-13 items-center justify-center border-b py-3 backdrop-blur print:hidden">
                 <Link href="/" aria-label="Patungan">
-                    <AppLogo />
+                    <AppLogoIcon className="size-8" />
                 </Link>
             </header>
 
@@ -34,8 +34,11 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
                 to go hunting on the marketing site for them.
             */}
             <footer className="text-muted-foreground px-4 py-6 text-center text-[11px] print:hidden">
-                <p>
-                    Ditenagai <span className="text-foreground font-semibold">Patungan</span> · Bayar bagianmu, beres.
+                <p className="flex items-center justify-center gap-1.5">
+                    <span>Ditenagai</span>
+                    <AppLogoIcon className="size-5" aria-label="Patungan" />
+                    <span aria-hidden="true">·</span>
+                    <span>Bayar bagianmu, beres.</span>
                 </p>
                 <p className="mt-2 flex items-center justify-center gap-3">
                     <a href={route('legal.privacy')} className="hover:text-foreground transition">
