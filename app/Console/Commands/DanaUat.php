@@ -31,7 +31,8 @@ class DanaUat extends Command
 {
     protected $signature = 'dana:uat
         {--amount=10000 : Amount in whole rupiah for the test charge}
-        {--keep : Skip the cancel step, leaving the QR payable in sandbox}';
+        {--keep : Skip the cancel step, leaving the QR payable in sandbox}
+        {--dump : Print the full request and response, for a provider support ticket}';
 
     protected $description = 'Run the DANA QRIS sandbox scenarios: generate, query, cancel';
 
@@ -90,9 +91,12 @@ class DanaUat extends Command
             );
         } catch (Throwable $e) {
             $this->reportFailure('Generate QRIS', $e);
+            $this->dump($qris);
 
             return self::FAILURE;
         }
+
+        $this->dump($qris);
 
         $this->pass('Generate QRIS', 'referenceNo '.$charge->transactionId);
         $this->line('  <fg=gray>QR content: '.Str::limit($charge->qrString ?? '', 48).'</>');
@@ -163,6 +167,57 @@ class DanaUat extends Command
         }
 
         return $gateway->qris();
+    }
+
+    /**
+     * Prints the exchange verbatim when --dump is given.
+     *
+     * Safe to paste into a support channel: X-SIGNATURE already travelled to
+     * DANA over the wire and cannot be reversed into the private key, and these
+     * APIs carry no bearer token. The private key itself never appears here and
+     * must never be shared with anybody, including a provider.
+     */
+    private function dump(DanaQrisService $qris): void
+    {
+        if (! $this->option('dump')) {
+            return;
+        }
+
+        $exchange = $qris->lastExchange();
+
+        if ($exchange === null) {
+            $this->components->warn('No exchange was captured - the request never left this server.');
+
+            return;
+        }
+
+        $this->newLine();
+        $this->line('<fg=gray>--- REQUEST ---------------------------------------------------</>');
+        $this->line('POST '.$exchange['url']);
+
+        foreach ($exchange['headers'] as $name => $value) {
+            $this->line($name.': '.$value);
+        }
+
+        $this->newLine();
+        $this->line($this->pretty((string) $exchange['request_body']));
+
+        $this->newLine();
+        $this->line('<fg=gray>--- RESPONSE (HTTP '.$exchange['http_status'].') -------------------------------</>');
+        $this->line($this->pretty((string) $exchange['response_body']));
+        $this->line('<fg=gray>---------------------------------------------------------------</>');
+    }
+
+    /** Re-indents JSON for a human reading it in a chat window. */
+    private function pretty(string $body): string
+    {
+        $decoded = json_decode($body, true);
+
+        if (! is_array($decoded)) {
+            return $body;
+        }
+
+        return (string) json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
     private function pass(string $scenario, string $detail): void

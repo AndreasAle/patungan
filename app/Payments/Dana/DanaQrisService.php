@@ -41,6 +41,21 @@ final class DanaQrisService
         private readonly DanaCredentials $credentials,
     ) {}
 
+    /**
+     * The last request and response this service sent, verbatim.
+     *
+     * Exists so dana:uat --dump can hand a provider's support team exactly what
+     * left this server, rather than a paraphrase of it. That is the first thing
+     * they ask for, and reconstructing it by hand is how a wrong sample ends up
+     * sending an investigation in the wrong direction.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function lastExchange(): ?array
+    {
+        return $this->client->lastExchange;
+    }
+
     public function generate(ChargeRequest $request, string $externalId): ChargeResult
     {
         $this->guardReference($request->reference);

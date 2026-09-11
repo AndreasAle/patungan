@@ -24,6 +24,18 @@ use InvalidArgumentException;
  */
 final class DanaClient
 {
+    /**
+     * The last request and response, verbatim.
+     *
+     * Kept so dana:uat can show a provider's support team exactly what left
+     * this server. It holds no secret: X-SIGNATURE is already sent over the
+     * wire to DANA and cannot be reversed into the private key, and DANA's
+     * QRIS APIs carry no bearer token at all.
+     *
+     * @var array<string, mixed>|null
+     */
+    public ?array $lastExchange = null;
+
     public function __construct(
         private readonly DanaCredentials $credentials,
         private readonly DanaExternalIdGenerator $externalIds,
@@ -106,6 +118,14 @@ final class DanaClient
         ]);
 
         if (! is_array($decoded)) {
+            $this->lastExchange = [
+                'url' => $this->credentials->baseUrl.$path,
+                'headers' => $headers,
+                'request_body' => $encoded,
+                'http_status' => $response->status(),
+                'response_body' => $response->body(),
+            ];
+
             throw new DanaApiException(context: [
                 'reason' => 'DANA returned a body that is not JSON.',
                 'path' => $path,
@@ -113,6 +133,14 @@ final class DanaClient
                 'http_status' => $response->status(),
             ]);
         }
+
+        $this->lastExchange = [
+            'url' => $this->credentials->baseUrl.$path,
+            'headers' => $headers,
+            'request_body' => $encoded,
+            'http_status' => $response->status(),
+            'response_body' => $response->body(),
+        ];
 
         return [
             'body' => $decoded,
