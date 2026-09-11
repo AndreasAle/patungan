@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreSettlementRequest;
 use App\Models\PayoutDestination;
 use App\Models\Settlement;
+use App\Payouts\AccountVerifier;
 use App\Services\LedgerService;
 use App\Services\SettlementService;
+use App\Support\PayoutChannels;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -17,6 +19,7 @@ class PayoutController extends Controller
     public function __construct(
         private readonly SettlementService $settlements,
         private readonly LedgerService $ledger,
+        private readonly AccountVerifier $verifier,
     ) {}
 
     public function index(Request $request): Response
@@ -33,10 +36,18 @@ class PayoutController extends Controller
                 ->map(fn (PayoutDestination $destination) => [
                     'id' => $destination->id,
                     'type' => $destination->type->value,
+                    'provider_code' => $destination->provider_code,
+                    'provider_label' => $destination->provider_label,
+                    'masked_number' => $destination->maskedAccountNumber(),
                     'label' => $destination->maskedLabel(),
                     'account_holder' => $destination->account_holder,
+                    'verification_status' => $destination->verification_status->value,
                     'is_default' => $destination->is_default,
                 ])->all(),
+            // The grid of banks to withdraw somewhere new, without leaving
+            // this page to go and register an account first.
+            'channels' => PayoutChannels::all(),
+            'inquiry_available' => $this->verifier->isAvailable(),
             'settlements' => $user->settlements()->latest('requested_at')->limit(25)->get()
                 ->map(fn (Settlement $settlement) => [
                     'uuid' => $settlement->uuid,
