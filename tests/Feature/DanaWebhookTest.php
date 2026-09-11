@@ -87,6 +87,36 @@ class DanaWebhookTest extends TestCase
             ]);
     }
 
+    public function test_sandbox_uat_can_simulate_the_required_internal_server_error_acknowledgement(): void
+    {
+        config()->set('dana.uat.force_notify_error', true);
+
+        $response = $this->notify([], [
+            'X-SIGNATURE' => 'sandbox-uat-placeholder',
+            'X-TIMESTAMP' => DanaSignature::timestamp(),
+        ]);
+
+        $response->assertStatus(500)->assertJson([
+            'responseCode' => '5005601',
+            'responseMessage' => 'Internal Server Error',
+        ]);
+        $this->assertSame(0, WebhookLog::query()->count());
+    }
+
+    public function test_the_uat_failure_switch_is_ignored_in_production(): void
+    {
+        config()->set([
+            'dana.environment' => 'production',
+            'dana.base_url' => 'https://api.dana.id',
+            'dana.uat.force_notify_error' => true,
+        ]);
+
+        $payload = ['hello' => 'world'];
+        $this->notify($payload, $this->danaNotificationHeaders($payload))
+            ->assertOk()
+            ->assertJson(['responseCode' => '2005600']);
+    }
+
     public function test_the_finish_redirect_page_is_public_and_does_not_claim_payment_succeeded(): void
     {
         $this->get(route('public.payment.dana.finish'))

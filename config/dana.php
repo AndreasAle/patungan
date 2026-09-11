@@ -84,6 +84,15 @@ return [
 
     'notification_url' => env('DANA_NOTIFICATION_URL'),
 
+    /*
+    | Sandbox UAT switch for DANA's required 5005601 Finish Notify scenario.
+    | The controller also checks DANA_ENV=sandbox, so this can never force a
+    | production notification to fail even if an operator forgets to unset it.
+    */
+    'uat' => [
+        'force_notify_error' => (bool) env('DANA_UAT_FORCE_NOTIFY_ERROR', false),
+    ],
+
     'http' => [
         /*
          | DANA documents an 8 second expected timeout per API. The read timeout

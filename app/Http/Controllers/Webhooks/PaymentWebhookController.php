@@ -36,6 +36,21 @@ class PaymentWebhookController extends Controller
             ], 401);
         }
 
+        /*
+         * DANA requires merchants to prove that a transient Finish Notify
+         * failure is answered with 5005601 during sandbox UAT. This explicit
+         * switch is intentionally unavailable in production, and it runs only
+         * after the request has the headers a genuine DANA delivery carries.
+         */
+        if ($provider === DanaGateway::NAME
+            && config('dana.environment') === 'sandbox'
+            && config('dana.uat.force_notify_error') === true) {
+            return response()->json([
+                'responseCode' => '5005601',
+                'responseMessage' => 'Internal Server Error',
+            ], 500);
+        }
+
         $gateway = $this->gateways->driver($provider);
 
         $log = $this->processor->handle($gateway, InboundWebhook::fromRequest($request));
