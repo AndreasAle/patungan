@@ -462,35 +462,17 @@
     /* The dashboard illustration moves in layers, like a wallet being opened. */
     .wallet-hero-art {
         overflow: visible;
-        filter: drop-shadow(0 18px 24px rgb(1 31 20 / 0.2));
+        filter: drop-shadow(0 12px 20px rgb(1 31 20 / 0.15));
     }
 
     .wallet-art-body {
-        transform-origin: 150px 160px;
+        transform-origin: 120px 120px;
         animation: wallet-float 4.8s ease-in-out infinite;
     }
 
     .wallet-art-coin {
-        transform-origin: 161px 91px;
+        transform-origin: 135px 62px;
         animation: wallet-coin 3.4s ease-in-out infinite;
-    }
-
-    .wallet-art-note {
-        transform-origin: 85px 60px;
-        animation: wallet-note 5.2s ease-in-out infinite;
-    }
-
-    .wallet-art-spark {
-        transform-origin: center;
-        animation: wallet-spark 2.4s ease-in-out infinite;
-    }
-
-    .wallet-art-spark-delay {
-        animation-delay: 0.65s;
-    }
-
-    .wallet-art-lines {
-        animation: wallet-lines 2.7s ease-in-out infinite;
     }
 
     .dashboard-card {
@@ -594,54 +576,20 @@
     @keyframes wallet-float {
         0%,
         100% {
-            transform: translateY(0) rotate(0deg);
+            transform: translateY(0);
         }
         50% {
-            transform: translateY(-5px) rotate(1.2deg);
+            transform: translateY(-2px);
         }
     }
 
     @keyframes wallet-coin {
         0%,
         100% {
-            transform: translateY(0) rotate(-4deg);
+            transform: translateY(0);
         }
         50% {
-            transform: translateY(-12px) rotate(4deg);
-        }
-    }
-
-    @keyframes wallet-note {
-        0%,
-        100% {
-            transform: translateY(0) rotate(0deg);
-            opacity: 0.82;
-        }
-        50% {
-            transform: translateY(-4px) rotate(-1.5deg);
-            opacity: 1;
-        }
-    }
-
-    @keyframes wallet-spark {
-        0%,
-        100% {
-            transform: scale(0.75) rotate(0deg);
-            opacity: 0.45;
-        }
-        50% {
-            transform: scale(1.15) rotate(16deg);
-            opacity: 1;
-        }
-    }
-
-    @keyframes wallet-lines {
-        0%,
-        100% {
-            opacity: 0.35;
-        }
-        50% {
-            opacity: 1;
+            transform: translateY(-4px);
         }
     }
 
@@ -809,9 +757,6 @@
     .mascot-zzz text,
     .wallet-art-body,
     .wallet-art-coin,
-    .wallet-art-note,
-    .wallet-art-spark,
-    .wallet-art-lines,
     .dashboard-orbit,
     .rise-in {
         animation: none !important;

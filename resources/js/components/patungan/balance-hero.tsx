@@ -25,7 +25,7 @@ export function BalanceHero({ name, balance, unreadCount }: BalanceHeroProps) {
 
     return (
         <div className="relative">
-            <WalletHeroArt className="pointer-events-none absolute top-9 -right-8 w-48 opacity-95 sm:top-4 sm:right-2 sm:w-56" />
+            <WalletHeroArt className="pointer-events-none absolute top-10 -right-3 w-44 opacity-95 sm:top-5 sm:right-2 sm:w-52" />
 
             <div className="relative z-10 flex items-center gap-3">
                 <AppLogoIcon className="size-8 shrink-0 lg:hidden" plate />
@@ -49,7 +49,7 @@ export function BalanceHero({ name, balance, unreadCount }: BalanceHeroProps) {
                 <div className="max-w-[64%] min-w-0 sm:max-w-[70%]">
                     <Eyebrow onDeep>Saldo tersedia</Eyebrow>
 
-                    <p className="display text-brand-deep-foreground mt-2 text-[29px] tabular-nums sm:text-[40px] lg:text-[44px]">
+                    <p className="display text-brand-deep-foreground mt-2 text-[34px] tabular-nums sm:text-[40px] lg:text-[44px]">
                         {rupiah(balance.available)}
                     </p>
 
@@ -59,7 +59,7 @@ export function BalanceHero({ name, balance, unreadCount }: BalanceHeroProps) {
                             ['Pending', balance.pending],
                             ['Sudah dicairkan', balance.paid_out],
                         ].map(([label, amount], index) => (
-                            <div key={label as string} className={index === 0 ? 'pr-6' : 'pl-6'}>
+                            <div key={label as string} className={index === 0 ? 'pr-4 min-[360px]:pr-6' : 'pl-4 min-[360px]:pl-6'}>
                                 <dt className="text-brand-deep-muted text-[10px] font-semibold tracking-[0.14em] uppercase">{label}</dt>
                                 <dd className="text-brand-deep-foreground mt-1 text-sm font-bold tabular-nums">{rupiah(amount as number)}</dd>
                             </div>
@@ -70,14 +70,14 @@ export function BalanceHero({ name, balance, unreadCount }: BalanceHeroProps) {
                 <div className="mt-3 flex gap-2 sm:mt-4 lg:mt-0 lg:shrink-0 lg:pb-1">
                     <Link
                         href={route('patungan.create')}
-                        className="bg-lime text-lime-foreground flex h-11 flex-[1.08] items-center justify-center gap-1.5 rounded-full px-3 text-[11px] font-semibold whitespace-nowrap transition hover:brightness-105 active:scale-[0.98] min-[360px]:text-xs lg:h-12 lg:flex-none lg:px-6 lg:text-sm"
+                        className="bg-lime text-lime-foreground flex h-12 flex-[1.08] items-center justify-center gap-1.5 rounded-full px-2.5 text-[13px] font-bold whitespace-nowrap transition hover:brightness-105 active:scale-[0.98] min-[360px]:px-3 lg:flex-none lg:px-6 lg:text-sm"
                     >
                         <Plus className="size-4" strokeWidth={2.5} />
                         Buat Patungan
                     </Link>
                     <Link
                         href={route('payout.index')}
-                        className="text-brand-deep-foreground ring-brand-deep-muted/30 flex h-11 flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-[11px] font-semibold whitespace-nowrap ring-1 transition hover:bg-white/10 active:scale-[0.98] min-[360px]:text-xs lg:h-12 lg:flex-none lg:px-6 lg:text-sm"
+                        className="text-brand-deep-foreground ring-brand-deep-muted/30 flex h-12 flex-1 items-center justify-center gap-1.5 rounded-full px-2.5 text-[13px] font-bold whitespace-nowrap ring-1 transition hover:bg-white/10 active:scale-[0.98] min-[360px]:px-3 lg:flex-none lg:px-6 lg:text-sm"
                     >
                         <ArrowDownToLine className="size-4" />
                         Tarik Dana
