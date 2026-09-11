@@ -40,6 +40,19 @@ final class DanaGateway implements AcknowledgesWebhooks, PaymentGateway
         return self::NAME;
     }
 
+    /**
+     * The QRIS service behind this driver.
+     *
+     * Exposed for the sandbox UAT command, which has to drive generate, query
+     * and cancel individually rather than through the payment flow. Reaching in
+     * with reflection would work today and break silently the first time this
+     * class is refactored, so the seam is named instead of hidden.
+     */
+    public function qris(): DanaQrisService
+    {
+        return $this->qris;
+    }
+
     public function createQrisCharge(ChargeRequest $request): ChargeResult
     {
         return $this->qris->generate($request, $this->externalIds->generate());
