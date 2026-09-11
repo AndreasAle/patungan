@@ -30,7 +30,12 @@ export function CollectionGauge({ collection, className }: { collection: Collect
     const filled = (percent / 100) * half;
 
     return (
-        <section className={cn('border-border bg-card flex flex-col rounded-3xl border p-5 lg:p-6', className)}>
+        <section
+            className={cn(
+                'dashboard-card from-card flex flex-col rounded-3xl border border-emerald-100/80 bg-gradient-to-br via-emerald-50/35 to-lime-50/65 p-5 lg:p-6 dark:border-emerald-400/15 dark:via-emerald-400/5 dark:to-lime-400/10',
+                className,
+            )}
+        >
             <p className="text-muted-foreground text-[11px] font-bold tracking-[0.14em] uppercase">Tingkat pelunasan</p>
 
             <div className="relative mx-auto mt-4 w-full max-w-[240px]">

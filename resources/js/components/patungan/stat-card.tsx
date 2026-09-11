@@ -78,10 +78,18 @@ interface StatCardProps {
 
 export function StatCard({ icon: Icon, label, value, suffix, metric, tone = 'primary', className, style }: StatCardProps) {
     return (
-        <section className={cn('border-border bg-card rounded-3xl border p-5', className)} style={style}>
+        <section
+            className={cn(
+                'dashboard-card border-primary/10 from-card via-card rounded-3xl border bg-gradient-to-br to-emerald-50/55 p-5 dark:to-emerald-400/10',
+                className,
+            )}
+            style={style}
+        >
             <div className="flex items-start justify-between gap-3">
                 <p className="text-muted-foreground flex items-center gap-2 text-[11px] font-semibold tracking-[0.08em] uppercase">
-                    <Icon className="text-primary size-3.5" strokeWidth={2.4} />
+                    <span className="bg-brand-soft text-primary flex size-8 items-center justify-center rounded-xl">
+                        <Icon className="size-3.5" strokeWidth={2.4} />
+                    </span>
                     {label}
                 </p>
             </div>

@@ -459,6 +459,58 @@
         animation: mascot-breathe 5.5s ease-in-out infinite;
     }
 
+    /* The dashboard illustration moves in layers, like a wallet being opened. */
+    .wallet-hero-art {
+        overflow: visible;
+        filter: drop-shadow(0 18px 24px rgb(1 31 20 / 0.2));
+    }
+
+    .wallet-art-body {
+        transform-origin: 150px 160px;
+        animation: wallet-float 4.8s ease-in-out infinite;
+    }
+
+    .wallet-art-coin {
+        transform-origin: 161px 91px;
+        animation: wallet-coin 3.4s ease-in-out infinite;
+    }
+
+    .wallet-art-note {
+        transform-origin: 85px 60px;
+        animation: wallet-note 5.2s ease-in-out infinite;
+    }
+
+    .wallet-art-spark {
+        transform-origin: center;
+        animation: wallet-spark 2.4s ease-in-out infinite;
+    }
+
+    .wallet-art-spark-delay {
+        animation-delay: 0.65s;
+    }
+
+    .wallet-art-lines {
+        animation: wallet-lines 2.7s ease-in-out infinite;
+    }
+
+    .dashboard-card {
+        box-shadow: 0 12px 34px rgb(13 78 55 / 0.055);
+        transition:
+            transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+            box-shadow 220ms ease,
+            border-color 220ms ease;
+    }
+
+    .dashboard-card:hover {
+        transform: translateY(-3px);
+        border-color: color-mix(in oklab, var(--primary) 22%, var(--border));
+        box-shadow: 0 18px 42px rgb(13 78 55 / 0.1);
+    }
+
+    .dashboard-orbit {
+        animation: dashboard-orbit 14s linear infinite;
+    }
+
     @keyframes mascot-float {
         0%,
         100% {
@@ -536,6 +588,66 @@
         }
         50% {
             transform: scale(1.03);
+        }
+    }
+
+    @keyframes wallet-float {
+        0%,
+        100% {
+            transform: translateY(0) rotate(0deg);
+        }
+        50% {
+            transform: translateY(-5px) rotate(1.2deg);
+        }
+    }
+
+    @keyframes wallet-coin {
+        0%,
+        100% {
+            transform: translateY(0) rotate(-4deg);
+        }
+        50% {
+            transform: translateY(-12px) rotate(4deg);
+        }
+    }
+
+    @keyframes wallet-note {
+        0%,
+        100% {
+            transform: translateY(0) rotate(0deg);
+            opacity: 0.82;
+        }
+        50% {
+            transform: translateY(-4px) rotate(-1.5deg);
+            opacity: 1;
+        }
+    }
+
+    @keyframes wallet-spark {
+        0%,
+        100% {
+            transform: scale(0.75) rotate(0deg);
+            opacity: 0.45;
+        }
+        50% {
+            transform: scale(1.15) rotate(16deg);
+            opacity: 1;
+        }
+    }
+
+    @keyframes wallet-lines {
+        0%,
+        100% {
+            opacity: 0.35;
+        }
+        50% {
+            opacity: 1;
+        }
+    }
+
+    @keyframes dashboard-orbit {
+        to {
+            transform: rotate(360deg);
         }
     }
 
@@ -695,10 +807,20 @@
     .mascot-coins circle,
     .mascot-think circle,
     .mascot-zzz text,
+    .wallet-art-body,
+    .wallet-art-coin,
+    .wallet-art-note,
+    .wallet-art-spark,
+    .wallet-art-lines,
+    .dashboard-orbit,
     .rise-in {
         animation: none !important;
         transform: none !important;
         opacity: 1 !important;
+    }
+
+    .dashboard-card:hover {
+        transform: none;
     }
 
     .payment-logo-marquee {

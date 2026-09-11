@@ -10,10 +10,34 @@ interface Action {
 }
 
 const actions: Action[] = [
-    { label: 'Patungan', hint: 'Semua daftar', href: 'patungan.index', icon: Wallet, tone: 'bg-emerald-50 text-emerald-700' },
-    { label: 'Transaksi', hint: 'Riwayat dana', href: 'transactions.index', icon: Receipt, tone: 'bg-sky-50 text-sky-700' },
-    { label: 'Pencairan', hint: 'Tarik saldo', href: 'payout.index', icon: ArrowDownToLine, tone: 'bg-amber-50 text-amber-700' },
-    { label: 'Rekening', hint: 'Tujuan tarik', href: 'payout.destinations', icon: Landmark, tone: 'bg-violet-50 text-violet-700' },
+    {
+        label: 'Patungan',
+        hint: 'Semua daftar',
+        href: 'patungan.index',
+        icon: Wallet,
+        tone: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300',
+    },
+    {
+        label: 'Transaksi',
+        hint: 'Riwayat dana',
+        href: 'transactions.index',
+        icon: Receipt,
+        tone: 'bg-sky-50 text-sky-700 dark:bg-sky-400/15 dark:text-sky-300',
+    },
+    {
+        label: 'Pencairan',
+        hint: 'Tarik saldo',
+        href: 'payout.index',
+        icon: ArrowDownToLine,
+        tone: 'bg-amber-50 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300',
+    },
+    {
+        label: 'Rekening',
+        hint: 'Tujuan tarik',
+        href: 'payout.destinations',
+        icon: Landmark,
+        tone: 'bg-violet-50 text-violet-700 dark:bg-violet-400/15 dark:text-violet-300',
+    },
 ];
 
 /**
@@ -28,7 +52,7 @@ export function QuickActions() {
         <nav aria-label="Pintasan" className="border-border bg-card overflow-hidden rounded-3xl border shadow-[0_1px_20px_rgba(16,66,44,0.05)]">
             <Link
                 href={route('patungan.create')}
-                className="group from-brand-soft/85 flex items-center gap-3 bg-gradient-to-r to-white px-4 py-4 transition hover:from-emerald-100/80"
+                className="group from-brand-soft/85 to-card flex items-center gap-3 bg-gradient-to-r px-4 py-4 transition hover:from-emerald-100/80 dark:hover:from-emerald-400/15"
             >
                 <span className="bg-primary text-primary-foreground flex size-11 shrink-0 items-center justify-center rounded-2xl shadow-sm transition group-hover:scale-105">
                     <Plus className="size-5" strokeWidth={2.4} />

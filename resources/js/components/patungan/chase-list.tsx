@@ -21,7 +21,12 @@ export interface ChaseRow {
  */
 export function ChaseList({ rows, className }: { rows: ChaseRow[]; className?: string }) {
     return (
-        <section className={cn('border-border bg-card flex flex-col rounded-3xl border p-5 lg:p-6', className)}>
+        <section
+            className={cn(
+                'dashboard-card from-card via-card flex flex-col rounded-3xl border border-amber-100/90 bg-gradient-to-br to-amber-50/80 p-5 lg:p-6 dark:border-amber-400/15 dark:to-amber-400/10',
+                className,
+            )}
+        >
             <div>
                 <p className="text-muted-foreground text-[11px] font-bold tracking-[0.14em] uppercase">Perlu ditagih</p>
                 <h2 className="display mt-2 text-lg sm:text-xl">Sisa tagihan terbesar</h2>

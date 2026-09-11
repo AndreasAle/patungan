@@ -72,10 +72,18 @@ export function MascotGreeting({ name, activeCount, awaitingCount, collectedThis
 
     return (
         <section
-            className={cn('border-border bg-card relative flex items-center gap-4 overflow-hidden rounded-3xl border p-4 sm:gap-5 sm:p-5', className)}
+            className={cn(
+                'dashboard-card border-primary/10 from-card via-card relative flex items-center gap-4 overflow-hidden rounded-3xl border bg-gradient-to-br to-emerald-50/80 p-4 sm:gap-5 sm:p-5 dark:to-emerald-400/10',
+                className,
+            )}
         >
             {/* A wash behind the character so it does not float on flat white. */}
             <span aria-hidden="true" className="bg-brand-soft pointer-events-none absolute -top-10 -left-10 size-40 rounded-full opacity-60" />
+            <span
+                aria-hidden="true"
+                className="dashboard-orbit absolute -top-5 right-10 size-14 rounded-full border border-dashed border-emerald-300/50"
+            />
+            <span aria-hidden="true" className="bg-lime absolute top-5 right-5 size-2.5 rounded-full shadow-[0_0_0_6px_rgba(199,243,61,0.14)]" />
 
             <Mascot mood={state.mood} className="relative size-20 shrink-0 sm:size-24" />
 

@@ -88,7 +88,13 @@ export function ZoneMap({ breakdown, className }: { breakdown: ZoneBreakdown; cl
     } as CSSProperties;
 
     return (
-        <section className={cn('border-border bg-card rounded-3xl border p-5 lg:p-6', className)} style={palette}>
+        <section
+            className={cn(
+                'dashboard-card from-card rounded-3xl border border-sky-100/90 bg-gradient-to-br via-sky-50/25 to-emerald-50/55 p-5 lg:p-6 dark:border-sky-400/15 dark:via-sky-400/5 dark:to-emerald-400/10',
+                className,
+            )}
+            style={palette}
+        >
             <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                     <p className="text-muted-foreground text-[11px] font-bold tracking-[0.14em] uppercase">Asal pembayaran</p>

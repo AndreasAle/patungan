@@ -86,10 +86,10 @@ export default function Dashboard({ balance, stats, active, history, notificatio
             {/* The phone keeps the compact strip; the three stat cards below
                 carry the same figures with their history on desktop. */}
             <div className="lg:hidden">
-                <SummaryStrip stats={stats} />
+                <QuickActions />
 
-                <div className="mt-4">
-                    <QuickActions />
+                <div className="mt-3">
+                    <SummaryStrip stats={stats} />
                 </div>
             </div>
 
@@ -191,7 +191,7 @@ export default function Dashboard({ balance, stats, active, history, notificatio
 /** Unread notifications, or an honest note that there is nothing new. */
 function ActivityPanel({ notifications }: { notifications: NotificationItem[] }) {
     return (
-        <section className="border-border bg-card rounded-3xl border p-5">
+        <section className="dashboard-card border-primary/10 from-card via-card rounded-3xl border bg-gradient-to-br to-sky-50/60 p-5 dark:to-sky-400/10">
             <h2 className="text-muted-foreground text-[11px] font-bold tracking-[0.18em] uppercase">Aktivitas</h2>
 
             {notifications.length === 0 ? (
@@ -227,7 +227,12 @@ function WalletPanel({ balance, className }: { balance: Balance; className?: str
     ] as const;
 
     return (
-        <section className={cn('border-border bg-card rounded-3xl border p-5', className)}>
+        <section
+            className={cn(
+                'dashboard-card border-primary/10 from-card via-card rounded-3xl border bg-gradient-to-br to-lime-50/70 p-5 dark:to-lime-400/10',
+                className,
+            )}
+        >
             <h2 className="text-muted-foreground text-[11px] font-bold tracking-[0.18em] uppercase">Dompet</h2>
 
             <dl className="divide-border mt-2 divide-y">

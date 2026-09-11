@@ -1,5 +1,6 @@
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Eyebrow } from '@/components/patungan/section-heading';
+import { WalletHeroArt } from '@/components/patungan/wallet-hero-art';
 import { rupiah } from '@/lib/format';
 import type { Balance } from '@/types';
 import { Link } from '@inertiajs/react';
@@ -23,8 +24,10 @@ export function BalanceHero({ name, balance, unreadCount }: BalanceHeroProps) {
     const firstName = name.split(' ')[0];
 
     return (
-        <div>
-            <div className="flex items-center gap-3">
+        <div className="relative">
+            <WalletHeroArt className="pointer-events-none absolute top-9 -right-8 w-48 opacity-95 sm:top-4 sm:right-2 sm:w-56" />
+
+            <div className="relative z-10 flex items-center gap-3">
                 <AppLogoIcon className="size-8 shrink-0 lg:hidden" plate />
 
                 <div className="min-w-0 flex-1">
@@ -42,8 +45,8 @@ export function BalanceHero({ name, balance, unreadCount }: BalanceHeroProps) {
                 </Link>
             </div>
 
-            <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:gap-10">
-                <div className="min-w-0">
+            <div className="relative z-10 mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:gap-10">
+                <div className="max-w-[64%] min-w-0 sm:max-w-[70%]">
                     <Eyebrow onDeep>Saldo tersedia</Eyebrow>
 
                     <p className="display text-brand-deep-foreground mt-3 text-[29px] tabular-nums sm:text-[40px] lg:text-[44px]">
@@ -64,7 +67,7 @@ export function BalanceHero({ name, balance, unreadCount }: BalanceHeroProps) {
                     </dl>
                 </div>
 
-                <div className="flex gap-2.5 lg:shrink-0 lg:pb-1">
+                <div className="mt-7 flex gap-2.5 sm:mt-10 lg:mt-0 lg:shrink-0 lg:pb-1">
                     <Link
                         href={route('patungan.create')}
                         className="bg-lime text-lime-foreground flex h-12 flex-1 items-center justify-center gap-2 rounded-full px-6 text-sm font-semibold transition hover:brightness-105 active:scale-[0.98] lg:flex-none"
