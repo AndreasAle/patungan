@@ -45,16 +45,16 @@ export function BalanceHero({ name, balance, unreadCount }: BalanceHeroProps) {
                 </Link>
             </div>
 
-            <div className="relative z-10 mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:gap-10">
+            <div className="relative z-10 mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:gap-8">
                 <div className="max-w-[64%] min-w-0 sm:max-w-[70%]">
                     <Eyebrow onDeep>Saldo tersedia</Eyebrow>
 
-                    <p className="display text-brand-deep-foreground mt-3 text-[29px] tabular-nums sm:text-[40px] lg:text-[44px]">
+                    <p className="display text-brand-deep-foreground mt-2 text-[29px] tabular-nums sm:text-[40px] lg:text-[44px]">
                         {rupiah(balance.available)}
                     </p>
 
                     {/* Hairline pair rather than a run-on sentence of numbers. */}
-                    <dl className="divide-brand-deep-muted/25 border-brand-deep-muted/25 mt-5 flex divide-x border-t pt-4">
+                    <dl className="divide-brand-deep-muted/25 border-brand-deep-muted/25 mt-3 flex divide-x border-t pt-3">
                         {[
                             ['Pending', balance.pending],
                             ['Sudah dicairkan', balance.paid_out],
@@ -67,17 +67,17 @@ export function BalanceHero({ name, balance, unreadCount }: BalanceHeroProps) {
                     </dl>
                 </div>
 
-                <div className="mt-7 flex gap-2.5 sm:mt-10 lg:mt-0 lg:shrink-0 lg:pb-1">
+                <div className="mt-3 flex gap-2 sm:mt-4 lg:mt-0 lg:shrink-0 lg:pb-1">
                     <Link
                         href={route('patungan.create')}
-                        className="bg-lime text-lime-foreground flex h-12 flex-1 items-center justify-center gap-2 rounded-full px-6 text-sm font-semibold transition hover:brightness-105 active:scale-[0.98] lg:flex-none"
+                        className="bg-lime text-lime-foreground flex h-11 flex-[1.08] items-center justify-center gap-1.5 rounded-full px-3 text-[11px] font-semibold whitespace-nowrap transition hover:brightness-105 active:scale-[0.98] min-[360px]:text-xs lg:h-12 lg:flex-none lg:px-6 lg:text-sm"
                     >
                         <Plus className="size-4" strokeWidth={2.5} />
                         Buat Patungan
                     </Link>
                     <Link
                         href={route('payout.index')}
-                        className="text-brand-deep-foreground ring-brand-deep-muted/30 flex h-12 flex-1 items-center justify-center gap-2 rounded-full px-6 text-sm font-semibold ring-1 transition hover:bg-white/10 active:scale-[0.98] lg:flex-none"
+                        className="text-brand-deep-foreground ring-brand-deep-muted/30 flex h-11 flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-[11px] font-semibold whitespace-nowrap ring-1 transition hover:bg-white/10 active:scale-[0.98] min-[360px]:text-xs lg:h-12 lg:flex-none lg:px-6 lg:text-sm"
                     >
                         <ArrowDownToLine className="size-4" />
                         Tarik Dana

@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { ArrowDownToLine, Landmark, Plus, Receipt, Wallet, type LucideIcon } from 'lucide-react';
+import { ArrowDownToLine, Landmark, Receipt, Wallet, type LucideIcon } from 'lucide-react';
 
 interface Action {
     label: string;
@@ -43,28 +43,16 @@ const actions: Action[] = [
 /**
  * The shortcut row under the balance panel.
  *
- * One strong primary action followed by the four destinations people revisit.
- * This borrows the familiar wallet-home hierarchy without borrowing labels or
- * inventing features PATUNGAN does not have.
+ * Four direct destinations people revisit. The create action already lives in
+ * the balance hero, so this row stays compact instead of repeating it.
  */
 export function QuickActions() {
     return (
-        <nav aria-label="Pintasan" className="border-border bg-card overflow-hidden rounded-3xl border shadow-[0_1px_20px_rgba(16,66,44,0.05)]">
-            <Link
-                href={route('patungan.create')}
-                className="group from-brand-soft/85 to-card flex items-center gap-3 bg-gradient-to-r px-4 py-4 transition hover:from-emerald-100/80 dark:hover:from-emerald-400/15"
-            >
-                <span className="bg-primary text-primary-foreground flex size-11 shrink-0 items-center justify-center rounded-2xl shadow-sm transition group-hover:scale-105">
-                    <Plus className="size-5" strokeWidth={2.4} />
-                </span>
-                <span className="min-w-0 flex-1">
-                    <span className="text-foreground block text-sm font-bold tracking-tight">Buat Patungan</span>
-                    <span className="text-muted-foreground mt-0.5 block truncate text-[11px]">Mulai baru, lalu bagikan ke teman</span>
-                </span>
-                <span className="bg-primary text-primary-foreground shrink-0 rounded-lg px-3 py-2 text-[10px] font-bold tracking-[0.08em]">BUAT</span>
-            </Link>
-
-            <div className="border-border grid grid-cols-4 border-t px-2 py-4">
+        <nav
+            aria-label="Pintasan"
+            className="border-border bg-card overflow-hidden rounded-3xl border px-2 py-3 shadow-[0_1px_20px_rgba(16,66,44,0.05)]"
+        >
+            <div className="grid grid-cols-4">
                 {actions.map((action) => (
                     <Link
                         key={action.href}
