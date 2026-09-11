@@ -1,13 +1,13 @@
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { rupiah } from '@/lib/format';
 import type { DashboardStats } from '@/types';
-import { Clock3, TrendingUp, Wallet } from 'lucide-react';
+import { ChartNoAxesColumnIncreasing, ChevronDown, Clock3, TrendingUp, Wallet } from 'lucide-react';
 
 /**
- * The three numbers an organizer acts on, sitting over the lower edge of the
- * green panel.
+ * The three numbers an organizer acts on, tucked behind one compact row.
  *
  * They cover every patungan the organizer owns, not only the ones listed
- * below, so the strip does not quietly stop counting at the tenth row.
+ * below. It starts closed so the mobile home opens with actions, not accounting.
  */
 export function SummaryStrip({ stats }: { stats: DashboardStats }) {
     const items = [
@@ -17,16 +17,33 @@ export function SummaryStrip({ stats }: { stats: DashboardStats }) {
     ];
 
     return (
-        <dl className="border-border bg-card divide-border grid divide-y rounded-3xl border shadow-[0_1px_20px_rgba(16,66,44,0.05)] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-            {items.map((item) => (
-                <div key={item.label} className="flex items-center justify-between gap-3 px-5 py-3.5 sm:block sm:px-6 sm:py-5">
-                    <dt className="text-muted-foreground flex items-center gap-2 text-[11px] font-semibold tracking-[0.1em] uppercase">
-                        <item.icon className="text-primary size-3.5" strokeWidth={2.4} />
-                        {item.label}
-                    </dt>
-                    <dd className="display text-foreground text-base tabular-nums sm:mt-2.5 sm:text-2xl">{item.value}</dd>
-                </div>
-            ))}
-        </dl>
+        <Collapsible defaultOpen={false} className="border-border bg-card overflow-hidden rounded-3xl border shadow-[0_1px_20px_rgba(16,66,44,0.05)]">
+            <CollapsibleTrigger className="group hover:bg-surface flex w-full items-center gap-3 px-4 py-3.5 text-left transition">
+                <span className="bg-brand-soft text-primary flex size-9 shrink-0 items-center justify-center rounded-xl">
+                    <ChartNoAxesColumnIncreasing className="size-[17px]" strokeWidth={2.2} />
+                </span>
+                <span className="min-w-0 flex-1">
+                    <span className="text-foreground block text-xs font-bold tracking-tight">Ringkasan patungan</span>
+                    <span className="text-muted-foreground mt-0.5 block text-[10px]">Masuk, aktif, dan yang belum bayar</span>
+                </span>
+                <span className="text-primary text-[10px] font-semibold group-data-[state=open]:hidden">Buka</span>
+                <span className="text-primary hidden text-[10px] font-semibold group-data-[state=open]:inline">Tutup</span>
+                <ChevronDown className="text-muted-foreground size-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+            </CollapsibleTrigger>
+
+            <CollapsibleContent>
+                <dl className="divide-border border-border divide-y border-t">
+                    {items.map((item) => (
+                        <div key={item.label} className="flex items-center justify-between gap-3 px-4 py-3">
+                            <dt className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold tracking-[0.09em] uppercase">
+                                <item.icon className="text-primary size-3.5" strokeWidth={2.4} />
+                                {item.label}
+                            </dt>
+                            <dd className="text-foreground text-sm font-bold tabular-nums">{item.value}</dd>
+                        </div>
+                    ))}
+                </dl>
+            </CollapsibleContent>
+        </Collapsible>
     );
 }
