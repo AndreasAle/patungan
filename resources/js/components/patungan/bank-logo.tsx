@@ -23,18 +23,8 @@ const brandColours: Record<string, string> = {
     linkaja: '#E32629',
 };
 
-/**
- * Real logo files, when we have one that is actually that bank's mark.
- *
- * Deliberately short. The images in this project are mobile-app icons, and
- * only these three are close enough to the bank's own mark to pass as one.
- * Dropping a proper file at the path below adds a bank here without touching
- * this component.
- */
+/** Wallet marks use the app artwork already shipped by the landing page. */
 const logoFiles: Record<string, string> = {
-    bca: '/images/brand/payment-bca-mobile.jpg',
-    bri: '/images/brand/payment-brimo.jpg',
-    mandiri: '/images/brand/payment-livin.jpg',
     gopay: '/images/brand/payment-gopay.jpg',
     ovo: '/images/brand/payment-ovo.jpg',
     dana: '/images/brand/payment-dana.jpg',
@@ -43,9 +33,9 @@ const logoFiles: Record<string, string> = {
 };
 
 const sizes = {
-    sm: 'size-9 rounded-lg text-[10px]',
-    md: 'size-11 rounded-xl text-xs',
-    lg: 'size-14 rounded-2xl text-sm',
+    sm: 'h-10 w-14 rounded-xl text-[10px]',
+    md: 'h-12 w-16 rounded-xl text-xs',
+    lg: 'h-16 w-24 rounded-2xl text-sm',
 } as const;
 
 /**
@@ -75,7 +65,15 @@ export function BankLogo({ code, label, size = 'md', className }: { code: string
     if (source !== null) {
         return (
             <span className={cn('bg-card ring-border flex shrink-0 items-center justify-center overflow-hidden ring-1', sizes[size], className)}>
-                <img src={source} alt="" width={112} height={112} className="size-full object-cover" onError={onError} loading="lazy" />
+                <img
+                    src={source}
+                    alt={`${label} logo`}
+                    width={144}
+                    height={96}
+                    className="size-full object-contain p-1.5"
+                    onError={onError}
+                    loading="lazy"
+                />
             </span>
         );
     }
