@@ -45,6 +45,17 @@ return [
     'payout' => [
         'provider' => env('PAYOUT_PROVIDER', 'manual'),
         'min_amount' => (int) env('PAYOUT_MIN_AMOUNT', 10000),
+
+        /*
+         | Who can tell us the name on a bank account: "none" or "dana".
+         |
+         | Defaults to none, and that is not laziness. DANA's inquiry lives in
+         | their Disbursement product, which is activated and UAT-tested
+         | separately from QRIS. Turning this on before that is done produces a
+         | verification button that fails every time, which is worse for trust
+         | than not offering one.
+         */
+        'inquiry' => env('PAYOUT_INQUIRY', 'none'),
     ],
 
     /*

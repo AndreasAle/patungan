@@ -7,8 +7,8 @@ import { Label } from '@/components/ui/label';
 import PatunganLayout from '@/layouts/patungan-layout';
 import { cn } from '@/lib/utils';
 import { Head, router, useForm } from '@inertiajs/react';
-import { Landmark, Shield, Star, Trash2, Wallet } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
+import { BadgeCheck, Landmark, LoaderCircle, Shield, Star, Trash2, Wallet } from 'lucide-react';
+import { useEffect, useState, type FormEvent } from 'react';
 
 interface Channel {
     code: string;
@@ -20,17 +20,29 @@ interface Destination {
     type: string;
     label: string;
     account_holder: string;
+    verification_status: string;
+    verification_label: string;
+    verified_account_holder: string | null;
     is_default: boolean;
 }
 
 interface DestinationsProps {
     channels: Record<string, Channel[]>;
     destinations: Destination[];
+    /** False when no provider can tell us the name on an account. */
+    inquiry_available: boolean;
 }
 
 const typeLabels: Record<string, string> = { BANK: 'Bank', EWALLET: 'E-wallet' };
 
-export default function PayoutDestinations({ channels, destinations }: DestinationsProps) {
+interface CheckResult {
+    status: 'VERIFIED' | 'MISMATCH' | 'UNVERIFIED' | 'UNAVAILABLE';
+    account_holder: string | null;
+    found: boolean;
+    message: string;
+}
+
+export default function PayoutDestinations({ channels, destinations, inquiry_available }: DestinationsProps) {
     const [removing, setRemoving] = useState<Destination | null>(null);
 
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -42,6 +54,59 @@ export default function PayoutDestinations({ channels, destinations }: Destinati
 
     const options = channels[data.type] ?? [];
     const isBank = data.type === 'BANK';
+
+    /*
+     * The bank's answer, or null before anybody has asked.
+     *
+     * Cleared whenever the number or the bank changes: a name shown against a
+     * number that has since been edited is worse than no name, because it
+     * looks like confirmation of something nobody checked.
+     */
+    const [check, setCheck] = useState<CheckResult | null>(null);
+    const [checking, setChecking] = useState(false);
+
+    useEffect(() => {
+        setCheck(null);
+    }, [data.account_number, data.provider_code, data.type]);
+
+    const runCheck = async () => {
+        setChecking(true);
+
+        try {
+            const csrf = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/)?.[1];
+
+            const response = await fetch(route('payout.destination.verify'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    ...(csrf ? { 'X-XSRF-TOKEN': decodeURIComponent(csrf) } : {}),
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({ type: data.type, provider_code: data.provider_code, account_number: data.account_number }),
+            });
+
+            if (!response.ok) {
+                setCheck({ status: 'UNAVAILABLE', account_holder: null, found: false, message: 'Verifikasi gagal. Coba lagi sebentar lagi.' });
+
+                return;
+            }
+
+            setCheck(await response.json());
+        } catch {
+            setCheck({ status: 'UNAVAILABLE', account_holder: null, found: false, message: 'Koneksi terputus saat verifikasi.' });
+        } finally {
+            setChecking(false);
+        }
+    };
+
+    /*
+     * A mismatch can still be saved - bank records carry married names and
+     * abbreviations - but it is stored flagged, and payouts to it get looked at
+     * first. An account the bank says does not exist cannot be saved at all.
+     */
+    const canSave = inquiry_available ? check !== null && check.status !== 'UNVERIFIED' : data.account_holder.trim().length > 0;
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
@@ -90,6 +155,25 @@ export default function PayoutDestinations({ channels, destinations }: Destinati
                                     <div className="min-w-0 flex-1">
                                         <p className="truncate text-sm font-bold tracking-tight">{destination.label}</p>
                                         <p className="text-muted-foreground truncate text-[11px]">{destination.account_holder}</p>
+
+                                        {/*
+                                            Only the two states worth acting on
+                                            are shown. Labelling every ordinary
+                                            row "belum diverifikasi" turns the
+                                            badge into wallpaper.
+                                        */}
+                                        {destination.verification_status === 'VERIFIED' && (
+                                            <span className="text-success mt-1 inline-flex items-center gap-1 text-[10px] font-semibold">
+                                                <BadgeCheck className="size-3" />
+                                                Terverifikasi
+                                            </span>
+                                        )}
+                                        {destination.verification_status === 'MISMATCH' && (
+                                            <span className="text-warning mt-1 inline-flex items-center gap-1 text-[10px] font-semibold">
+                                                <Shield className="size-3" />
+                                                Nama beda, pencairan diperiksa dulu
+                                            </span>
+                                        )}
                                     </div>
 
                                     {destination.is_default ? (
@@ -183,24 +267,72 @@ export default function PayoutDestinations({ channels, destinations }: Destinati
                         <InputError message={errors.account_number} className="mt-1.5" />
                     </div>
 
-                    <div className="mt-3.5">
-                        <Label htmlFor="account_holder">Nama pemilik</Label>
-                        <Input
-                            id="account_holder"
-                            placeholder="Sesuai buku tabungan"
-                            value={data.account_holder}
-                            onChange={(event) => setData('account_holder', event.target.value)}
-                            className="mt-1.5 h-11 rounded-xl"
-                        />
-                        <InputError message={errors.account_holder} className="mt-1.5" />
-                    </div>
+                    {inquiry_available ? (
+                        <div className="mt-3.5">
+                            {/*
+                                The bank answers this, not the person. Typing
+                                your own "account holder" was never a check -
+                                any name could sit against any number.
+                            */}
+                            {check === null ? (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={runCheck}
+                                    disabled={checking || data.account_number.length < 6}
+                                    className="h-11 w-full rounded-xl text-sm font-semibold"
+                                >
+                                    {checking && <LoaderCircle className="size-4 animate-spin" />}
+                                    {checking ? 'Mengecek ke bank...' : 'Verifikasi rekening'}
+                                </Button>
+                            ) : (
+                                <div
+                                    className={cn(
+                                        'rounded-xl border px-4 py-3',
+                                        check.status === 'VERIFIED' && 'border-success/30 bg-success-soft',
+                                        check.status === 'MISMATCH' && 'border-warning/40 bg-warning-soft',
+                                        (check.status === 'UNVERIFIED' || check.status === 'UNAVAILABLE') && 'border-border bg-surface',
+                                    )}
+                                >
+                                    <p className="text-muted-foreground text-[10px] font-bold tracking-[0.14em] uppercase">Pemilik rekening</p>
+
+                                    {check.account_holder ? (
+                                        <p className="mt-1.5 flex items-center gap-1.5 text-sm font-bold tracking-tight">
+                                            {check.account_holder}
+                                            {check.status === 'VERIFIED' && <BadgeCheck className="text-success size-4 shrink-0" />}
+                                        </p>
+                                    ) : (
+                                        <p className="text-muted-foreground mt-1.5 text-sm font-semibold">Tidak diketahui</p>
+                                    )}
+
+                                    <p className="text-muted-foreground mt-1.5 text-[11px] leading-relaxed">{check.message}</p>
+
+                                    <button type="button" onClick={() => setCheck(null)} className="text-primary mt-2.5 text-[11px] font-semibold">
+                                        Cek ulang
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="mt-3.5">
+                            <Label htmlFor="account_holder">Nama pemilik</Label>
+                            <Input
+                                id="account_holder"
+                                placeholder="Sesuai buku tabungan"
+                                value={data.account_holder}
+                                onChange={(event) => setData('account_holder', event.target.value)}
+                                className="mt-1.5 h-11 rounded-xl"
+                            />
+                            <InputError message={errors.account_holder} className="mt-1.5" />
+                        </div>
+                    )}
 
                     <p className="bg-surface text-muted-foreground mt-3.5 flex items-start gap-2 rounded-xl px-3 py-2.5 text-[11px] leading-relaxed">
                         <Shield className="text-primary mt-0.5 size-3.5 shrink-0" />
                         Nomor rekening tidak pernah dikirim balik ke browser. Di mana pun ditampilkan, formatnya jadi seperti BCA ******8291.
                     </p>
 
-                    <Button type="submit" className="mt-5 h-12 w-full rounded-full text-sm font-semibold" disabled={processing}>
+                    <Button type="submit" className="mt-5 h-12 w-full rounded-xl text-sm font-semibold" disabled={processing || !canSave}>
                         {processing ? 'Menyimpan...' : 'Simpan rekening'}
                     </Button>
                 </form>

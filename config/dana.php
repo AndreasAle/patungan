@@ -85,6 +85,19 @@ return [
     'notification_url' => env('DANA_NOTIFICATION_URL'),
 
     /*
+    |--------------------------------------------------------------------------
+    | Account inquiry
+    |--------------------------------------------------------------------------
+    |
+    | Overridable because this endpoint belongs to the Disbursement product,
+    | which is activated separately from QRIS. Leaving it configurable means a
+    | corrected path is an env change rather than a deploy.
+    |
+    */
+
+    'inquiry_endpoint' => env('DANA_INQUIRY_ENDPOINT', '/v1.0/emoney/account-inquiry.htm'),
+
+    /*
     | Sandbox UAT switch for DANA's required 5005601 Finish Notify scenario.
     | The controller also checks DANA_ENV=sandbox, so this can never force a
     | production notification to fail even if an operator forgets to unset it.

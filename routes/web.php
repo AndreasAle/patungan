@@ -147,6 +147,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('patungan/{patungan}/peserta/{participant}/lunas', [ParticipantController::class, 'unmarkPaid'])->name('participant.unmark-paid');
 
         Route::post('pencairan', [PayoutController::class, 'store'])->name('payout.store');
+        /*
+         | Account numbers are short and guessable enough that an unlimited
+         | inquiry endpoint is a way to harvest names from a bank. Signed in,
+         | and hard limited.
+         */
+        Route::post('pencairan/tujuan/verifikasi', [PayoutDestinationController::class, 'verify'])
+            ->middleware('throttle:12,1')
+            ->name('payout.destination.verify');
         Route::post('pencairan/tujuan', [PayoutDestinationController::class, 'store'])->name('payout.destination.store');
         Route::post('pencairan/tujuan/{destination}/utama', [PayoutDestinationController::class, 'makeDefault'])->name('payout.destination.default');
         Route::delete('pencairan/tujuan/{destination}', [PayoutDestinationController::class, 'destroy'])->name('payout.destination.destroy');

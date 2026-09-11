@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AccountVerificationStatus;
 use App\Enums\PayoutDestinationType;
 use App\Models\Concerns\HasUuid;
 use Database\Factories\PayoutDestinationFactory;
@@ -31,6 +32,7 @@ class PayoutDestination extends Model
     {
         return [
             'type' => PayoutDestinationType::class,
+            'verification_status' => AccountVerificationStatus::class,
             // Encrypted at rest; the model decrypts only when something asks.
             'account_number' => 'encrypted',
             'is_default' => 'boolean',
