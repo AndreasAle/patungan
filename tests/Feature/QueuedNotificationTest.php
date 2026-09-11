@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Notifications\ParticipantPaidNotification;
 use App\Services\PaymentService;
+use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Events\CallQueuedListener;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
@@ -48,7 +50,7 @@ class QueuedNotificationTest extends TestCase
          * somebody who cannot see what depends on it. Without a worker every
          * queued notification in this application is written and never sent.
          */
-        $commands = collect(app(\Illuminate\Console\Scheduling\Schedule::class)->events())
+        $commands = collect(app(Schedule::class)->events())
             ->map(fn ($event) => $event->command ?? '')
             ->implode(' ');
 
@@ -66,6 +68,11 @@ class QueuedNotificationTest extends TestCase
 
         app(PaymentService::class)->markAsPaid($payment, 'TXN-TEST-2');
 
-        Queue::assertPushed(\Illuminate\Notifications\SendQueuedNotifications::class);
+        /*
+         * The listener is what lands on the queue, not the notification: the
+         * notification is only raised once the listener runs, which is exactly
+         * why nothing arrived while no worker existed.
+         */
+        Queue::assertPushed(CallQueuedListener::class);
     }
 }
