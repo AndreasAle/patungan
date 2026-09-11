@@ -1,3 +1,4 @@
+import { GlobalSearch } from '@/components/admin/global-search';
 import AppLogo from '@/components/app-logo';
 import { FlashToast } from '@/components/patungan/flash-toast';
 import { cn } from '@/lib/utils';
@@ -33,13 +34,19 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                             <span className="font-bold tracking-tight">Admin</span>
                         </div>
 
-                        <Link
-                            href={route('dashboard')}
-                            className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-sm font-medium"
-                        >
-                            <ArrowLeft className="size-4" />
-                            Kembali ke app
-                        </Link>
+                        <div className="flex items-center gap-4">
+                            <div className="hidden sm:block">
+                                <GlobalSearch />
+                            </div>
+
+                            <Link
+                                href={route('dashboard')}
+                                className="text-muted-foreground hover:text-foreground flex shrink-0 items-center gap-1.5 text-sm font-medium"
+                            >
+                                <ArrowLeft className="size-4" />
+                                <span className="hidden lg:inline">Kembali ke app</span>
+                            </Link>
+                        </div>
                     </div>
 
                     <nav className="mx-auto flex w-full max-w-7xl gap-1 overflow-x-auto px-4 pb-2 lg:px-8">

@@ -1,6 +1,7 @@
 import { rupiah } from '@/lib/format';
 import { cn } from '@/lib/utils';
-import { AlertTriangle, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { Link } from '@inertiajs/react';
+import { AlertTriangle, ArrowUpRight, CheckCircle2, ShieldAlert } from 'lucide-react';
 
 export interface Integrity {
     balanced: boolean;
@@ -17,6 +18,8 @@ export interface Anomaly {
     detail: string;
     count: number;
     severity: 'critical' | 'warning';
+    /** Where the counted rows live, when there is such a page. */
+    href: string | null;
 }
 
 /**
@@ -82,27 +85,41 @@ export function HealthPanel({ integrity, anomalies }: { integrity: Integrity; an
                 <p className="text-muted-foreground text-xs">Tidak ada antrean, webhook, atau pencairan yang tertahan.</p>
             ) : (
                 <div className="grid gap-3 sm:grid-cols-2">
-                    {active.map((anomaly) => (
-                        <div
-                            key={anomaly.key}
-                            className={cn(
-                                'flex items-start gap-3 rounded-3xl border p-4',
-                                anomaly.severity === 'critical' ? 'border-destructive/30 bg-destructive/5' : 'border-warning/30 bg-warning/5',
-                            )}
-                        >
-                            <AlertTriangle
-                                className={cn('mt-0.5 size-4 shrink-0', anomaly.severity === 'critical' ? 'text-destructive' : 'text-warning')}
-                                strokeWidth={2.4}
-                            />
-                            <div className="min-w-0">
-                                <p className="text-sm font-bold">
-                                    {anomaly.label}
-                                    <span className="text-muted-foreground ml-2 font-mono text-xs tabular-nums">{anomaly.count}</span>
-                                </p>
-                                <p className="text-muted-foreground mt-1 text-xs leading-relaxed">{anomaly.detail}</p>
+                    {active.map((anomaly) => {
+                        const body = (
+                            <>
+                                <AlertTriangle
+                                    className={cn('mt-0.5 size-4 shrink-0', anomaly.severity === 'critical' ? 'text-destructive' : 'text-warning')}
+                                    strokeWidth={2.4}
+                                />
+                                <div className="min-w-0">
+                                    <p className="flex items-center gap-1.5 text-sm font-bold">
+                                        {anomaly.label}
+                                        <span className="text-muted-foreground font-mono text-xs tabular-nums">{anomaly.count}</span>
+                                        {anomaly.href && <ArrowUpRight className="size-3.5 opacity-0 transition group-hover:opacity-100" />}
+                                    </p>
+                                    <p className="text-muted-foreground mt-1 text-xs leading-relaxed">{anomaly.detail}</p>
+                                </div>
+                            </>
+                        );
+
+                        const classes = cn(
+                            'flex items-start gap-3 rounded-3xl border p-4',
+                            anomaly.severity === 'critical' ? 'border-destructive/30 bg-destructive/5' : 'border-warning/30 bg-warning/5',
+                        );
+
+                        // A count with nowhere to go makes an operator hunt for
+                        // the rows by hand, which in practice means they do not.
+                        return anomaly.href ? (
+                            <Link key={anomaly.key} href={anomaly.href} className={cn(classes, 'group transition hover:brightness-95')}>
+                                {body}
+                            </Link>
+                        ) : (
+                            <div key={anomaly.key} className={classes}>
+                                {body}
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
         </section>

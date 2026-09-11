@@ -34,6 +34,9 @@ class AdminAudit
 
     public const SUPPORT_MESSAGE_UPDATED = 'support.updated';
 
+    /** Moving data out of the system, where no later access control reaches it. */
+    public const DATA_EXPORTED = 'data.exported';
+
     /** @param array<string, mixed> $context */
     public static function record(
         User $actor,

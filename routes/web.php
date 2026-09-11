@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\Admin\AdminAuditLogController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminExportController;
 use App\Http\Controllers\Admin\AdminPatunganController;
 use App\Http\Controllers\Admin\AdminPaymentController;
+use App\Http\Controllers\Admin\AdminSearchController;
 use App\Http\Controllers\Admin\AdminSettlementController;
 use App\Http\Controllers\Admin\AdminSupportMessageController;
 use App\Http\Controllers\Admin\AdminUserController;
@@ -185,6 +187,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('webhooks', [AdminWebhookLogController::class, 'index'])->name('webhooks');
 
     Route::get('audit', [AdminAuditLogController::class, 'index'])->name('audit');
+
+    Route::get('cari', AdminSearchController::class)->name('search');
+    Route::get('ekspor/{dataset}', AdminExportController::class)->name('export');
 
     Route::get('bantuan', [AdminSupportMessageController::class, 'index'])->name('support');
     Route::post('bantuan/{message}', [AdminSupportMessageController::class, 'update'])->name('support.update');

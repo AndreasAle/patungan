@@ -93,7 +93,11 @@ class PlatformHealth
      * operator reading this at speed needs to know what is broken, not what it
      * looks like.
      *
-     * @return list<array{key: string, label: string, detail: string, count: int, severity: string}>
+     * Each carries the link to the rows it counted where one exists. A number
+     * an operator cannot click is a number they have to go hunting for by hand,
+     * which in practice means they do not.
+     *
+     * @return list<array{key: string, label: string, detail: string, count: int, severity: string, href: string|null}>
      */
     public function anomalies(): array
     {
@@ -104,6 +108,7 @@ class PlatformHealth
                 'detail' => 'Uang masuk tapi saldo penyelenggara tidak pernah dikredit.',
                 'count' => $this->paidWithoutLedger(),
                 'severity' => 'critical',
+                'href' => route('admin.payments', ['status' => PaymentStatus::Paid->value]),
             ],
             [
                 'key' => 'stuck_settlement',
@@ -111,6 +116,7 @@ class PlatformHealth
                 'detail' => 'Belum selesai lebih dari '.self::STUCK_SETTLEMENT_HOURS.' jam, padahal saldo sudah dipotong.',
                 'count' => $this->stuckSettlements(),
                 'severity' => 'critical',
+                'href' => route('admin.settlements', ['status' => SettlementStatus::Processing->value]),
             ],
             [
                 'key' => 'participant_paid_no_payment',
@@ -118,6 +124,7 @@ class PlatformHealth
                 'detail' => 'Ditandai lunas manual, atau pembayarannya hilang.',
                 'count' => $this->participantsPaidWithoutPayment(),
                 'severity' => 'warning',
+                'href' => null,
             ],
             [
                 'key' => 'stuck_pending',
@@ -125,6 +132,7 @@ class PlatformHealth
                 'detail' => 'Slot invoice peserta tertahan; biasanya penjadwal tidak jalan.',
                 'count' => $this->stuckPending(),
                 'severity' => 'warning',
+                'href' => route('admin.payments', ['status' => PaymentStatus::Pending->value]),
             ],
             [
                 'key' => 'webhook_failed',
@@ -132,6 +140,7 @@ class PlatformHealth
                 'detail' => 'Pembayaran mungkin sudah masuk tapi belum tercatat.',
                 'count' => $this->recentWebhookFailures(),
                 'severity' => 'warning',
+                'href' => route('admin.webhooks', ['status' => WebhookLog::STATUS_FAILED]),
             ],
             [
                 'key' => 'queue_backlog',
@@ -139,6 +148,7 @@ class PlatformHealth
                 'detail' => 'Notifikasi ke penyelenggara tertahan. Pastikan worker jalan.',
                 'count' => $this->queueDepth(),
                 'severity' => 'warning',
+                'href' => null,
             ],
             [
                 'key' => 'failed_jobs',
@@ -146,6 +156,7 @@ class PlatformHealth
                 'detail' => 'Sudah dicoba ulang sampai batas dan menyerah.',
                 'count' => $this->failedJobs(),
                 'severity' => 'warning',
+                'href' => null,
             ],
         ];
     }
