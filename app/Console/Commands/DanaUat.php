@@ -32,7 +32,8 @@ class DanaUat extends Command
     protected $signature = 'dana:uat
         {--amount=10000 : Amount in whole rupiah for the test charge}
         {--keep : Skip the cancel step, leaving the QR payable in sandbox}
-        {--dump : Print the full request and response, for a provider support ticket}';
+        {--dump : Print the full request and response, for a provider support ticket}
+        {--minimal : Send the exact body shape DANA support hands out, to isolate a field}';
 
     protected $description = 'Run the DANA QRIS sandbox scenarios: generate, query, cancel';
 
@@ -72,6 +73,11 @@ class DanaUat extends Command
 
         if ($qris === null) {
             return self::FAILURE;
+        }
+
+        if ($this->option('minimal')) {
+            $qris->useMinimalBody();
+            $this->components->warn('Minimal body: no validityPeriod, no sourcePlatform, orderTerminalType APP.');
         }
 
         $ids = new DanaExternalIdGenerator;

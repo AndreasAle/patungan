@@ -36,10 +36,27 @@ final class DanaQrisService
     /** DANA caps partnerReferenceNo at 25 characters for QRIS specifically. */
     private const MAX_REFERENCE_LENGTH = 25;
 
+    /**
+     * Sends the exact body shape DANA's integration support hands out.
+     *
+     * Their sample omits sourcePlatform and validityPeriod, adds
+     * terminalSource, and uses orderTerminalType APP. The published reference
+     * disagrees with parts of that, and when a provider's documentation and
+     * their support team disagree, the support team is the one who can see the
+     * server logs. This exists so the difference can be tested rather than
+     * argued about, and so the richer body stays the default if it works.
+     */
+    private bool $minimalBody = false;
+
     public function __construct(
         private readonly DanaClient $client,
         private readonly DanaCredentials $credentials,
     ) {}
+
+    public function useMinimalBody(bool $minimal = true): void
+    {
+        $this->minimalBody = $minimal;
+    }
 
     /**
      * The last request and response this service sent, verbatim.
@@ -64,22 +81,29 @@ final class DanaQrisService
 
         $body = array_filter([
             'merchantId' => $this->credentials->merchantId(),
-            'subMerchantId' => $this->credentials->subMerchantId,
+            'subMerchantId' => $this->minimalBody ? null : $this->credentials->subMerchantId,
             'storeId' => $this->credentials->storeId(),
             'partnerReferenceNo' => $request->reference,
             'amount' => [
                 'value' => DanaStatusMapper::rupiahToAmount($request->amount),
                 'currency' => 'IDR',
             ],
-            'validityPeriod' => $expiresAt->format('Y-m-d\TH:i:sP'),
+            /*
+             * Dropped in minimal mode because DANA's support sample omits it.
+             * Losing it means the QR lives for DANA's default window instead of
+             * our invoice TTL, which is a real cost - so it is only given up
+             * if keeping it is what breaks the call.
+             */
+            'validityPeriod' => $this->minimalBody ? null : $expiresAt->format('Y-m-d\TH:i:sP'),
             'additionalInfo' => [
-                'envInfo' => [
+                'terminalSource' => 'MER',
+                'envInfo' => array_filter([
                     // A server-to-server call from our own backend: DANA's
                     // enums for a payment gateway integration with no device.
-                    'sourcePlatform' => 'IPG',
+                    'sourcePlatform' => $this->minimalBody ? null : 'IPG',
                     'terminalType' => 'SYSTEM',
-                    'orderTerminalType' => 'WEB',
-                ],
+                    'orderTerminalType' => $this->minimalBody ? 'APP' : 'WEB',
+                ], static fn ($value): bool => $value !== null),
             ],
         ], static fn ($value): bool => $value !== null && $value !== '');
 
