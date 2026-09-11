@@ -40,7 +40,15 @@ class PayoutController extends Controller
             'settlements' => $user->settlements()->latest('requested_at')->limit(25)->get()
                 ->map(fn (Settlement $settlement) => [
                     'uuid' => $settlement->uuid,
+                    /*
+                     * A short, quotable reference. Support conversations about
+                     * money need something a person can read down a phone line;
+                     * a full UUID is not that, and a sequential id would leak
+                     * how many payouts the platform has ever processed.
+                     */
+                    'reference' => 'PC-'.strtoupper(substr(str_replace('-', '', $settlement->uuid), 0, 8)),
                     'amount' => $settlement->amount,
+                    'fee' => $settlement->fee,
                     'net_amount' => $settlement->net_amount,
                     'status' => $settlement->status->value,
                     'status_label' => $settlement->status->label(),

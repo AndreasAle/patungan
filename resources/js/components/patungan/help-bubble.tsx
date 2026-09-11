@@ -10,6 +10,9 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 
 type Errors = Partial<Record<'name' | 'contact' | 'message', string>>;
 
+/** Per-browser, and deliberately not per-account: a payer has no account. */
+const DISMISSED_KEY = 'patungan.help-bubble.dismissed';
+
 /**
  * The CSRF token Laravel issues as a cookie.
  *
@@ -35,6 +38,21 @@ function csrfToken(): string {
  */
 export function HelpBubble({ className }: { className?: string }) {
     const [open, setOpen] = useState(false);
+    /*
+     * Dismissed for this browser, remembered across pages.
+     *
+     * Read lazily so the bubble never flashes in before the stored preference
+     * is known. localStorage throws outright in some embedded browsers rather
+     * than returning null, so every touch of it is guarded - a support widget
+     * must not be able to take a payment page down with it.
+     */
+    const [dismissed, setDismissed] = useState(() => {
+        try {
+            return window.localStorage.getItem(DISMISSED_KEY) === '1';
+        } catch {
+            return false;
+        }
+    });
     const [sending, setSending] = useState(false);
     const [sent, setSent] = useState(false);
     const [errors, setErrors] = useState<Errors>({});
@@ -138,8 +156,24 @@ export function HelpBubble({ className }: { className?: string }) {
         }
     };
 
+    const dismiss = () => {
+        setDismissed(true);
+        setOpen(false);
+
+        try {
+            window.localStorage.setItem(DISMISSED_KEY, '1');
+        } catch {
+            // Private browsing, or storage disabled. It stays hidden for this
+            // page view, which is what the person asked for right now.
+        }
+    };
+
+    if (dismissed) {
+        return null;
+    }
+
     return (
-        <div className={cn('pb-safe fixed right-4 bottom-4 z-50 flex flex-col items-end gap-3 print:hidden', className)}>
+        <div className={cn('pb-safe group/bubble fixed right-4 bottom-4 z-50 flex flex-col items-end gap-3 print:hidden', className)}>
             {open && (
                 <div
                     ref={panel}
@@ -242,26 +276,45 @@ export function HelpBubble({ className }: { className?: string }) {
                 </div>
             )}
 
-            <button
-                type="button"
-                onClick={() => setOpen((shown) => !shown)}
-                aria-expanded={open}
-                aria-label={open ? 'Tutup bantuan' : 'Butuh bantuan?'}
-                className="surface-deep ring-card flex size-14 items-center justify-center rounded-full shadow-[0_10px_30px_rgba(16,66,44,0.32)] ring-4 transition active:scale-95"
-            >
-                {open ? (
-                    <X className="text-brand-deep-foreground size-5" />
-                ) : (
-                    <span className="relative">
-                        <AppLogoIcon className="size-8" plate />
-                        {/* A small mark so the bubble reads as "talk to someone",
-                            not as the logo dropped in the corner by mistake. */}
-                        <span className="bg-lime text-lime-foreground absolute -right-2 -bottom-1.5 flex size-4 items-center justify-center rounded-full">
-                            <MessageCircle className="size-2.5" strokeWidth={3} />
-                        </span>
-                    </span>
+            <div className="relative">
+                {/*
+                    Hidden while the panel is open: the panel has its own close
+                    button, and two X-like controls a few pixels apart is how
+                    somebody dismisses the bubble forever when they meant to
+                    close the form.
+                */}
+                {!open && (
+                    <button
+                        type="button"
+                        onClick={dismiss}
+                        aria-label="Sembunyikan tombol bantuan"
+                        className="border-border bg-card text-muted-foreground hover:text-foreground absolute -top-1 -left-1 z-10 flex size-6 items-center justify-center rounded-full border shadow-sm transition hover:scale-105 focus-visible:opacity-100 sm:opacity-0 sm:group-hover/bubble:opacity-100"
+                    >
+                        <X className="size-3" strokeWidth={2.8} />
+                    </button>
                 )}
-            </button>
+
+                <button
+                    type="button"
+                    onClick={() => setOpen((shown) => !shown)}
+                    aria-expanded={open}
+                    aria-label={open ? 'Tutup bantuan' : 'Butuh bantuan?'}
+                    className="surface-deep ring-card flex size-14 items-center justify-center rounded-full shadow-[0_10px_30px_rgba(16,66,44,0.32)] ring-4 transition active:scale-95"
+                >
+                    {open ? (
+                        <X className="text-brand-deep-foreground size-5" />
+                    ) : (
+                        <span className="relative">
+                            <AppLogoIcon className="size-8" plate />
+                            {/* A small mark so the bubble reads as "talk to someone",
+                            not as the logo dropped in the corner by mistake. */}
+                            <span className="bg-lime text-lime-foreground absolute -right-2 -bottom-1.5 flex size-4 items-center justify-center rounded-full">
+                                <MessageCircle className="size-2.5" strokeWidth={3} />
+                            </span>
+                        </span>
+                    )}
+                </button>
+            </div>
         </div>
     );
 }

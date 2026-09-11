@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import type { ReactNode } from 'react';
 
 interface ConfirmDialogProps {
     open: boolean;
@@ -11,6 +12,14 @@ interface ConfirmDialogProps {
     destructive?: boolean;
     processing?: boolean;
     onConfirm: () => void;
+    /**
+     * Detail shown between the question and the buttons.
+     *
+     * Some confirmations are a yes/no about an action already described in the
+     * title. Others - moving money - need the figures on screen at the moment
+     * of confirming, not remembered from the form behind the dialog.
+     */
+    children?: ReactNode;
 }
 
 export function ConfirmDialog({
@@ -23,6 +32,7 @@ export function ConfirmDialog({
     destructive = false,
     processing = false,
     onConfirm,
+    children,
 }: ConfirmDialogProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -31,6 +41,9 @@ export function ConfirmDialog({
                     <DialogTitle>{title}</DialogTitle>
                     <DialogDescription>{description}</DialogDescription>
                 </DialogHeader>
+
+                {children}
+
                 <DialogFooter className="gap-2 sm:gap-2">
                     <Button variant="outline" onClick={() => onOpenChange(false)} disabled={processing}>
                         {cancelLabel}
