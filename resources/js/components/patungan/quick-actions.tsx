@@ -22,21 +22,21 @@ const actions: Action[] = [
         hint: 'Riwayat dana',
         href: 'transactions.index',
         icon: Receipt,
-        tone: 'bg-sky-50 text-sky-700 dark:bg-sky-400/15 dark:text-sky-300',
+        tone: 'bg-teal-50 text-teal-700 dark:bg-teal-400/15 dark:text-teal-300',
     },
     {
         label: 'Pencairan',
         hint: 'Tarik saldo',
         href: 'payout.index',
         icon: ArrowDownToLine,
-        tone: 'bg-amber-50 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300',
+        tone: 'bg-lime-100 text-emerald-800 dark:bg-lime-400/15 dark:text-lime-300',
     },
     {
         label: 'Rekening',
         hint: 'Tujuan tarik',
         href: 'payout.destinations',
         icon: Landmark,
-        tone: 'bg-violet-50 text-violet-700 dark:bg-violet-400/15 dark:text-violet-300',
+        tone: 'bg-green-50 text-green-800 dark:bg-green-400/15 dark:text-green-300',
     },
 ];
 
@@ -48,10 +48,7 @@ const actions: Action[] = [
  */
 export function QuickActions() {
     return (
-        <nav
-            aria-label="Pintasan"
-            className="border-border bg-card overflow-hidden rounded-3xl border px-2 py-3 shadow-[0_1px_20px_rgba(16,66,44,0.05)]"
-        >
+        <nav aria-label="Pintasan" className="px-1 py-2">
             <div className="grid grid-cols-4">
                 {actions.map((action) => (
                     <Link

@@ -32,19 +32,16 @@ export function CollectionGauge({ collection, className }: { collection: Collect
     return (
         <section
             className={cn(
-                'dashboard-card dark:via-card relative flex flex-col overflow-hidden rounded-[1.75rem] border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-cyan-50 p-5 lg:p-6 dark:border-violet-400/15 dark:from-violet-400/10 dark:to-cyan-400/10',
+                'dashboard-card dark:via-card relative flex flex-col overflow-hidden rounded-[1.75rem] border border-emerald-100 bg-gradient-to-br from-emerald-50/90 via-white to-lime-50/70 p-5 lg:p-6 dark:border-emerald-400/15 dark:from-emerald-400/10 dark:to-lime-400/10',
                 className,
             )}
         >
-            <span aria-hidden="true" className="absolute -top-10 -right-8 size-32 rounded-full bg-cyan-200/35 blur-2xl dark:bg-cyan-400/10" />
-            <span aria-hidden="true" className="absolute -bottom-10 -left-8 size-28 rounded-full bg-violet-200/40 blur-2xl dark:bg-violet-400/10" />
-
             <div className="relative flex items-center justify-between gap-3">
                 <div>
-                    <p className="text-[10px] font-extrabold tracking-[0.16em] text-violet-600 uppercase dark:text-violet-300">Progress bareng</p>
+                    <p className="text-primary text-[10px] font-extrabold tracking-[0.16em] uppercase">Progress bareng</p>
                     <h2 className="display mt-1 text-lg sm:text-xl">Uangnya sudah sampai mana?</h2>
                 </div>
-                <span className="flex size-10 shrink-0 rotate-3 items-center justify-center rounded-2xl bg-violet-500 text-white shadow-lg shadow-violet-500/20">
+                <span className="bg-primary text-primary-foreground flex size-10 shrink-0 items-center justify-center rounded-2xl">
                     <Sparkles className="size-4.5" strokeWidth={2.3} />
                 </span>
             </div>
@@ -59,9 +56,9 @@ export function CollectionGauge({ collection, className }: { collection: Collect
                     >
                         <defs>
                             <linearGradient id="collection-progress" x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
-                                <stop stopColor="#8B5CF6" />
-                                <stop offset=".48" stopColor="#22C55E" />
-                                <stop offset="1" stopColor="#22D3EE" />
+                                <stop stopColor="#0D4D37" />
+                                <stop offset=".55" stopColor="#16A66A" />
+                                <stop offset="1" stopColor="#C7F33D" />
                             </linearGradient>
                         </defs>
                         <circle
@@ -71,7 +68,7 @@ export function CollectionGauge({ collection, className }: { collection: Collect
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="12"
-                            className="text-violet-100 dark:text-violet-300/10"
+                            className="text-emerald-100 dark:text-emerald-300/10"
                         />
                         <circle
                             cx="60"
@@ -112,12 +109,12 @@ export function CollectionGauge({ collection, className }: { collection: Collect
                 </div>
             ) : (
                 <div className="relative mt-5 grid grid-cols-2 gap-2.5">
-                    <div className="rounded-2xl border border-white/70 bg-white/75 p-3 shadow-sm backdrop-blur dark:border-white/5 dark:bg-white/5">
-                        <UsersRound className="size-4 text-cyan-600 dark:text-cyan-300" />
+                    <div className="rounded-2xl border border-emerald-100 bg-white/80 p-3 shadow-sm dark:border-emerald-300/10 dark:bg-white/5">
+                        <UsersRound className="text-primary size-4" />
                         <p className="mt-2 text-base font-extrabold tabular-nums">{collection.unpaid_people} orang</p>
                         <p className="text-muted-foreground text-[10px]">belum bayar</p>
                     </div>
-                    <div className="rounded-2xl border border-white/70 bg-white/75 p-3 shadow-sm backdrop-blur dark:border-white/5 dark:bg-white/5">
+                    <div className="rounded-2xl border border-emerald-100 bg-white/80 p-3 shadow-sm dark:border-emerald-300/10 dark:bg-white/5">
                         <Coins className="size-4 text-orange-500 dark:text-orange-300" />
                         <p className="mt-2 truncate text-base font-extrabold text-orange-600 tabular-nums dark:text-orange-300">
                             {rupiah(collection.unpaid_amount)}
@@ -129,7 +126,7 @@ export function CollectionGauge({ collection, className }: { collection: Collect
 
             <Link
                 href={route('patungan.index')}
-                className="group bg-foreground text-background relative mt-4 flex items-center justify-between rounded-full px-4 py-3 text-xs font-bold transition hover:opacity-85"
+                className="group bg-brand-deep text-brand-deep-foreground relative mt-4 flex items-center justify-between rounded-full px-4 py-3 text-xs font-bold transition hover:brightness-110"
             >
                 Cek progress patungan
                 <ArrowUpRight className="size-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />

@@ -14,24 +14,24 @@ export interface ChaseRow {
 
 const rowTones = [
     {
-        shell: 'border-orange-200/70 bg-orange-50/85 dark:border-orange-300/15 dark:bg-orange-400/10',
-        badge: 'bg-orange-500',
-        bar: 'from-orange-400 to-rose-400',
+        shell: 'border-emerald-200/80 bg-emerald-50/85 dark:border-emerald-300/15 dark:bg-emerald-400/10',
+        badge: 'bg-emerald-700',
+        bar: 'from-emerald-700 to-emerald-400',
     },
     {
-        shell: 'border-violet-200/70 bg-violet-50/85 dark:border-violet-300/15 dark:bg-violet-400/10',
-        badge: 'bg-violet-500',
-        bar: 'from-violet-500 to-fuchsia-400',
+        shell: 'border-teal-200/80 bg-teal-50/80 dark:border-teal-300/15 dark:bg-teal-400/10',
+        badge: 'bg-teal-600',
+        bar: 'from-teal-600 to-emerald-400',
     },
     {
-        shell: 'border-cyan-200/70 bg-cyan-50/85 dark:border-cyan-300/15 dark:bg-cyan-400/10',
-        badge: 'bg-cyan-500',
-        bar: 'from-cyan-500 to-emerald-400',
+        shell: 'border-green-200/80 bg-green-50/80 dark:border-green-300/15 dark:bg-green-400/10',
+        badge: 'bg-green-600',
+        bar: 'from-green-600 to-lime-400',
     },
     {
         shell: 'border-lime-200/80 bg-lime-50/90 dark:border-lime-300/15 dark:bg-lime-400/10',
         badge: 'bg-lime-500 text-emerald-950',
-        bar: 'from-lime-500 to-emerald-400',
+        bar: 'from-emerald-500 to-lime-400',
     },
 ] as const;
 
@@ -40,19 +40,17 @@ export function ChaseList({ rows, className }: { rows: ChaseRow[]; className?: s
     return (
         <section
             className={cn(
-                'dashboard-card from-card via-card relative flex flex-col overflow-hidden rounded-[1.75rem] border border-rose-100 bg-gradient-to-br to-rose-50/70 p-5 lg:p-6 dark:border-rose-400/15 dark:to-rose-400/10',
+                'dashboard-card from-card via-card relative flex flex-col overflow-hidden rounded-[1.75rem] border border-emerald-100 bg-gradient-to-br to-emerald-50/75 p-5 lg:p-6 dark:border-emerald-400/15 dark:to-emerald-400/10',
                 className,
             )}
         >
-            <span aria-hidden="true" className="absolute -top-14 -right-12 size-36 rounded-full bg-orange-200/30 blur-2xl dark:bg-orange-400/10" />
-
             <div className="relative flex items-start justify-between gap-3">
                 <div>
-                    <p className="text-[10px] font-extrabold tracking-[0.16em] text-rose-500 uppercase dark:text-rose-300">Reminder corner</p>
+                    <p className="text-primary text-[10px] font-extrabold tracking-[0.16em] uppercase">Perlu diingatkan</p>
                     <h2 className="display mt-1 text-lg sm:text-xl">Yang perlu disapa dulu</h2>
                     <p className="text-muted-foreground mt-1 text-[11px]">Urut dari sisa tagihan terbesar.</p>
                 </div>
-                <span className="flex size-10 shrink-0 -rotate-6 items-center justify-center rounded-2xl bg-rose-500 text-white shadow-lg shadow-rose-500/20">
+                <span className="bg-primary text-primary-foreground flex size-10 shrink-0 items-center justify-center rounded-2xl">
                     <Megaphone className="size-4.5" strokeWidth={2.3} />
                 </span>
             </div>
