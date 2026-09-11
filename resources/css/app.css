@@ -287,10 +287,25 @@
         overflow-x: auto;
         padding: 0.25rem 1rem 1.25rem 0.25rem;
         scroll-padding-inline: 0.25rem;
-        scroll-snap-type: x mandatory;
+        /*
+         * Proximity, not mandatory. Mandatory snapping on a horizontal rail
+         * fights a finger that meant to scroll the page vertically, which is
+         * the jank this landing page was already fixed for once.
+         */
+        scroll-snap-type: x proximity;
         overscroll-behavior-x: contain;
-        scrollbar-width: thin;
-        scrollbar-color: color-mix(in oklab, var(--lime) 60%, transparent) color-mix(in oklab, white 8%, transparent);
+
+        /*
+         * The scrollbar is hidden because this rail already has arrows and
+         * numbered steps. A native scrollbar here renders as a track with
+         * stepper buttons on Windows, which looks like an accident next to
+         * everything around it.
+         */
+        scrollbar-width: none;
+    }
+
+    .real-flow-rail::-webkit-scrollbar {
+        display: none;
     }
 
     .real-flow-card {
@@ -404,62 +419,36 @@
 
     .payment-logo-card {
         display: flex;
-        height: 2.25rem;
+        height: 2.75rem;
         flex: none;
         align-items: center;
         justify-content: center;
-        gap: 0.4rem;
-        border: 1px solid color-mix(in oklab, var(--border) 76%, transparent);
+        gap: 0.55rem;
+        border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
         border-radius: 9999px;
-        background: color-mix(in oklab, var(--card) 92%, white);
-        padding: 0.25rem 0.65rem 0.25rem 0.3rem;
-        color: color-mix(in oklab, var(--foreground) 72%, transparent);
-        font-size: 0.675rem;
+        background: var(--card);
+        padding: 0.3rem 0.95rem 0.3rem 0.35rem;
+        color: color-mix(in oklab, var(--foreground) 88%, transparent);
+        font-size: 0.75rem;
         font-weight: 700;
         white-space: nowrap;
-        box-shadow: 0 4px 14px color-mix(in oklab, var(--brand-deep) 6%, transparent);
-        transition:
-            transform 180ms ease,
-            box-shadow 180ms ease,
-            border-color 180ms ease,
-            color 180ms ease,
-            background-color 180ms ease;
+        box-shadow: 0 2px 10px color-mix(in oklab, var(--brand-deep) 5%, transparent);
     }
 
-    .payment-logo-card:hover {
-        transform: translateY(-1px);
-        border-color: color-mix(in oklab, var(--primary) 24%, var(--border));
-        color: var(--foreground);
-        box-shadow: 0 6px 18px color-mix(in oklab, var(--brand-deep) 10%, transparent);
-    }
-
-    .payment-logo-card:focus-visible {
-        outline: 2px solid var(--ring);
-        outline-offset: 2px;
-    }
-
-    .payment-logo-card.is-active {
-        border-color: color-mix(in oklab, var(--primary) 38%, var(--border));
-        background: var(--card);
-        color: var(--foreground);
-    }
-
+    /*
+     * Full colour, always.
+     *
+     * People recognise OVO and GoPay by their colour before they read the
+     * word. Desaturating them removes the only thing that makes this strip
+     * work: it stops reading as "these all accept it" and starts reading as a
+     * row of images that failed to load.
+     */
     .payment-logo-image {
-        width: 1.65rem;
-        height: 1.65rem;
+        width: 2rem;
+        height: 2rem;
         flex: none;
-        border-radius: 0.5rem;
+        border-radius: 0.6rem;
         object-fit: cover;
-        filter: grayscale(1);
-        opacity: 0.48;
-        transition:
-            filter 200ms ease,
-            opacity 200ms ease,
-            transform 200ms ease;
-    }
-
-    .payment-logo-card:hover .payment-logo-image {
-        opacity: 0.68;
     }
 
     .payment-logo-card.is-active .payment-logo-image {

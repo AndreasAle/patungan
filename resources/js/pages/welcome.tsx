@@ -401,23 +401,56 @@ export default function Welcome({ fee_examples, max_participants }: WelcomeProps
                     <Eyebrow>Di kehidupan nyata</Eyebrow>
                     <h2 className="display mt-5 max-w-lg text-[32px] sm:text-5xl">Dipakai di tempat uang biasanya jadi urusan.</h2>
 
+                    <p className="text-muted-foreground mt-5 max-w-md text-sm leading-relaxed">
+                        Lapangan, makan bareng, kas komunitas. Tempat yang sama di mana biasanya ada satu orang yang nalangin dulu.
+                    </p>
+
                     <div className="mt-10 grid gap-3 sm:grid-cols-3">
                         {[
-                            { src: 'badminton-app', alt: 'Membayar patungan sewa lapangan lewat ponsel', caption: 'Lapangan badminton' },
-                            { src: 'cafe-split', alt: 'Dua orang membagi tagihan makan dengan QRIS', caption: 'Makan bareng' },
-                            { src: 'friends-cafe', alt: 'Sekelompok teman membuka Patungan bersama', caption: 'Patungan komunitas' },
+                            {
+                                src: 'badminton-app',
+                                alt: 'Membayar patungan sewa lapangan lewat ponsel',
+                                caption: 'Lapangan badminton',
+                                detail: 'Sewa dibagi delapan, tanpa nalangin dulu.',
+                            },
+                            {
+                                src: 'cafe-split',
+                                alt: 'Dua orang membagi tagihan makan dengan QRIS',
+                                caption: 'Makan bareng',
+                                detail: 'Satu struk, tiap orang bayar bagiannya.',
+                            },
+                            {
+                                src: 'friends-cafe',
+                                alt: 'Sekelompok teman membuka Patungan bersama',
+                                caption: 'Patungan komunitas',
+                                detail: 'Kas rutin yang nggak perlu ditagih tiap bulan.',
+                            },
                         ].map((photo) => (
-                            <figure key={photo.src} className="relative overflow-hidden rounded-3xl">
+                            <figure key={photo.src} className="group ring-border/60 relative overflow-hidden rounded-3xl ring-1">
                                 <img
                                     src={`/images/brand/${photo.src}.webp`}
                                     alt={photo.alt}
                                     width={900}
                                     height={1125}
                                     loading="lazy"
-                                    className="aspect-[4/5] w-full object-cover"
+                                    className="aspect-[4/5] w-full object-cover transition-transform duration-700 group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                                 />
-                                <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[hsl(159_68%_10%_/_0.85)] to-transparent px-5 pt-10 pb-4 text-sm font-bold text-white">
-                                    {photo.caption}
+
+                                {/*
+                                    Two stops rather than one. A single
+                                    transparent-to-dark ramp leaves a visible
+                                    band edge across the middle of a photo; the
+                                    extra stop keeps the darkening weighted to
+                                    the bottom where the words actually sit.
+                                */}
+                                <span
+                                    aria-hidden="true"
+                                    className="absolute inset-x-0 bottom-0 h-2/5 bg-[linear-gradient(to_top,hsl(159_68%_8%_/_0.92),hsl(159_68%_8%_/_0.55)_45%,transparent)]"
+                                />
+
+                                <figcaption className="absolute inset-x-0 bottom-0 px-5 pb-5">
+                                    <p className="text-lime text-[10px] font-bold tracking-[0.16em] uppercase">{photo.caption}</p>
+                                    <p className="mt-1.5 text-sm leading-snug font-semibold text-white">{photo.detail}</p>
                                 </figcaption>
                             </figure>
                         ))}

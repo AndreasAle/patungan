@@ -1,6 +1,0 @@
-import{a as o}from"./app-logo-CehQsyAB.js";/**
- * @license lucide-react v0.475.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */const c=[["rect",{width:"14",height:"14",x:"8",y:"8",rx:"2",ry:"2",key:"17jyea"}],["path",{d:"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2",key:"zix9uf"}]],u=o("Copy",c);function i(e){return`https://wa.me/?text=${encodeURIComponent(e)}`}function s(){return typeof navigator<"u"&&typeof navigator.share=="function"}async function h(e){if(s())try{return await navigator.share({text:e}),!0}catch{return!1}return window.open(i(e),"_blank","noopener,noreferrer"),!0}async function d(e){try{return await navigator.clipboard.writeText(e),!0}catch{return!1}}async function y(e,n,a="whatsapp"){var r;const t=(r=document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/))==null?void 0:r[1];try{await fetch(route("share.record",e),{method:"POST",headers:{Accept:"application/json","Content-Type":"application/json","X-Requested-With":"XMLHttpRequest",...t?{"X-XSRF-TOKEN":decodeURIComponent(t)}:{}},credentials:"same-origin",keepalive:!0,body:JSON.stringify({type:n,channel:a})})}catch{}}export{u as C,d as c,y as r,h as s};
