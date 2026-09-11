@@ -628,6 +628,16 @@ export default function Welcome({ fee_examples, max_participants }: WelcomeProps
                                             Kontak
                                         </a>
                                     </li>
+                                    <li>
+                                        <Link href={route('legal.privacy')} className="text-muted-foreground hover:text-foreground text-sm">
+                                            Kebijakan Privasi
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link href={route('legal.terms')} className="text-muted-foreground hover:text-foreground text-sm">
+                                            Syarat & Ketentuan
+                                        </Link>
+                                    </li>
                                 </ul>
                             </div>
                         </div>

@@ -48,13 +48,9 @@ export function ShareSheet({ open, onClose, title, message, emptyTitle, emptyBod
         <BottomSheet open={open} onOpenChange={(next) => !next && onClose()} title={title}>
             {message === null ? (
                 <div className="py-6 text-center">
-                    <span className="bg-success-soft text-success mx-auto flex size-12 items-center justify-center rounded-2xl text-2xl">
-                        🎉
-                    </span>
+                    <span className="bg-success-soft text-success mx-auto flex size-12 items-center justify-center rounded-2xl text-2xl">🎉</span>
                     <p className="mt-4 text-sm font-bold tracking-tight">{emptyTitle ?? 'Semua sudah bayar 🎉'}</p>
-                    <p className="text-muted-foreground mt-1.5 text-xs leading-relaxed">
-                        {emptyBody ?? 'Nggak ada yang perlu ditagih lagi.'}
-                    </p>
+                    <p className="text-muted-foreground mt-1.5 text-xs leading-relaxed">{emptyBody ?? 'Nggak ada yang perlu ditagih lagi.'}</p>
                     <Button variant="outline" className="mt-5 h-11 rounded-full px-6 text-sm font-semibold" onClick={onClose}>
                         Tutup
                     </Button>

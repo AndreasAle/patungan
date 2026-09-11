@@ -75,9 +75,7 @@ export default function PersonalPay({ patungan, participant, pay_url }: Props) {
                         <CircleCheck className="size-7" strokeWidth={2.4} />
                     </span>
                     <p className="mt-4 text-base font-bold tracking-tight">Sudah bayar</p>
-                    <p className="text-muted-foreground mt-1.5 text-sm">
-                        {participant.amount_due_formatted} sudah masuk. Nggak perlu bayar lagi.
-                    </p>
+                    <p className="text-muted-foreground mt-1.5 text-sm">{participant.amount_due_formatted} sudah masuk. Nggak perlu bayar lagi.</p>
 
                     {participant.invoice_url && (
                         <Button asChild variant="outline" className="mt-5 h-11 rounded-full px-6 text-sm font-semibold">

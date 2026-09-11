@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\AdminSupportMessageController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminWebhookLogController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\LegalController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\PatunganController;
 use App\Http\Controllers\PayoutController;
@@ -51,6 +52,14 @@ Route::get('/', fn () => Inertia::render('welcome', [
 Route::post('bantuan/pesan', [SupportMessageController::class, 'store'])
     ->middleware('throttle:5,10')
     ->name('support.store');
+
+/*
+|--------------------------------------------------------------------------
+| Legal pages - public, and linked from every footer
+|--------------------------------------------------------------------------
+*/
+Route::get('privasi', [LegalController::class, 'privacy'])->name('legal.privacy');
+Route::get('syarat', [LegalController::class, 'terms'])->name('legal.terms');
 
 /*
 |--------------------------------------------------------------------------

@@ -28,8 +28,24 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             */}
             <main className="mx-auto w-full max-w-md flex-1 px-4 pt-4 pb-24 sm:max-w-lg">{children}</main>
 
+            {/*
+                A payer deciding whether to trust this page with their money
+                should be able to read the terms from the page itself, not have
+                to go hunting on the marketing site for them.
+            */}
             <footer className="text-muted-foreground px-4 py-6 text-center text-[11px] print:hidden">
-                Ditenagai <span className="text-foreground font-semibold">Patungan</span> · Bayar bagianmu, beres.
+                <p>
+                    Ditenagai <span className="text-foreground font-semibold">Patungan</span> · Bayar bagianmu, beres.
+                </p>
+                <p className="mt-2 flex items-center justify-center gap-3">
+                    <a href={route('legal.privacy')} className="hover:text-foreground transition">
+                        Privasi
+                    </a>
+                    <span aria-hidden="true">·</span>
+                    <a href={route('legal.terms')} className="hover:text-foreground transition">
+                        Syarat
+                    </a>
+                </p>
             </footer>
 
             {/* A payer with a QRIS that will not settle has no other way to reach anyone. */}
