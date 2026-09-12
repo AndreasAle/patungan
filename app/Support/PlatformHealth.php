@@ -119,6 +119,14 @@ class PlatformHealth
                 'href' => route('admin.settlements', ['status' => SettlementStatus::Processing->value]),
             ],
             [
+                'key' => 'participant_paid_twice',
+                'label' => 'Peserta membayar dua kali',
+                'detail' => 'Dua pembayaran lunas untuk satu orang. Uangnya nyata dan sudah dikredit - perlu dikembalikan.',
+                'count' => $this->participantsPaidTwice(),
+                'severity' => 'critical',
+                'href' => route('admin.payments', ['status' => PaymentStatus::Paid->value]),
+            ],
+            [
                 'key' => 'participant_paid_no_payment',
                 'label' => 'Peserta lunas tanpa pembayaran',
                 'detail' => 'Ditandai lunas manual, atau pembayarannya hilang.',
@@ -178,6 +186,25 @@ class PlatformHealth
                     ->whereColumn('wallet_ledgers.payment_id', 'payments.id')
                     ->where('wallet_ledgers.type', LedgerType::PaymentReceived->value);
             })
+            ->count();
+    }
+
+    /**
+     * One participant, two settled payments.
+     *
+     * Possible because DANA refuses validityPeriod, so a QR outlives the
+     * invoice it was issued for: somebody can pay the old QR and the
+     * replacement. expireStalePayments cancels the old QR to prevent it, but a
+     * cancel that fails leaves exactly this, and it is a real double charge
+     * owed back to a real person.
+     */
+    private function participantsPaidTwice(): int
+    {
+        return Payment::query()
+            ->where('status', PaymentStatus::Paid->value)
+            ->groupBy('participant_id')
+            ->havingRaw('COUNT(*) > 1')
+            ->pluck('participant_id')
             ->count();
     }
 

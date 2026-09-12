@@ -100,6 +100,17 @@ trait UsesDana
         ]);
     }
 
+    /** A successful cancel, which retires the QR on DANA's side. */
+    protected function fakeDanaCancel(): void
+    {
+        Http::fake([
+            $this->danaBaseUrl.DanaQrisService::CANCEL => Http::response([
+                'responseCode' => '2005700',
+                'responseMessage' => 'Successful',
+            ]),
+        ]);
+    }
+
     /**
      * Headers signed exactly the way DANA signs a Finish Notify: RSA over
      * METHOD:path:bodyHash:timestamp, with DANA's private key.

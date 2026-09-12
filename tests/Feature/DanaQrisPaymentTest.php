@@ -176,6 +176,67 @@ class DanaQrisPaymentTest extends TestCase
         $this->assertSame('DANA-LATE-REF', $payment->gateway_transaction_id);
     }
 
+    public function test_validity_period_is_not_sent_because_dana_refuses_it(): void
+    {
+        $this->fakeDanaQrisGenerate();
+
+        $this->openInvoice();
+
+        Http::assertSent(function (Request $request): bool {
+            $body = json_decode($request->body(), true);
+
+            /*
+             * Isolated by bisect against sandbox: the full body minus
+             * validityPeriod is accepted, and the full body with it is refused
+             * with 4004701 no matter what else changes. Sending it again would
+             * break every charge, so it is pinned here.
+             */
+            return ! array_key_exists('validityPeriod', $body);
+        });
+    }
+
+    public function test_an_expiring_invoice_cancels_the_qr_at_dana_first(): void
+    {
+        $this->fakeDanaQrisGenerate();
+        $this->fakeDanaCancel();
+
+        $payment = $this->openInvoice();
+        $payment->forceFill(['expires_at' => now()->subMinute()])->save();
+
+        $this->assertSame(1, app(PaymentService::class)->expireStalePayments());
+
+        /*
+         * The ordering that matters. DANA refuses validityPeriod, so their QR
+         * does not die when our invoice does. If we stopped honouring the
+         * invoice while leaving a payable QR in somebody's chat, they could pay
+         * the old QR and the replacement and be charged twice.
+         */
+        Http::assertSent(fn (Request $request): bool => str_contains($request->url(), DanaQrisService::CANCEL)
+            && json_decode($request->body(), true)['originalPartnerReferenceNo'] === $payment->gateway_reference);
+
+        $this->assertSame(PaymentStatus::Expired, $payment->refresh()->status);
+    }
+
+    public function test_an_invoice_still_expires_when_the_cancel_fails(): void
+    {
+        $this->fakeDanaQrisGenerate();
+
+        $payment = $this->openInvoice();
+        $payment->forceFill(['expires_at' => now()->subMinute()])->save();
+
+        Http::fake([
+            $this->danaBaseUrl.DanaQrisService::CANCEL => Http::response([], 500),
+        ]);
+
+        /*
+         * Holding it PENDING until DANA answers would lock the participant out
+         * of ever retrying whenever that reference upsets the cancel endpoint.
+         * The residue is caught by the double-payment anomaly instead.
+         */
+        $this->assertSame(1, app(PaymentService::class)->expireStalePayments());
+        $this->assertSame(PaymentStatus::Expired, $payment->refresh()->status);
+    }
+
     public function test_it_refuses_to_generate_qris_without_the_required_store_id(): void
     {
         config(['dana.store_id' => null]);

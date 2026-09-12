@@ -74,6 +74,12 @@ final class DanaQrisService
         $this->sendValidityPeriod = false;
     }
 
+    /** Restores validityPeriod, for testing whether DANA accepts it yet. */
+    public function withValidityPeriod(): void
+    {
+        $this->sendValidityPeriod = true;
+    }
+
     public function withOrderTerminalType(string $type): void
     {
         $this->orderTerminalType = $type;
@@ -115,9 +121,25 @@ final class DanaQrisService
              * our invoice TTL, which is a real cost - so it is only given up
              * if keeping it is what breaks the call.
              */
-            'validityPeriod' => ($this->minimalBody || $this->sendValidityPeriod === false)
-                ? null
-                : $expiresAt->format('Y-m-d\TH:i:sP'),
+            /*
+             * Not sent. DANA rejects this endpoint with 4004701 Invalid Field
+             * Format whenever validityPeriod is present - isolated by bisect:
+             * the full body minus this field is accepted, and the full body
+             * with it is refused no matter what else changes.
+             *
+             * The cost is real and is paid for elsewhere. Without it the QR
+             * lives for the DANA default rather than our 15-minute invoice TTL,
+             * so expireStalePayments now cancels the QR at DANA before it stops
+             * honouring the invoice here. Otherwise a participant could hold a
+             * dead invoice and a live QR at the same time, retry, and be
+             * charged twice.
+             *
+             * Kept switchable rather than deleted so it can be restored the day
+             * DANA accepts it, without reconstructing why it was dropped.
+             */
+            'validityPeriod' => $this->sendValidityPeriod === true
+                ? $expiresAt->format('Y-m-d\TH:i:sP')
+                : null,
             'additionalInfo' => [
                 'terminalSource' => 'MER',
                 'envInfo' => array_filter([

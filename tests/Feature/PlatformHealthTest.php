@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\ParticipantStatus;
+use App\Enums\PaymentStatus;
 use App\Enums\SettlementStatus;
 use App\Models\Payment;
 use App\Models\PayoutDestination;
@@ -115,6 +116,36 @@ class PlatformHealthTest extends TestCase
 
         $this->assertFalse($integrity['balanced'], 'Crediting the same payment twice must be visible.');
         $this->assertSame($payment->charged_amount, $integrity['drift']);
+    }
+
+    public function test_a_participant_charged_twice_is_flagged_as_critical(): void
+    {
+        $patungan = $this->makePatungan($this->organizer(), ['Sandi']);
+        $participant = $patungan->participants->first();
+
+        $first = app(PaymentService::class)->createForParticipant($participant);
+        app(PaymentService::class)->markAsPaid($first, 'TXN-DOUBLE-1');
+
+        $this->assertSame(0, $this->anomalyCounts()['participant_paid_twice']);
+
+        /*
+         * What a stale QR produces: the invoice expired here, a replacement was
+         * issued, and the old QR was paid anyway because DANA refuses
+         * validityPeriod and the QR outlived our invoice. Both payments are
+         * real money and both are credited - so it has to be visible and
+         * refundable rather than quietly correct-looking.
+         */
+        $second = $first->replicate();
+        $second->forceFill([
+            'uuid' => (string) Str::uuid(),
+            'gateway_reference' => $first->gateway_reference.'-STALE',
+            // A separate charge really did happen, so it carries its own id.
+            'gateway_transaction_id' => 'TXN-DOUBLE-2',
+            'status' => PaymentStatus::Paid->value,
+            'active_participant_id' => null,
+        ])->save();
+
+        $this->assertSame(1, $this->anomalyCounts()['participant_paid_twice']);
     }
 
     public function test_a_participant_marked_paid_without_a_payment_is_flagged(): void

@@ -195,7 +195,16 @@ class PaymentService
         });
     }
 
-    /** Sweeps invoices whose expiry has passed so participants can retry. */
+    /**
+     * Sweeps invoices whose expiry has passed so participants can retry.
+     *
+     * The QR is cancelled at the provider first, and that ordering is the whole
+     * point. DANA refuses validityPeriod on QRIS generate, so the QR does not
+     * expire on their side when our invoice expires on ours. Marking the
+     * invoice dead here while leaving a payable QR in somebody's WhatsApp is
+     * how one participant ends up paying twice: once on the old QR, once on the
+     * replacement they were invited to request.
+     */
     public function expireStalePayments(): int
     {
         $expired = 0;
@@ -207,6 +216,8 @@ class PaymentService
             ->orderBy('id')
             ->chunkById(100, function ($payments) use (&$expired): void {
                 foreach ($payments as $payment) {
+                    $this->cancelAtGateway($payment);
+
                     if ($this->markAsFinal($payment, PaymentStatus::Expired)) {
                         $expired++;
                     }
@@ -214,6 +225,33 @@ class PaymentService
             });
 
         return $expired;
+    }
+
+    /**
+     * Best effort, and deliberately so.
+     *
+     * A failed cancel still lets the invoice expire. The alternative - holding
+     * it PENDING until the provider answers - blocks the participant from ever
+     * retrying whenever the cancel endpoint is unhappy about that particular
+     * reference, which is a permanent lockout caused by a transient fault.
+     *
+     * The residual risk is not left unwatched: a participant holding two PAID
+     * payments is reported as a critical anomaly on the admin dashboard, where
+     * it can be refunded. Crediting both is the honest record - the money
+     * really did arrive twice - so the failure that remains is visible and
+     * correctable rather than silent.
+     */
+    private function cancelAtGateway(Payment $payment): void
+    {
+        try {
+            $this->gateways->driver($payment->gateway)->cancel($payment);
+        } catch (Throwable $e) {
+            Log::warning('Expired invoice could not be cancelled at the gateway', [
+                'payment' => $payment->uuid,
+                'gateway' => $payment->gateway,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
