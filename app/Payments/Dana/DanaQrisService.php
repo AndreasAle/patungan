@@ -18,6 +18,12 @@ use Illuminate\Support\Facades\Log;
  *   generate  POST /v1.0/qr/qr-mpm-generate.htm   service code 47
  *   query     POST /rest/v1.1/debit/status        service code 55
  *   cancel    POST /v1.0/debit/cancel.htm         service code 57
+ *
+ * All three verified against sandbox on 2026-09-12: generate returns a QR,
+ * query answers Transaction Not Found for a QR nobody has scanned, and cancel
+ * is accepted. Two of those paths were changed on a guess earlier that day and
+ * changed back, so the verification is worth stating - cancel in particular
+ * really does live on the debit path, and expireStalePayments depends on it.
 
  *
  * Generate returns qrContent, the raw QR payload, which the payment page draws
