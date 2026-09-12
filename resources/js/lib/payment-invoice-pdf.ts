@@ -13,16 +13,26 @@ export interface PaymentInvoicePdfData {
     isManual: boolean;
 }
 
+/**
+ * An RGB triple, named once.
+ *
+ * Each colour used to be `as const`, which typed it as its own literal tuple -
+ * so a function that took `palette.muted` would only ever accept that exact
+ * colour and reject every other one. Naming the shape lets them all be passed
+ * to the same function, which is the entire point of a palette.
+ */
+type Rgb = readonly [number, number, number];
+
 const palette = {
-    deep: [8, 71, 49] as const,
-    green: [18, 111, 76] as const,
-    lime: [190, 241, 54] as const,
-    ink: [19, 36, 30] as const,
-    muted: [104, 126, 117] as const,
-    line: [218, 232, 225] as const,
-    mint: [240, 248, 244] as const,
-    warning: [255, 244, 215] as const,
-    warningInk: [176, 92, 9] as const,
+    deep: [8, 71, 49] as Rgb,
+    green: [18, 111, 76] as Rgb,
+    lime: [190, 241, 54] as Rgb,
+    ink: [19, 36, 30] as Rgb,
+    muted: [104, 126, 117] as Rgb,
+    line: [218, 232, 225] as Rgb,
+    mint: [240, 248, 244] as Rgb,
+    warning: [255, 244, 215] as Rgb,
+    warningInk: [176, 92, 9] as Rgb,
 };
 
 function safeFilename(value: string): string {

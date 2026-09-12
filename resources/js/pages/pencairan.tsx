@@ -1,6 +1,7 @@
 import InputError from '@/components/input-error';
 import { BankLogo } from '@/components/patungan/bank-logo';
 import { ConfirmDialog } from '@/components/patungan/confirm-dialog';
+import { PhoneVerificationCard, ReviewReasons, type PhoneState } from '@/components/patungan/phone-verification-card';
 import { RupiahInput } from '@/components/patungan/rupiah-input';
 import { Eyebrow, PanelHeading } from '@/components/patungan/section-heading';
 import { StatusBadge } from '@/components/patungan/status-badge';
@@ -50,6 +51,7 @@ interface SettlementRow {
     requested_at: string | null;
     processed_at: string | null;
     failure_reason: string | null;
+    review_reasons: string[];
 }
 
 interface CheckResult {
@@ -65,7 +67,15 @@ interface PencairanProps {
     settlements: SettlementRow[];
     channels: Record<string, Channel[]>;
     inquiry_available: boolean;
-    payout: { min_amount: number; provider: string; automated: boolean };
+    payout: {
+        min_amount: number;
+        provider: string;
+        automated: boolean;
+        automatic_enabled: boolean;
+        automatic_max: number;
+        cooling_hours: number;
+    };
+    phone: PhoneState;
 }
 
 type Step = 'pick' | 'account' | 'amount';
@@ -84,7 +94,7 @@ type Step = 'pick' | 'account' | 'amount';
  * screen. Nobody thinks "I will go and register a bank account"; they think "I
  * want my money in BCA".
  */
-export default function Pencairan({ balance, destinations, settlements, channels, inquiry_available, payout }: PencairanProps) {
+export default function Pencairan({ balance, destinations, settlements, channels, inquiry_available, payout, phone }: PencairanProps) {
     const [step, setStep] = useState<Step>('pick');
     const [target, setTarget] = useState<Destination | null>(null);
 
@@ -318,6 +328,8 @@ export default function Pencairan({ balance, destinations, settlements, channels
                     </div>
                 </div>
 
+                <PhoneVerificationCard phone={phone} coolingHours={payout.cooling_hours} />
+
                 <section className="border-border bg-card min-w-0 overflow-hidden rounded-2xl border">
                     <div className="border-border flex items-center justify-between gap-3 border-b px-5 py-4">
                         <PanelHeading>Riwayat penarikan</PanelHeading>
@@ -357,6 +369,8 @@ export default function Pencairan({ balance, destinations, settlements, channels
                                             </div>
                                         )}
                                     </dl>
+
+                                    {settlement.status === 'PENDING' && <ReviewReasons reasons={settlement.review_reasons} />}
 
                                     {settlement.failure_reason && (
                                         <p className="bg-destructive/10 text-destructive mt-2.5 rounded-lg px-3 py-2 text-[11px]">

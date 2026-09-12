@@ -6,9 +6,12 @@ use App\Http\Requests\StoreSettlementRequest;
 use App\Models\PayoutDestination;
 use App\Models\Settlement;
 use App\Payouts\AccountVerifier;
+use App\Payouts\PayoutRiskPolicy;
 use App\Services\LedgerService;
+use App\Services\PhoneVerificationCode;
 use App\Services\SettlementService;
 use App\Support\PayoutChannels;
+use App\Support\PhoneNumber;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -20,6 +23,8 @@ class PayoutController extends Controller
         private readonly SettlementService $settlements,
         private readonly LedgerService $ledger,
         private readonly AccountVerifier $verifier,
+        private readonly PayoutRiskPolicy $risk,
+        private readonly PhoneVerificationCode $phones,
     ) {}
 
     public function index(Request $request): Response
@@ -67,11 +72,33 @@ class PayoutController extends Controller
                     'requested_at' => $settlement->requested_at?->toIso8601String(),
                     'processed_at' => $settlement->processed_at?->toIso8601String(),
                     'failure_reason' => $settlement->failure_reason,
+                    /*
+                     * Why this one is waiting for a person. Frozen onto the row
+                     * when it was requested, so it still explains itself after
+                     * the organizer has fixed whatever caused it.
+                     */
+                    'review_reasons' => $settlement->metadata['review_reasons'] ?? [],
                 ])->all(),
             'payout' => [
                 'min_amount' => (int) config('patungan.payout.min_amount'),
                 'provider' => $this->settlements->providerName(),
                 'automated' => $this->settlements->providerIsAutomated(),
+                'automatic_enabled' => $this->risk->enabled() && $this->settlements->providerIsAutomated(),
+                'automatic_max' => $this->risk->ceiling(),
+                'cooling_hours' => $this->risk->coolingHours(),
+            ],
+            /*
+             * Surfaced here rather than in account settings because this is
+             * where it earns its keep: a verified phone is one of the things
+             * that lets a payout go without waiting for a person, and this is
+             * the screen where somebody cares about that.
+             */
+            'phone' => [
+                'masked' => PhoneNumber::masked($user->phone),
+                'pretty' => PhoneNumber::pretty($user->phone),
+                'verified' => $user->phone_verified_at !== null,
+                'available' => $this->phones->isAvailable(),
+                'cooldown' => $this->phones->cooldown($user),
             ],
         ]);
     }
