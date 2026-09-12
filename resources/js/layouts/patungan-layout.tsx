@@ -50,7 +50,7 @@ interface PatunganLayoutProps {
      */
     heroMobileOnly?: boolean;
     /** The create wizard keeps its own action pinned, so its tab bar belongs in the page flow. */
-    mobileNavPosition?: 'fixed' | 'flow';
+    mobileNavPosition?: 'fixed' | 'flow' | 'hidden';
 }
 
 export default function PatunganLayout({
@@ -218,28 +218,32 @@ export default function PatunganLayout({
             {/* On wizard pages this also clears the pinned step action. */}
             <HelpBubble className="bottom-24 lg:bottom-4" />
 
-            {/* The create wizard opts into flow mode because its step action owns the viewport edge. */}
-            <nav className={cn('pb-safe inset-x-0 z-40 px-3 lg:hidden', mobileNavPosition === 'fixed' ? 'fixed bottom-0' : 'relative pt-2 pb-24')}>
-                <div className="border-border/70 bg-card/95 mx-auto grid max-w-md grid-cols-5 items-center gap-1 rounded-[26px] border px-2 py-2 shadow-[0_8px_30px_rgba(16,66,44,0.14)] backdrop-blur-sm">
-                    {mobileNav.slice(0, 2).map((link) => (
-                        <NavTab key={link.href} link={link} pathname={pathname} />
-                    ))}
+            {/* A focused wizard hides app navigation because its own action owns the viewport edge. */}
+            {mobileNavPosition !== 'hidden' && (
+                <nav
+                    className={cn('pb-safe inset-x-0 z-40 px-3 lg:hidden', mobileNavPosition === 'fixed' ? 'fixed bottom-0' : 'relative pt-2 pb-24')}
+                >
+                    <div className="border-border/70 bg-card/95 mx-auto grid max-w-md grid-cols-5 items-center gap-1 rounded-[26px] border px-2 py-2 shadow-[0_8px_30px_rgba(16,66,44,0.14)] backdrop-blur-sm">
+                        {mobileNav.slice(0, 2).map((link) => (
+                            <NavTab key={link.href} link={link} pathname={pathname} />
+                        ))}
 
-                    <div className="flex justify-center">
-                        <Link
-                            href={route('patungan.create')}
-                            className="bg-primary text-primary-foreground shadow-primary/30 ring-card flex size-12 -translate-y-3 items-center justify-center rounded-2xl shadow-lg ring-4 transition active:scale-95"
-                            aria-label="Buat patungan"
-                        >
-                            <Plus className="size-5" strokeWidth={2.6} />
-                        </Link>
+                        <div className="flex justify-center">
+                            <Link
+                                href={route('patungan.create')}
+                                className="bg-primary text-primary-foreground shadow-primary/30 ring-card flex size-12 -translate-y-3 items-center justify-center rounded-2xl shadow-lg ring-4 transition active:scale-95"
+                                aria-label="Buat patungan"
+                            >
+                                <Plus className="size-5" strokeWidth={2.6} />
+                            </Link>
+                        </div>
+
+                        {mobileNav.slice(2).map((link) => (
+                            <NavTab key={link.href} link={link} pathname={pathname} />
+                        ))}
                     </div>
-
-                    {mobileNav.slice(2).map((link) => (
-                        <NavTab key={link.href} link={link} pathname={pathname} />
-                    ))}
-                </div>
-            </nav>
+                </nav>
+            )}
         </div>
     );
 }

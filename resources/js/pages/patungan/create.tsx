@@ -72,7 +72,7 @@ export default function CreatePatungan({ categories, fee_bearer }: { categories:
         expires_at: '',
         privacy_mode: 'OPEN',
         split_type: 'EQUAL',
-        equal_amount: 0,
+        equal_amount: 25000,
         participants: [],
     });
 
@@ -164,7 +164,7 @@ export default function CreatePatungan({ categories, fee_bearer }: { categories:
 
     return (
         <PatunganLayout
-            mobileNavPosition="flow"
+            mobileNavPosition="hidden"
             hero={
                 <div>
                     <Eyebrow onDeep>
