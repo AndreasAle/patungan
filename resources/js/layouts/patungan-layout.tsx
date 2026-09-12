@@ -49,9 +49,20 @@ interface PatunganLayoutProps {
      * is the whole point of the screen do not.
      */
     heroMobileOnly?: boolean;
+    /** The create wizard keeps its own action pinned, so its tab bar belongs in the page flow. */
+    mobileNavPosition?: 'fixed' | 'flow';
 }
 
-export default function PatunganLayout({ children, title, back, action, hero, wide = false, heroMobileOnly = false }: PatunganLayoutProps) {
+export default function PatunganLayout({
+    children,
+    title,
+    back,
+    action,
+    hero,
+    wide = false,
+    heroMobileOnly = false,
+    mobileNavPosition = 'fixed',
+}: PatunganLayoutProps) {
     const page = usePage<SharedData>();
     const user = page.props.auth.user;
     const pathname = new URL(page.url, 'http://localhost').pathname;
@@ -204,11 +215,11 @@ export default function PatunganLayout({ children, title, back, action, hero, wi
                 </div>
             </div>
 
-            {/* Sits above the mobile tab bar, which owns the bottom of the screen. */}
+            {/* On wizard pages this also clears the pinned step action. */}
             <HelpBubble className="bottom-24 lg:bottom-4" />
 
-            {/* Mobile tab bar: a floating pill that clears the home indicator. */}
-            <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 px-3 lg:hidden">
+            {/* The create wizard opts into flow mode because its step action owns the viewport edge. */}
+            <nav className={cn('pb-safe inset-x-0 z-40 px-3 lg:hidden', mobileNavPosition === 'fixed' ? 'fixed bottom-0' : 'relative pt-2 pb-24')}>
                 <div className="border-border/70 bg-card/95 mx-auto grid max-w-md grid-cols-5 items-center gap-1 rounded-[26px] border px-2 py-2 shadow-[0_8px_30px_rgba(16,66,44,0.14)] backdrop-blur-sm">
                     {mobileNav.slice(0, 2).map((link) => (
                         <NavTab key={link.href} link={link} pathname={pathname} />

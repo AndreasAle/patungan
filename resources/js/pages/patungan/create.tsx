@@ -164,6 +164,7 @@ export default function CreatePatungan({ categories, fee_bearer }: { categories:
 
     return (
         <PatunganLayout
+            mobileNavPosition="flow"
             hero={
                 <div>
                     <Eyebrow onDeep>
@@ -186,7 +187,7 @@ export default function CreatePatungan({ categories, fee_bearer }: { categories:
         >
             <Head title="Buat Patungan" />
 
-            <form onSubmit={submit}>
+            <form onSubmit={submit} className="pb-20 lg:pb-0">
                 {step === 0 && (
                     <div className="space-y-3">
                         <Section title="Judul patungan" description="Nama yang muncul di link yang kamu share.">
@@ -566,34 +567,36 @@ export default function CreatePatungan({ categories, fee_bearer }: { categories:
                     onConfirm={appendNames}
                 />
 
-                <div className="mt-5 flex gap-2.5">
-                    {step > 0 && (
-                        <Button
-                            type="button"
-                            variant="outline"
-                            className="h-11 rounded-xl px-4 text-sm font-semibold"
-                            onClick={() => setStep(step - 1)}
-                        >
-                            <ArrowLeft className="size-4" />
-                            Kembali
-                        </Button>
-                    )}
+                <div className="border-border/80 bg-background/95 pb-safe fixed inset-x-0 bottom-0 z-50 border-t px-4 pt-2.5 shadow-[0_-10px_30px_rgba(8,71,49,0.08)] backdrop-blur-md lg:static lg:mt-5 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none lg:backdrop-blur-none">
+                    <div className="mx-auto flex w-full max-w-lg gap-2.5 lg:max-w-none">
+                        {step > 0 && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="h-12 rounded-xl px-4 text-sm font-semibold lg:h-11"
+                                onClick={() => setStep(step - 1)}
+                            >
+                                <ArrowLeft className="size-4" />
+                                Kembali
+                            </Button>
+                        )}
 
-                    {step < steps.length - 1 ? (
-                        <Button
-                            type="button"
-                            className="h-11 flex-1 rounded-xl text-sm font-semibold"
-                            disabled={!canContinue}
-                            onClick={() => setStep(step + 1)}
-                        >
-                            Lanjut
-                            <ArrowRight className="size-4" />
-                        </Button>
-                    ) : (
-                        <Button type="submit" className="h-11 flex-1 rounded-xl text-sm font-semibold" disabled={processing}>
-                            {processing ? 'Membuat...' : 'Buat Patungan'}
-                        </Button>
-                    )}
+                        {step < steps.length - 1 ? (
+                            <Button
+                                type="button"
+                                className="h-12 flex-1 rounded-xl text-sm font-semibold lg:h-11"
+                                disabled={!canContinue}
+                                onClick={() => setStep(step + 1)}
+                            >
+                                Lanjut
+                                <ArrowRight className="size-4" />
+                            </Button>
+                        ) : (
+                            <Button type="submit" className="h-12 flex-1 rounded-xl text-sm font-semibold lg:h-11" disabled={processing}>
+                                {processing ? 'Membuat...' : 'Buat Patungan'}
+                            </Button>
+                        )}
+                    </div>
                 </div>
             </form>
         </PatunganLayout>
