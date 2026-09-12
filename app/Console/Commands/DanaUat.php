@@ -139,6 +139,9 @@ class DanaUat extends Command
         $event = $qris->query($payment, $ids->generate());
 
         if ($event === null) {
+            // Dump before bailing: the query exchange is the whole evidence and
+            // --dump used to show only the generate that had already passed.
+            $this->dump($qris);
             $this->reportFailure('Query Payment', new \RuntimeException('DANA did not return a readable status.'));
 
             return self::FAILURE;
@@ -154,6 +157,7 @@ class DanaUat extends Command
         }
 
         if (! $qris->cancel($payment, $ids->generate(), 'UAT scenario')) {
+            $this->dump($qris);
             $this->reportFailure('Cancel Order', new \RuntimeException('DANA refused the cancel.'));
 
             return self::FAILURE;

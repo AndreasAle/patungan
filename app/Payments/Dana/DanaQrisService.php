@@ -237,12 +237,21 @@ final class DanaQrisService
             'subMerchantId' => $this->credentials->subMerchantId,
         ], static fn ($value): bool => $value !== null && $value !== '');
 
+        /*
+         * Every way this can fail used to return null in silence, so a rejected
+         * query and a query that succeeded in an unexpected shape produced the
+         * identical "no readable status" and left nothing behind to tell them
+         * apart. This runs the reconciliation path - one of only two things
+         * allowed to settle a payment - so each exit now says which one it was.
+         */
         try {
             $result = $this->client->post(self::QUERY, $body, $externalId);
-        } catch (DanaApiException) {
-            Log::channel('dana')->warning('DANA QRIS query failed', [
-                'payment' => $payment->uuid,
+        } catch (DanaApiException $e) {
+            Log::channel('dana')->warning('DANA QRIS query was refused', [
+                'reference' => $payment->gateway_reference,
                 'external_id' => $externalId,
+                'response_code' => $e->context['response_code'] ?? null,
+                'response_message' => $e->context['response_message'] ?? null,
             ]);
 
             return null;
@@ -251,12 +260,31 @@ final class DanaQrisService
         $response = $result['body'];
 
         if (! DanaStatusMapper::isSuccessResponse($response['responseCode'] ?? null)) {
+            Log::channel('dana')->warning('DANA QRIS query returned a non-success code', [
+                'reference' => $payment->gateway_reference,
+                'external_id' => $externalId,
+                'response_code' => $response['responseCode'] ?? null,
+                'response_message' => $response['responseMessage'] ?? null,
+            ]);
+
             return null;
         }
 
         $status = $response['latestTransactionStatus'] ?? null;
 
         if (! is_string($status)) {
+            /*
+             * DANA said yes but not what happened to the money. Logged with the
+             * keys it did send, because that is the difference between "their
+             * field is named something else" and "this order does not exist".
+             */
+            Log::channel('dana')->warning('DANA QRIS query carried no transaction status', [
+                'reference' => $payment->gateway_reference,
+                'external_id' => $externalId,
+                'response_code' => $response['responseCode'] ?? null,
+                'fields' => array_keys($response),
+            ]);
+
             return null;
         }
 
