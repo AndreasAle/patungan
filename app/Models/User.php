@@ -63,6 +63,9 @@ class User extends Authenticatable implements MustVerifyEmail
             'suspended_at' => 'datetime',
             'email_verification_sent_at' => 'datetime',
             'email_verification_expires_at' => 'datetime',
+            'phone_verified_at' => 'datetime',
+            'phone_verification_sent_at' => 'datetime',
+            'phone_verification_expires_at' => 'datetime',
         ];
     }
 

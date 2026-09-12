@@ -9,6 +9,7 @@ use App\Events\PayoutRequested;
 use App\Models\PayoutDestination;
 use App\Models\Settlement;
 use App\Models\User;
+use App\Payouts\PayoutRiskPolicy;
 use App\Support\Money;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -20,6 +21,7 @@ class SettlementService
         private readonly PayoutProvider $provider,
         private readonly LedgerService $ledger,
         private readonly Analytics $analytics,
+        private readonly PayoutRiskPolicy $risk,
     ) {}
 
     /**
@@ -43,7 +45,17 @@ class SettlementService
             ]);
         }
 
-        $settlement = DB::transaction(function () use ($organizer, $destination, $amount): Settlement {
+        /*
+         * Decided before the money moves, and recorded alongside it. An
+         * automated provider is necessary but not sufficient: the policy still
+         * has to agree, and where it does not the payout is queued for an
+         * operator rather than refused. The money is the organizer's; our
+         * caution should cost them time, not access.
+         */
+        $decision = $this->risk->evaluate($organizer, $destination, $amount);
+        $automatic = $decision['automatic'] && $this->provider->isAutomated();
+
+        $settlement = DB::transaction(function () use ($organizer, $destination, $amount, $automatic, $decision): Settlement {
             // Serialise concurrent payout requests for this organizer.
             User::query()->lockForUpdate()->find($organizer->id);
 
@@ -70,7 +82,17 @@ class SettlementService
                 'provider' => $this->provider->name(),
                 'status' => SettlementStatus::Pending->value,
                 'requested_at' => now(),
-                'metadata' => ['automated' => $this->provider->isAutomated()],
+                'metadata' => [
+                    'automated' => $automatic,
+                    /*
+                     * Why it is waiting, kept on the row rather than recomputed
+                     * later. The reasons are true as of this moment - the
+                     * destination ages, the phone gets verified - and an
+                     * operator reading this next week needs what was true when
+                     * the request was made, not what is true now.
+                     */
+                    'review_reasons' => $decision['reasons'],
+                ],
             ])->save();
 
             $this->ledger->recordPayout($settlement);
@@ -78,11 +100,13 @@ class SettlementService
             return $settlement;
         });
 
-        $result = $this->provider->createPayout($settlement);
-        $settlement->forceFill([
-            'provider_reference' => $result->reference,
-            'status' => $result->status->value,
-        ])->save();
+        if ($automatic) {
+            $result = $this->provider->createPayout($settlement);
+            $settlement->forceFill([
+                'provider_reference' => $result->reference,
+                'status' => $result->status->value,
+            ])->save();
+        }
 
         PayoutRequested::dispatch($settlement);
         $this->analytics->record(

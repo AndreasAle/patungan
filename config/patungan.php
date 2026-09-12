@@ -56,6 +56,25 @@ return [
          | than not offering one.
          */
         'inquiry' => env('PAYOUT_INQUIRY', 'none'),
+
+        /*
+        | When a payout may leave without a human looking at it.
+        |
+        | Off by default, and that is the safe direction: with it off every
+        | payout still happens, it simply waits for an operator. Turning it on
+        | before the provider can actually disburse changes nothing, because a
+        | manual provider queues regardless - the policy says so honestly
+        | rather than claiming an automation that does not exist.
+        |
+        | cooling_hours is the one people are tempted to shorten. It is what
+        | turns an instant drain of a compromised account into something
+        | somebody can still catch, so it earns its cost in patience.
+        */
+        'automatic' => [
+            'enabled' => (bool) env('PAYOUT_AUTOMATIC', false),
+            'max_amount' => (int) env('PAYOUT_AUTOMATIC_MAX', 1000000),
+            'cooling_hours' => (int) env('PAYOUT_AUTOMATIC_COOLING_HOURS', 24),
+        ],
     ],
 
     /*
