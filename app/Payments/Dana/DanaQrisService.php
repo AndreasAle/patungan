@@ -16,12 +16,9 @@ use Illuminate\Support\Facades\Log;
  * The three DANA QRIS MPM endpoints this payment flow needs.
  *
  *   generate  POST /v1.0/qr/qr-mpm-generate.htm   service code 47
- *   query     POST /v1.0/qr/qr-mpm-query.htm      asks about service code 47
+ *   query     POST /rest/v1.1/debit/status        service code 55
  *   cancel    POST /v1.0/debit/cancel.htm         service code 57
- *
- * cancel is still on the debit path and has never been exercised against
- * sandbox - the UAT run never reached it while query was failing. If it answers
- * 404 with a 57 in the code, it needs the same correction query just had.
+
  *
  * Generate returns qrContent, the raw QR payload, which the payment page draws
  * itself - a participant never leaves a Patungan screen to pay.
@@ -31,18 +28,21 @@ final class DanaQrisService
     public const GENERATE = '/v1.0/qr/qr-mpm-generate.htm';
 
     /*
-     * The QRIS query, not the Debit one.
+     * The generic SNAP status endpoint, and it is the right one.
      *
-     * This was /rest/v1.1/debit/status, and DANA answered every call with
-     * 4045501 Transaction Not Found. That response code is its own explanation:
-     * 404 + service 55 + 01, and 55 is Debit. We were creating orders in QRIS
-     * MPM (47) and asking the debit system what had become of them, so "not
-     * found" was the truthful answer to the wrong question.
+     * Worth recording because it was changed away from and changed back. It
+     * answers a QRIS order with 4045501 Transaction Not Found, and the 55 in
+     * that code names the endpoint that replied - not the system the order
+     * lives in. Reading it as "wrong system" led to /v1.0/qr/qr-mpm-query.htm,
+     * which returns HTTP 200 with an empty body: the signature of a route
+     * nothing handles.
      *
-     * serviceCode in the body stays 47: in SNAP that field names the original
-     * transaction being asked about, not the endpoint doing the asking.
+     * This endpoint echoes serviceCode 47 and our reference straight back, so
+     * it understood the question and looked. "Not found" is the honest answer
+     * for a QR nobody has scanned yet, which is handled below rather than
+     * treated as a broken call.
      */
-    public const QUERY = '/v1.0/qr/qr-mpm-query.htm';
+    public const QUERY = '/rest/v1.1/debit/status';
 
     public const CANCEL = '/v1.0/debit/cancel.htm';
 
@@ -274,6 +274,27 @@ final class DanaQrisService
         }
 
         $response = $result['body'];
+
+        if (DanaStatusMapper::isTransactionNotFound($response['responseCode'] ?? null)) {
+            /*
+             * Nobody has scanned the QR. That is a real, known state - the
+             * invoice is simply still waiting - so it is reported as Pending
+             * rather than as a reply we could not read. Reconciliation skips
+             * pending events, so the outcome is the same; what changes is that
+             * an unpaid invoice no longer looks like a failure in the logs.
+             */
+            return new GatewayEvent(
+                reference: $payment->gateway_reference,
+                transactionId: $payment->gateway_transaction_id,
+                status: PaymentStatus::Pending,
+                // Nothing has been received, and this is never read for a
+                // pending event. Zero is the honest figure.
+                grossAmount: 0,
+                signatureValid: true,
+                eventType: 'qris.query.not_found',
+                raw: $this->keepUseful($response),
+            );
+        }
 
         if (! DanaStatusMapper::isSuccessResponse($response['responseCode'] ?? null)) {
             Log::channel('dana')->warning('DANA QRIS query returned a non-success code', [

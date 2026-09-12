@@ -54,6 +54,19 @@ final class DanaStatusMapper
     }
 
     /**
+     * DANA has no transaction on file for this order.
+     *
+     * For a QR that nobody has scanned this is the correct answer, not a
+     * fault: generate creates the code, and a transaction only exists once
+     * somebody pays it. Treating it as an unreadable reply made every query of
+     * an unpaid invoice look like a broken integration.
+     */
+    public static function isTransactionNotFound(?string $responseCode): bool
+    {
+        return is_string($responseCode) && str_starts_with($responseCode, '404');
+    }
+
+    /**
      * DANA response codes are HTTP status + service code + case code, so a
      * QRIS generate succeeds with 2004700 and a status query with 2005500.
      */

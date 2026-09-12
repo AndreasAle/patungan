@@ -237,6 +237,35 @@ class DanaQrisPaymentTest extends TestCase
         $this->assertSame(PaymentStatus::Expired, $payment->refresh()->status);
     }
 
+    public function test_an_unscanned_qr_is_reported_as_pending_not_as_a_failure(): void
+    {
+        $this->fakeDanaQrisGenerate();
+        $payment = $this->openInvoice();
+
+        Http::fake([
+            $this->danaBaseUrl.DanaQrisService::QUERY => Http::response([
+                'responseCode' => '4045501',
+                'responseMessage' => 'Transaction Not Found',
+                'serviceCode' => '47',
+                'originalPartnerReferenceNo' => $payment->gateway_reference,
+            ], 404),
+        ]);
+
+        /*
+         * What DANA says about every QR nobody has scanned yet. It was being
+         * read as an unreadable reply, which made a perfectly normal unpaid
+         * invoice look like a broken integration in the logs.
+         */
+        $event = app(PaymentGatewayManager::class)->driver('dana')->fetchStatus($payment->refresh());
+
+        $this->assertNotNull($event);
+        $this->assertSame(PaymentStatus::Pending, $event->status);
+        $this->assertSame(0, $event->grossAmount);
+
+        // And nothing is settled off the back of it.
+        $this->assertSame(PaymentStatus::Pending, $payment->refresh()->status);
+    }
+
     public function test_it_refuses_to_generate_qris_without_the_required_store_id(): void
     {
         config(['dana.store_id' => null]);

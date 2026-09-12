@@ -147,7 +147,11 @@ class DanaUat extends Command
             return self::FAILURE;
         }
 
-        $this->pass('Query Payment', 'status '.$event->status->value);
+        $this->pass('Query Payment', $event->eventType === 'qris.query.not_found'
+            // Expected: the QR was created seconds ago and nobody has scanned
+            // it, so DANA has no transaction to report yet.
+            ? 'belum ada yang bayar (Transaction Not Found)'
+            : 'status '.$event->status->value);
 
         // --- Scenario 3: Cancel Order ---------------------------------------
         if ($this->option('keep')) {
