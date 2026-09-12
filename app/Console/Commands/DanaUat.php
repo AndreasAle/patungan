@@ -33,7 +33,9 @@ class DanaUat extends Command
         {--amount=10000 : Amount in whole rupiah for the test charge}
         {--keep : Skip the cancel step, leaving the QR payable in sandbox}
         {--dump : Print the full request and response, for a provider support ticket}
-        {--minimal : Send the exact body shape DANA support hands out, to isolate a field}';
+        {--minimal : Send the exact body shape DANA support hands out, to isolate a field}
+        {--no-validity : Drop validityPeriod only, leaving the rest of the full body}
+        {--terminal= : Override orderTerminalType (APP or WEB), to isolate that field}';
 
     protected $description = 'Run the DANA QRIS sandbox scenarios: generate, query, cancel';
 
@@ -75,6 +77,16 @@ class DanaUat extends Command
             return self::FAILURE;
         }
 
+        if ($this->option('no-validity')) {
+            $qris->withoutValidityPeriod();
+            $this->components->warn('validityPeriod dropped; the QR will use the DANA default lifetime.');
+        }
+
+        if (is_string($terminal = $this->option('terminal')) && $terminal !== '') {
+            $qris->withOrderTerminalType(strtoupper($terminal));
+            $this->components->warn('orderTerminalType forced to '.strtoupper($terminal).'.');
+        }
+
         if ($this->option('minimal')) {
             $qris->useMinimalBody();
             $this->components->warn('Minimal body: no validityPeriod, no sourcePlatform, orderTerminalType APP.');
@@ -104,7 +116,11 @@ class DanaUat extends Command
 
         $this->dump($qris);
 
-        $this->pass('Generate QRIS', 'referenceNo '.$charge->transactionId);
+        // DANA's generate does not return a referenceNo; say so plainly rather
+        // than printing "referenceNo " with nothing after it.
+        $this->pass('Generate QRIS', $charge->transactionId === null
+            ? 'accepted, no referenceNo returned'
+            : 'referenceNo '.$charge->transactionId);
         $this->line('  <fg=gray>QR content: '.Str::limit($charge->qrString ?? '', 48).'</>');
 
         /*
@@ -148,8 +164,8 @@ class DanaUat extends Command
         $this->line('');
         $this->components->info('All three QRIS calls reached DANA.');
         $this->line('  <fg=gray>Refresh the Integration Checklist; scenarios are ticked on DANA\'s side,</>');
-        $this->line('  <fg=gray>not here. If one still shows incomplete, storage/logs/dana.log has the</>');
-        $this->line('  <fg=gray>exact request and response code they saw.</>');
+        $this->line('  <fg=gray>not here. If one still shows incomplete, '.$this->logPath().'</>');
+        $this->line('  <fg=gray>has the exact request and response code they saw.</>');
 
         return self::SUCCESS;
     }
@@ -263,6 +279,18 @@ class DanaUat extends Command
         return (string) json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
+    /**
+     * The log file that actually exists.
+     *
+     * The 'dana' channel uses the daily driver, so Laravel writes
+     * dana-YYYY-MM-DD.log. Printing "dana.log" sent somebody to a path that is
+     * never created, at the exact moment they needed the response body.
+     */
+    private function logPath(): string
+    {
+        return 'storage/logs/dana-'.now()->format('Y-m-d').'.log';
+    }
+
     private function pass(string $scenario, string $detail): void
     {
         $this->components->twoColumnDetail($scenario, '<fg=green>PASS</> <fg=gray>'.$detail.'</>');
@@ -283,6 +311,6 @@ class DanaUat extends Command
             $this->line('  <fg=gray>responseCode: '.$code.'</>');
         }
 
-        $this->line('  <fg=gray>Full request and response: storage/logs/dana.log</>');
+        $this->line('  <fg=gray>Full request and response: '.$this->logPath().'</>');
     }
 }

@@ -53,9 +53,30 @@ final class DanaQrisService
         private readonly DanaCredentials $credentials,
     ) {}
 
+    /**
+     * Individual overrides, so a rejected field can be bisected.
+     *
+     * --minimal drops four things at once, which proves a body works but not
+     * which field broke the other one. These exist so the difference can be
+     * narrowed to a single field in two runs instead of argued about.
+     */
+    private ?bool $sendValidityPeriod = null;
+
+    private ?string $orderTerminalType = null;
+
     public function useMinimalBody(bool $minimal = true): void
     {
         $this->minimalBody = $minimal;
+    }
+
+    public function withoutValidityPeriod(): void
+    {
+        $this->sendValidityPeriod = false;
+    }
+
+    public function withOrderTerminalType(string $type): void
+    {
+        $this->orderTerminalType = $type;
     }
 
     /**
@@ -94,7 +115,9 @@ final class DanaQrisService
              * our invoice TTL, which is a real cost - so it is only given up
              * if keeping it is what breaks the call.
              */
-            'validityPeriod' => $this->minimalBody ? null : $expiresAt->format('Y-m-d\TH:i:sP'),
+            'validityPeriod' => ($this->minimalBody || $this->sendValidityPeriod === false)
+                ? null
+                : $expiresAt->format('Y-m-d\TH:i:sP'),
             'additionalInfo' => [
                 'terminalSource' => 'MER',
                 'envInfo' => array_filter([
@@ -102,7 +125,7 @@ final class DanaQrisService
                     // enums for a payment gateway integration with no device.
                     'sourcePlatform' => $this->minimalBody ? null : 'IPG',
                     'terminalType' => 'SYSTEM',
-                    'orderTerminalType' => $this->minimalBody ? 'APP' : 'WEB',
+                    'orderTerminalType' => $this->orderTerminalType ?? ($this->minimalBody ? 'APP' : 'WEB'),
                 ], static fn ($value): bool => $value !== null),
             ],
         ], static fn ($value): bool => $value !== null && $value !== '');
@@ -130,22 +153,39 @@ final class DanaQrisService
         $referenceNo = $response['referenceNo'] ?? null;
 
         /*
-         * Both are required before this counts as a usable invoice. Without
-         * qrContent there is nothing for the payer to scan; without referenceNo
-         * we could not later match DANA's own notification to this payment.
+         * qrContent is the one field this endpoint must return. Without it
+         * there is nothing for the payer to scan and the invoice is worthless,
+         * so an accepted charge we cannot use is still a failure.
          */
         if (! is_string($qrContent) || $qrContent === '') {
+            Log::channel('dana')->error('DANA QRIS generate returned no QR content', [
+                'endpoint' => self::GENERATE,
+                'external_id' => $externalId,
+                'partner_reference_no' => $request->reference,
+                'response' => $response,
+            ]);
+
             throw new DanaInvalidResponseException(context: [
                 'reason' => 'DANA accepted the charge but returned no QR content.',
                 'external_id' => $externalId,
             ]);
         }
 
+        /*
+         * referenceNo is NOT returned by this endpoint. A successful generate
+         * answers with responseCode, responseMessage and qrContent, and nothing
+         * else. Requiring it here was my assumption that SNAP always carries
+         * one, and it rejected charges DANA had already accepted - the QR was
+         * issued and we threw it away.
+         *
+         * Nothing actually depends on it. Notifications are matched on
+         * originalPartnerReferenceNo, which is our own reference and is carried
+         * inside the QR payload itself; query and cancel send originalReferenceNo
+         * only when we have one. If a later notification brings it,
+         * PaymentService fills the column in then.
+         */
         if (! is_string($referenceNo) || $referenceNo === '') {
-            throw new DanaInvalidResponseException(context: [
-                'reason' => 'DANA accepted the charge but returned no reference number.',
-                'external_id' => $externalId,
-            ]);
+            $referenceNo = null;
         }
 
         return new ChargeResult(

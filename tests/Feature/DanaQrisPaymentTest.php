@@ -115,6 +115,67 @@ class DanaQrisPaymentTest extends TestCase
         });
     }
 
+    public function test_a_generate_response_without_a_reference_number_is_still_usable(): void
+    {
+        /*
+         * This is the real shape of a successful DANA QRIS generate, captured
+         * from sandbox: responseCode, responseMessage and qrContent, with no
+         * referenceNo anywhere. We used to demand one and threw away QRs that
+         * DANA had already issued.
+         */
+        Http::fake([
+            $this->danaBaseUrl.DanaQrisService::GENERATE => Http::response([
+                'responseCode' => '2004700',
+                'responseMessage' => 'Successful',
+                'qrContent' => '00020101021226570011ID.DANA.WWW',
+            ]),
+        ]);
+
+        $payment = $this->openInvoice();
+
+        $this->assertSame(PaymentStatus::Pending, $payment->status);
+        $this->assertSame('00020101021226570011ID.DANA.WWW', $payment->qr_string);
+
+        // Left empty rather than invented. A notification fills it in later if
+        // DANA ever sends one.
+        $this->assertNull($payment->gateway_transaction_id);
+    }
+
+    public function test_a_payment_opened_without_a_reference_number_can_still_be_settled(): void
+    {
+        Http::fake([
+            $this->danaBaseUrl.DanaQrisService::GENERATE => Http::response([
+                'responseCode' => '2004700',
+                'responseMessage' => 'Successful',
+                'qrContent' => '00020101021226570011ID.DANA.WWW',
+            ]),
+        ]);
+
+        $payment = $this->openInvoice();
+
+        /*
+         * The point of allowing the empty column: DANA matches its notification
+         * on our own reference, so the money still lands on the right invoice.
+         */
+        $payload = $this->danaNotificationPayload(
+            $payment->gateway_reference,
+            (int) $payment->charged_amount,
+            '00',
+            'DANA-LATE-REF',
+        );
+
+        $this->postJson(
+            route('webhooks.payments', ['provider' => 'dana']),
+            $payload,
+            $this->danaNotificationHeaders($payload),
+        )->assertOk();
+
+        $payment->refresh();
+
+        $this->assertSame(PaymentStatus::Paid, $payment->status);
+        $this->assertSame('DANA-LATE-REF', $payment->gateway_transaction_id);
+    }
+
     public function test_it_refuses_to_generate_qris_without_the_required_store_id(): void
     {
         config(['dana.store_id' => null]);
