@@ -22,7 +22,7 @@ type Filter = 'ALL' | 'PAID' | 'UNPAID';
 
 interface ShowProps {
     patungan: PatunganDetail;
-    can: { manage: boolean; close: boolean };
+    can: { manage: boolean; close: boolean; delete: boolean };
     share: ShareBundle;
     organizer_name: string;
 }
@@ -36,6 +36,7 @@ const filters: [Filter, string][] = [
 export default function PatunganShow({ patungan, can, share, organizer_name }: ShowProps) {
     const [filter, setFilter] = useState<Filter>('ALL');
     const [closing, setClosing] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const [removing, setRemoving] = useState<OrganizerParticipant | null>(null);
     const [newName, setNewName] = useState('');
     const [addingParticipant, setAddingParticipant] = useState(false);
@@ -362,14 +363,15 @@ export default function PatunganShow({ patungan, can, share, organizer_name }: S
                         </div>
                     )}
 
-                    {can.close && (
-                        <div className="mt-6">
-                            {isOpen ? (
+                    {(can.close || can.delete) && (
+                        <div className="mt-6 flex flex-wrap gap-2">
+                            {can.close && isOpen ? (
                                 <Button variant="outline" className="h-11 rounded-full px-6 text-sm font-semibold" onClick={() => setClosing(true)}>
                                     <Lock className="size-4" />
                                     Tutup patungan
                                 </Button>
                             ) : (
+                                can.close &&
                                 patungan.status === 'CLOSED' && (
                                     <Button
                                         variant="outline"
@@ -380,6 +382,17 @@ export default function PatunganShow({ patungan, can, share, organizer_name }: S
                                         Buka lagi
                                     </Button>
                                 )
+                            )}
+
+                            {can.delete && (
+                                <Button
+                                    variant="outline"
+                                    className="border-destructive/30 text-destructive hover:bg-destructive/5 hover:text-destructive h-11 rounded-full px-6 text-sm font-semibold"
+                                    onClick={() => setDeleting(true)}
+                                >
+                                    <Trash2 className="size-4" />
+                                    Hapus patungan
+                                </Button>
                             )}
                         </div>
                     )}
@@ -396,6 +409,20 @@ export default function PatunganShow({ patungan, can, share, organizer_name }: S
                 confirmLabel="Tutup"
                 onConfirm={() => {
                     router.post(route('patungan.close', patungan.uuid), {}, { preserveScroll: true, onFinish: () => setClosing(false) });
+                }}
+            />
+
+            <ConfirmDialog
+                open={deleting}
+                onOpenChange={setDeleting}
+                title="Hapus patungan ini?"
+                description={`Patungan “${patungan.title}” dan seluruh daftar pesertanya akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.`}
+                confirmLabel="Ya, hapus"
+                destructive
+                onConfirm={() => {
+                    router.delete(route('patungan.destroy', patungan.uuid), {
+                        onFinish: () => setDeleting(false),
+                    });
                 }}
             />
 

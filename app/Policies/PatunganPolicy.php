@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\PaymentStatus;
 use App\Models\Patungan;
 use App\Models\User;
 
@@ -30,7 +31,10 @@ class PatunganPolicy
 
     public function delete(User $user, Patungan $patungan): bool
     {
-        return $this->owns($user, $patungan) && $patungan->collected_amount === 0;
+        return $this->owns($user, $patungan)
+            && ! $user->isSuspended()
+            && $patungan->collected_amount === 0
+            && $patungan->payments()->where('status', PaymentStatus::Pending->value)->doesntExist();
     }
 
     private function owns(User $user, Patungan $patungan): bool

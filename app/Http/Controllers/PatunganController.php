@@ -132,6 +132,7 @@ class PatunganController extends Controller
             'can' => [
                 'manage' => $request->user()->can('manageParticipants', $patungan),
                 'close' => $request->user()->can('close', $patungan),
+                'delete' => $request->user()->can('delete', $patungan),
             ],
             'share' => [
                 'public_url' => $this->share->publicUrl($patungan),
@@ -167,6 +168,17 @@ class PatunganController extends Controller
         return redirect()
             ->route('patungan.show', $patungan)
             ->with('success', 'Patungan berhasil diperbarui.');
+    }
+
+    public function destroy(Patungan $patungan): RedirectResponse
+    {
+        $this->authorize('delete', $patungan);
+
+        $patungan->delete();
+
+        return redirect()
+            ->route('patungan.index')
+            ->with('success', 'Patungan berhasil dihapus.');
     }
 
     public function close(Patungan $patungan): RedirectResponse

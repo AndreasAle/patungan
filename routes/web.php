@@ -139,6 +139,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('patungan', [PatunganController::class, 'store'])->name('patungan.store');
         Route::get('patungan/{patungan}/edit', [PatunganController::class, 'edit'])->name('patungan.edit');
         Route::patch('patungan/{patungan}', [PatunganController::class, 'update'])->name('patungan.update');
+        Route::delete('patungan/{patungan}', [PatunganController::class, 'destroy'])->name('patungan.destroy');
         Route::post('patungan/{patungan}/tutup', [PatunganController::class, 'close'])->name('patungan.close');
         Route::post('patungan/{patungan}/buka', [PatunganController::class, 'reopen'])->name('patungan.reopen');
         Route::post('patungan/{patungan}/ulang', [PatunganController::class, 'repeat'])->name('patungan.repeat');

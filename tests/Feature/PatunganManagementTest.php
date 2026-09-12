@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\PatunganCategory;
 use App\Enums\SplitType;
 use App\Models\Patungan;
+use App\Services\PaymentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\PatunganFixtures;
 use Tests\TestCase;
@@ -148,6 +149,53 @@ class PatunganManagementTest extends TestCase
         ])->assertForbidden();
 
         $this->assertSame('Badminton Minggu Malam', $patungan->fresh()->title);
+    }
+
+    public function test_organizer_can_delete_an_unpaid_patungan(): void
+    {
+        $organizer = $this->organizer();
+        $patungan = $this->makePatungan($organizer, ['Andreas', 'Niko']);
+        $participantIds = $patungan->participants->pluck('id');
+
+        $this->actingAs($organizer)
+            ->delete(route('patungan.destroy', $patungan))
+            ->assertRedirect(route('patungan.index'))
+            ->assertSessionHas('success', 'Patungan berhasil dihapus.');
+
+        $this->assertDatabaseMissing('patungans', ['id' => $patungan->id]);
+
+        foreach ($participantIds as $participantId) {
+            $this->assertDatabaseMissing('patungan_participants', ['id' => $participantId]);
+        }
+    }
+
+    public function test_organizer_cannot_delete_a_patungan_that_has_received_money(): void
+    {
+        $organizer = $this->organizer();
+        $patungan = $this->makePatungan($organizer, ['Andreas', 'Niko']);
+        $participant = $patungan->participants->first();
+
+        $this->actingAs($organizer)->post(route('participant.mark-paid', [$patungan, $participant]))->assertRedirect();
+
+        $this->actingAs($organizer)
+            ->delete(route('patungan.destroy', $patungan))
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('patungans', ['id' => $patungan->id]);
+    }
+
+    public function test_an_active_payment_prevents_deleting_the_patungan(): void
+    {
+        $organizer = $this->organizer();
+        $patungan = $this->makePatungan($organizer, ['Andreas']);
+
+        app(PaymentService::class)->createForParticipant($patungan->participants->first());
+
+        $this->actingAs($organizer)
+            ->delete(route('patungan.destroy', $patungan))
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('patungans', ['id' => $patungan->id]);
     }
 
     public function test_guests_cannot_reach_the_organizer_dashboard(): void
