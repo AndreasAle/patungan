@@ -5,8 +5,8 @@ import PublicLayout from '@/layouts/public-layout';
 import { formatDate, formatTime, rupiah } from '@/lib/format';
 import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft, Check, Download, ExternalLink, ReceiptText, Share2, ShieldCheck } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
-import { useState } from 'react';
+import { QRCodeCanvas, QRCodeSVG } from 'qrcode.react';
+import { useRef, useState } from 'react';
 
 interface InvoiceProps {
     invoice: {
@@ -30,6 +30,8 @@ interface InvoiceProps {
 
 export default function Invoice({ invoice, patungan }: InvoiceProps) {
     const [shared, setShared] = useState(false);
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+    const qrCanvasRef = useRef<HTMLCanvasElement>(null);
 
     const share = async () => {
         const text = `Bukti pembayaran ${patungan.title} — ${invoice.participant_name}, ${rupiah(invoice.amount)}. ${invoice.number}`;
@@ -50,6 +52,36 @@ export default function Invoice({ invoice, patungan }: InvoiceProps) {
             window.setTimeout(() => setShared(false), 2000);
         } catch {
             setShared(false);
+        }
+    };
+
+    const downloadPdf = async () => {
+        const qrCanvas = qrCanvasRef.current;
+
+        if (!qrCanvas || isGeneratingPdf) return;
+
+        setIsGeneratingPdf(true);
+
+        try {
+            const { downloadPaymentInvoicePdf } = await import('@/lib/payment-invoice-pdf');
+
+            await downloadPaymentInvoicePdf(
+                {
+                    number: invoice.number,
+                    issuedDate: formatDate(invoice.issued_at),
+                    issuedTime: formatTime(invoice.issued_at),
+                    amount: invoice.amount,
+                    method: invoice.method_label ?? invoice.method ?? '-',
+                    participantName: invoice.participant_name,
+                    organizerName: patungan.organizer_name,
+                    patunganTitle: patungan.title,
+                    note: invoice.note,
+                    isManual: invoice.is_manual,
+                },
+                qrCanvas.toDataURL('image/png'),
+            );
+        } finally {
+            setIsGeneratingPdf(false);
         }
     };
 
@@ -193,9 +225,9 @@ export default function Invoice({ invoice, patungan }: InvoiceProps) {
                                 <Share2 className="size-4" />
                                 {shared ? 'Link tersalin' : 'Bagikan'}
                             </Button>
-                            <Button className="h-11 rounded-xl text-xs font-bold" onClick={() => window.print()}>
+                            <Button className="h-11 rounded-xl text-xs font-bold" onClick={downloadPdf} disabled={isGeneratingPdf}>
                                 <Download className="size-4" />
-                                Simpan PDF
+                                {isGeneratingPdf ? 'Membuat PDF…' : 'Unduh PDF'}
                             </Button>
                         </div>
                     </div>
@@ -214,6 +246,16 @@ export default function Invoice({ invoice, patungan }: InvoiceProps) {
                         </p>
                     </footer>
                 </article>
+
+                <QRCodeCanvas
+                    ref={qrCanvasRef}
+                    value={invoice.verify_url}
+                    size={512}
+                    level="H"
+                    marginSize={2}
+                    className="pointer-events-none fixed top-0 -left-[9999px] size-px opacity-0"
+                    aria-hidden="true"
+                />
             </div>
         </PublicLayout>
     );
