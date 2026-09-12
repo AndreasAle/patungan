@@ -15,6 +15,7 @@ use App\Http\Controllers\LegalController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\PatunganController;
 use App\Http\Controllers\PayoutController;
+use App\Http\Controllers\PhoneVerificationController;
 use App\Http\Controllers\PayoutDestinationController;
 use App\Http\Controllers\ProfileHubController;
 use App\Http\Controllers\Public\InvoiceController;
@@ -159,6 +160,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('pencairan/tujuan/verifikasi', [PayoutDestinationController::class, 'verify'])
             ->middleware('throttle:12,1')
             ->name('payout.destination.verify');
+        /*
+         | Rate limited hard. Each send costs a real SMS, and an unlimited
+         | endpoint is both a bill and a way to use us to text strangers.
+         */
+        Route::post('pencairan/hp/kirim', [PhoneVerificationController::class, 'send'])
+            ->middleware('throttle:5,10')
+            ->name('phone.verify.send');
+        Route::post('pencairan/hp/konfirmasi', [PhoneVerificationController::class, 'confirm'])
+            ->middleware('throttle:12,10')
+            ->name('phone.verify.confirm');
+
         Route::post('pencairan/tujuan', [PayoutDestinationController::class, 'store'])->name('payout.destination.store');
         Route::post('pencairan/tujuan/{destination}/utama', [PayoutDestinationController::class, 'makeDefault'])->name('payout.destination.default');
         Route::delete('pencairan/tujuan/{destination}', [PayoutDestinationController::class, 'destroy'])->name('payout.destination.destroy');

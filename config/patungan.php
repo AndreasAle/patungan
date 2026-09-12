@@ -78,6 +78,21 @@ return [
     ],
 
     /*
+    | One-time codes for verifying an organizer's phone number.
+    |
+    | "none" (the default) sends nothing, and that is deliberate: a verified
+    | phone is what releases automatic payouts, so a driver that pretended to
+    | send would mint verified numbers nobody can be warned on. With no provider
+    | configured, phones stay unverified and payouts stay queued for an operator.
+    |
+    | "log" writes the code to the log for local work and refuses to run in
+    | production at all.
+    */
+    'otp' => [
+        'driver' => env('OTP_DRIVER', 'none'),
+    ],
+
+    /*
     | Email quality gate. The domain must really be able to receive mail, and
     | throwaway inboxes are refused - a payer we cannot reach later is a problem
     | once money is involved.
