@@ -29,6 +29,38 @@ function safeFilename(value: string): string {
     return value.replace(/[^a-zA-Z0-9-_]/g, '-').replace(/-+/g, '-');
 }
 
+/** Rasterizes the exact mark used by AppLogoIcon so the PDF never substitutes it. */
+async function brandMarkPng(): Promise<string> {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+        <path d="M16 40V22A15 15 0 0 1 31 7H36A16.5 16.5 0 0 1 36 40Z" fill="#15563A"/>
+        <path d="M37 27H26A15 15 0 0 0 11 42V44A15 15 0 0 0 41 44Z" fill="#A6D93B"/>
+    </svg>`;
+    const source = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }));
+
+    try {
+        const image = new Image();
+
+        await new Promise<void>((resolve, reject) => {
+            image.onload = () => resolve();
+            image.onerror = () => reject(new Error('Logo Patungan gagal dimuat untuk PDF.'));
+            image.src = source;
+        });
+
+        const canvas = document.createElement('canvas');
+        canvas.width = 256;
+        canvas.height = 256;
+        const context = canvas.getContext('2d');
+
+        if (!context) throw new Error('Canvas untuk logo Patungan tidak tersedia.');
+
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+        return canvas.toDataURL('image/png');
+    } finally {
+        URL.revokeObjectURL(source);
+    }
+}
+
 /**
  * Builds a real A4 PDF instead of printing the browser viewport. Keeping the
  * drawing primitive also prevents browser headers, page URLs and responsive
@@ -36,6 +68,7 @@ function safeFilename(value: string): string {
  */
 export async function downloadPaymentInvoicePdf(data: PaymentInvoicePdfData, qrDataUrl: string): Promise<void> {
     const { jsPDF } = await import('jspdf');
+    const logoDataUrl = await brandMarkPng();
     const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
     const pageWidth = pdf.internal.pageSize.getWidth();
     const left = 18;
@@ -45,11 +78,11 @@ export async function downloadPaymentInvoicePdf(data: PaymentInvoicePdfData, qrD
     const setText = (color: readonly [number, number, number]) => pdf.setTextColor(color[0], color[1], color[2]);
     const setFill = (color: readonly [number, number, number]) => pdf.setFillColor(color[0], color[1], color[2]);
     const setDraw = (color: readonly [number, number, number]) => pdf.setDrawColor(color[0], color[1], color[2]);
-    const label = (value: string, x: number, y: number, color = palette.muted) => {
+    const label = (value: string, x: number, y: number, color = palette.muted, align: 'left' | 'right' = 'left') => {
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(7);
         setText(color);
-        pdf.text(value.toUpperCase(), x, y, { charSpace: 0.7 });
+        pdf.text(value.toUpperCase(), x, y, { charSpace: 0.7, align });
     };
     const value = (text: string, x: number, y: number, size = 10, align: 'left' | 'right' = 'left') => {
         pdf.setFont('helvetica', 'bold');
@@ -78,15 +111,11 @@ export async function downloadPaymentInvoicePdf(data: PaymentInvoicePdfData, qrD
     setFill(palette.lime);
     pdf.rect(142, 10, pageWidth - 154, 3, 'F');
 
-    // Patungan logo mark, drawn as vector so it stays sharp at any zoom.
-    setFill(palette.deep);
-    pdf.roundedRect(left, 22, 8, 11, 3, 3, 'F');
-    setFill(palette.lime);
-    pdf.roundedRect(left - 1.5, 28, 7, 7, 2.5, 2.5, 'F');
+    pdf.addImage(logoDataUrl, 'PNG', left, 20.5, 12, 12, undefined, 'FAST');
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(15);
     setText(palette.deep);
-    pdf.text('Patungan', left + 12, 30.5);
+    pdf.text('Patungan', left + 15, 29.3);
 
     setFill(palette.lime);
     pdf.roundedRect(right - 27, 21.5, 27, 9, 4.5, 4.5, 'F');
@@ -103,7 +132,7 @@ export async function downloadPaymentInvoicePdf(data: PaymentInvoicePdfData, qrD
     pdf.setFontSize(20);
     setText(palette.ink);
     pdf.text(data.number, left, 58);
-    label('Diterbitkan', right, 48);
+    label('Diterbitkan', right, 48, palette.muted, 'right');
     value(data.issuedDate, right, 55, 9, 'right');
 
     setFill(palette.deep);
@@ -147,7 +176,7 @@ export async function downloadPaymentInvoicePdf(data: PaymentInvoicePdfData, qrD
     setFill(palette.mint);
     pdf.roundedRect(left, 134, contentWidth, 12, 3, 3, 'F');
     label('Rincian pembayaran', left + 5, 141.5);
-    label('Jumlah', right - 5, 141.5);
+    label('Jumlah', right - 5, 141.5, palette.muted, 'right');
 
     setDraw(palette.line);
     pdf.roundedRect(left, 134, contentWidth, 42, 3, 3, 'S');
