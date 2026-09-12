@@ -107,78 +107,74 @@ export function ZoneMap({ breakdown, className }: { breakdown: ZoneBreakdown; cl
                 </span>
             </div>
 
-            {breakdown.known === 0 ? (
-                <p className="text-muted-foreground border-border mt-5 rounded-2xl border border-dashed px-4 py-8 text-center text-sm">
-                    Belum ada pembayaran yang bisa dipetakan. Peta ini terisi sendiri begitu ada yang bayar lewat QRIS.
-                </p>
-            ) : (
-                <>
-                    <div className="relative mt-5">
-                        <svg viewBox="0 0 780 290" className="h-auto w-full" role="img" aria-label="Peta skematis zona waktu Indonesia">
-                            {ISLANDS.map((island) => {
-                                const row = byZone[island.zone];
-                                const dim = hovered !== null && hovered !== island.zone;
+            <>
+                <div className="relative mt-5">
+                    <svg viewBox="0 0 780 290" className="h-auto w-full" role="img" aria-label="Peta skematis zona waktu Indonesia">
+                        {ISLANDS.map((island) => {
+                            const row = byZone[island.zone];
+                            const dim = hovered !== null && hovered !== island.zone;
 
-                                return (
-                                    <path
-                                        key={island.name}
-                                        d={island.d}
-                                        fill={fillFor(row?.share ?? 0, max)}
-                                        stroke="var(--color-card)"
-                                        strokeWidth={2}
-                                        className={cn('transition-opacity', dim ? 'opacity-35' : 'opacity-100')}
-                                        onMouseEnter={() => setHovered(island.zone)}
-                                        onMouseLeave={() => setHovered(null)}
-                                    >
-                                        <title>{`${island.name} - ${row?.label ?? ''} ${row?.share ?? 0}%`}</title>
-                                    </path>
-                                );
-                            })}
+                            return (
+                                <path
+                                    key={island.name}
+                                    d={island.d}
+                                    fill={fillFor(row?.share ?? 0, max)}
+                                    stroke="var(--color-card)"
+                                    strokeWidth={2}
+                                    className={cn('transition-opacity', dim ? 'opacity-35' : 'opacity-100')}
+                                    onMouseEnter={() => setHovered(island.zone)}
+                                    onMouseLeave={() => setHovered(null)}
+                                >
+                                    <title>{`${island.name} - ${row?.label ?? ''} ${row?.share ?? 0}%`}</title>
+                                </path>
+                            );
+                        })}
 
-                            {/*
+                        {/*
                                 The zone borders, drawn last so they sit on top.
                                 Without them the split through Kalimantan reads
                                 as a strait between two islands rather than what
                                 it is - the WIB/WITA line, which genuinely runs
                                 through the middle of that island.
                             */}
-                            {BORDERS.map((border) => (
-                                <g key={border.x}>
-                                    <line
-                                        x1={border.x}
-                                        y1={16}
-                                        x2={border.x}
-                                        y2={276}
-                                        stroke="var(--color-border)"
-                                        strokeWidth={1.5}
-                                        strokeDasharray="6 7"
-                                    />
-                                </g>
-                            ))}
+                        {BORDERS.map((border) => (
+                            <g key={border.x}>
+                                <line
+                                    x1={border.x}
+                                    y1={16}
+                                    x2={border.x}
+                                    y2={276}
+                                    stroke="var(--color-border)"
+                                    strokeWidth={1.5}
+                                    strokeDasharray="6 7"
+                                />
+                            </g>
+                        ))}
 
-                            {LABELS.map((label) => (
-                                <text
-                                    key={label.text}
-                                    x={label.x}
-                                    y={26}
-                                    textAnchor="middle"
-                                    className="fill-muted-foreground text-[13px] font-bold tracking-wider"
-                                >
-                                    {label.text}
-                                </text>
-                            ))}
-                        </svg>
+                        {LABELS.map((label) => (
+                            <text
+                                key={label.text}
+                                x={label.x}
+                                y={26}
+                                textAnchor="middle"
+                                className="fill-muted-foreground text-[13px] font-bold tracking-wider"
+                            >
+                                {label.text}
+                            </text>
+                        ))}
+                    </svg>
 
-                        {active && (
-                            <div className="surface-deep pointer-events-none absolute top-0 right-0 rounded-2xl px-4 py-3">
-                                <p className="text-brand-deep-foreground text-sm font-bold tracking-tight">{active.label}</p>
-                                <p className="text-brand-deep-muted mt-0.5 text-[11px]">
-                                    {active.count} pembayaran · {rupiah(active.amount)}
-                                </p>
-                            </div>
-                        )}
-                    </div>
+                    {active && (
+                        <div className="surface-deep pointer-events-none absolute top-0 right-0 rounded-2xl px-4 py-3">
+                            <p className="text-brand-deep-foreground text-sm font-bold tracking-tight">{active.label}</p>
+                            <p className="text-brand-deep-muted mt-0.5 text-[11px]">
+                                {active.count} pembayaran · {rupiah(active.amount)}
+                            </p>
+                        </div>
+                    )}
+                </div>
 
+                {indonesian.length > 0 && (
                     <ul className="mt-5 space-y-3">
                         {indonesian.map((row) => (
                             <li key={row.zone} onMouseEnter={() => setHovered(row.zone)} onMouseLeave={() => setHovered(null)}>
@@ -196,14 +192,14 @@ export function ZoneMap({ breakdown, className }: { breakdown: ZoneBreakdown; cl
                             </li>
                         ))}
                     </ul>
+                )}
 
-                    {(overseas?.count ?? 0) > 0 && (
-                        <p className="text-muted-foreground mt-4 text-[11px]">
-                            {overseas?.count} pembayaran dari luar Indonesia, tidak digambar di peta.
-                        </p>
-                    )}
-                </>
-            )}
+                {(overseas?.count ?? 0) > 0 && (
+                    <p className="text-muted-foreground mt-4 text-[11px]">
+                        {overseas?.count} pembayaran dari luar Indonesia, tidak digambar di peta.
+                    </p>
+                )}
+            </>
 
             {/* Said plainly, because the alternative is a reader who believes
                 this is province-level data. */}
