@@ -16,8 +16,12 @@ use Illuminate\Support\Facades\Log;
  * The three DANA QRIS MPM endpoints this payment flow needs.
  *
  *   generate  POST /v1.0/qr/qr-mpm-generate.htm   service code 47
- *   query     POST /rest/v1.1/debit/status        service code 55
+ *   query     POST /v1.0/qr/qr-mpm-query.htm      asks about service code 47
  *   cancel    POST /v1.0/debit/cancel.htm         service code 57
+ *
+ * cancel is still on the debit path and has never been exercised against
+ * sandbox - the UAT run never reached it while query was failing. If it answers
+ * 404 with a 57 in the code, it needs the same correction query just had.
  *
  * Generate returns qrContent, the raw QR payload, which the payment page draws
  * itself - a participant never leaves a Patungan screen to pay.
@@ -26,7 +30,19 @@ final class DanaQrisService
 {
     public const GENERATE = '/v1.0/qr/qr-mpm-generate.htm';
 
-    public const QUERY = '/rest/v1.1/debit/status';
+    /*
+     * The QRIS query, not the Debit one.
+     *
+     * This was /rest/v1.1/debit/status, and DANA answered every call with
+     * 4045501 Transaction Not Found. That response code is its own explanation:
+     * 404 + service 55 + 01, and 55 is Debit. We were creating orders in QRIS
+     * MPM (47) and asking the debit system what had become of them, so "not
+     * found" was the truthful answer to the wrong question.
+     *
+     * serviceCode in the body stays 47: in SNAP that field names the original
+     * transaction being asked about, not the endpoint doing the asking.
+     */
+    public const QUERY = '/v1.0/qr/qr-mpm-query.htm';
 
     public const CANCEL = '/v1.0/debit/cancel.htm';
 

@@ -12,12 +12,18 @@ import { formatDateTime, rupiah } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import type { Balance } from '@/types';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, ArrowUpRight, BadgeCheck, ChevronRight, LoaderCircle, Lock, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, BadgeCheck, Building2, ChevronRight, LoaderCircle, Lock, ShieldCheck, Sparkles, WalletCards } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 
 interface Channel {
     code: string;
     label: string;
+}
+
+type DestinationType = 'BANK' | 'EWALLET';
+
+interface SelectedChannel extends Channel {
+    type: DestinationType;
 }
 
 interface Destination {
@@ -83,7 +89,7 @@ export default function Pencairan({ balance, destinations, settlements, channels
     const [target, setTarget] = useState<Destination | null>(null);
 
     // Adding a bank, before it becomes a destination.
-    const [newChannel, setNewChannel] = useState<Channel | null>(null);
+    const [newChannel, setNewChannel] = useState<SelectedChannel | null>(null);
     const [accountNumber, setAccountNumber] = useState('');
     const [accountHolder, setAccountHolder] = useState('');
     const [check, setCheck] = useState<CheckResult | null>(null);
@@ -108,8 +114,8 @@ export default function Pencairan({ balance, destinations, settlements, channels
         setStep('amount');
     };
 
-    const chooseBank = (channel: Channel) => {
-        setNewChannel(channel);
+    const chooseChannel = (channel: Channel, type: DestinationType) => {
+        setNewChannel({ ...channel, type });
         setAccountNumber('');
         setAccountHolder('');
         setCheck(null);
@@ -141,7 +147,7 @@ export default function Pencairan({ balance, destinations, settlements, channels
                     ...(csrf ? { 'X-XSRF-TOKEN': decodeURIComponent(csrf) } : {}),
                 },
                 credentials: 'same-origin',
-                body: JSON.stringify({ type: 'BANK', provider_code: newChannel.code, account_number: accountNumber }),
+                body: JSON.stringify({ type: newChannel.type, provider_code: newChannel.code, account_number: accountNumber }),
             });
 
             setCheck(
@@ -171,7 +177,12 @@ export default function Pencairan({ balance, destinations, settlements, channels
 
         router.post(
             route('payout.destination.store'),
-            { type: 'BANK', provider_code: newChannel.code, account_number: accountNumber, account_holder: check?.account_holder ?? accountHolder },
+            {
+                type: newChannel.type,
+                provider_code: newChannel.code,
+                account_number: accountNumber,
+                account_holder: check?.account_holder ?? accountHolder,
+            },
             {
                 preserveScroll: true,
                 onSuccess: (page) => {
@@ -244,7 +255,13 @@ export default function Pencairan({ balance, destinations, settlements, channels
                     <WithdrawalProgress step={step} />
 
                     {step === 'pick' && (
-                        <StepPick destinations={destinations} banks={channels.BANK ?? []} onPick={chooseExisting} onNewBank={chooseBank} />
+                        <StepPick
+                            destinations={destinations}
+                            banks={channels.BANK ?? []}
+                            wallets={channels.EWALLET ?? []}
+                            onPick={chooseExisting}
+                            onNewChannel={chooseChannel}
+                        />
                     )}
 
                     {step === 'account' && newChannel && (
@@ -389,32 +406,36 @@ export default function Pencairan({ balance, destinations, settlements, channels
     );
 }
 
-/** A quiet, wallet-style progress rail. It explains the path without adding another decision. */
 function WithdrawalProgress({ step }: { step: Step }) {
     const activeIndex = step === 'pick' ? 0 : step === 'account' ? 1 : 2;
     const labels = ['Tujuan', 'Rekening', 'Nominal'];
 
     return (
-        <div className="border-border bg-card mb-3 rounded-2xl border px-5 py-4" aria-label={`Langkah ${activeIndex + 1} dari 3`}>
+        <div
+            className="border-primary/10 from-brand-soft/80 to-card mb-3 rounded-[1.4rem] border bg-gradient-to-r px-4 py-3.5 shadow-sm"
+            aria-label={`Langkah ${activeIndex + 1} dari 3`}
+        >
             <div className="flex items-center justify-between gap-3">
-                <div>
-                    <p className="text-primary text-[10px] font-bold tracking-[0.14em] uppercase">Tarik saldo</p>
-                    <p className="mt-1 text-sm font-bold tracking-tight">Langkah {activeIndex + 1} dari 3</p>
-                </div>
-                <p className="text-muted-foreground text-[11px]">Cepat, aman, transparan</p>
+                <p className="text-sm font-bold tracking-tight">Tarik saldo</p>
+                <span className="bg-primary text-primary-foreground rounded-full px-2.5 py-1 text-[9px] font-bold">{activeIndex + 1} / 3</span>
             </div>
 
-            <ol className="mt-4 grid grid-cols-3 gap-2">
+            <ol className="mt-3 grid grid-cols-3 gap-1.5">
                 {labels.map((label, index) => (
                     <li key={label} className="min-w-0">
-                        <span className={cn('block h-1 rounded-full transition-colors', index <= activeIndex ? 'bg-primary' : 'bg-border')} />
                         <span
                             className={cn(
-                                'mt-2 block truncate text-[10px] font-semibold',
+                                'block h-1.5 rounded-full transition-colors',
+                                index <= activeIndex ? 'from-primary bg-gradient-to-r to-lime-400' : 'bg-border',
+                            )}
+                        />
+                        <span
+                            className={cn(
+                                'mt-1.5 block truncate text-[9px] font-semibold',
                                 index <= activeIndex ? 'text-foreground' : 'text-muted-foreground',
                             )}
                         >
-                            {index + 1}. {label}
+                            {label}
                         </span>
                     </li>
                 ))}
@@ -427,31 +448,43 @@ function WithdrawalProgress({ step }: { step: Step }) {
 function StepPick({
     destinations,
     banks,
+    wallets,
     onPick,
-    onNewBank,
+    onNewChannel,
 }: {
     destinations: Destination[];
     banks: Channel[];
+    wallets: Channel[];
     onPick: (destination: Destination) => void;
-    onNewBank: (channel: Channel) => void;
+    onNewChannel: (channel: Channel, type: DestinationType) => void;
 }) {
     return (
-        <div className="border-border bg-card overflow-hidden rounded-2xl border shadow-[0_18px_50px_-38px_rgba(5,74,52,0.45)]">
-            <div className="border-border border-b px-5 py-4">
-                <PanelHeading>Mau tarik ke mana?</PanelHeading>
-                <p className="text-muted-foreground mt-1.5 text-xs">Pilih rekening tersimpan atau bank tujuan baru.</p>
+        <div className="border-border bg-card overflow-hidden rounded-[1.75rem] border shadow-[0_22px_60px_-44px_rgba(5,74,52,0.6)]">
+            <div className="via-card relative isolate overflow-hidden bg-gradient-to-br from-emerald-50 to-lime-50/80 px-5 py-5 dark:from-emerald-950/35 dark:to-lime-950/20">
+                <div className="bg-primary/5 pointer-events-none absolute -top-10 -right-8 -z-10 size-28 rounded-full blur-xl" />
+                <div className="flex items-center gap-3">
+                    <span className="bg-primary text-primary-foreground flex size-10 items-center justify-center rounded-2xl shadow-[0_10px_24px_-12px_rgba(5,100,70,0.8)]">
+                        <WalletCards className="size-5" />
+                    </span>
+                    <div>
+                        <p className="text-primary flex items-center gap-1 text-[9px] font-bold tracking-[0.14em] uppercase">
+                            <Sparkles className="size-3" /> Pilih tujuan
+                        </p>
+                        <h2 className="display mt-0.5 text-xl">Mau cair ke mana?</h2>
+                    </div>
+                </div>
             </div>
 
             {destinations.length > 0 && (
-                <div className="px-5 pt-5">
-                    <p className="text-muted-foreground text-[10px] font-bold tracking-[0.12em] uppercase">Rekening tersimpan</p>
+                <div className="px-4 pt-4 sm:px-5">
+                    <p className="text-muted-foreground px-1 text-[10px] font-bold tracking-[0.12em] uppercase">Terakhir dipakai</p>
                     <ul className="mt-3 space-y-2">
                         {destinations.map((destination) => (
                             <li key={destination.id}>
                                 <button
                                     type="button"
                                     onClick={() => onPick(destination)}
-                                    className="border-border hover:border-primary/40 hover:bg-brand-soft/45 flex w-full items-center gap-3 rounded-2xl border px-3.5 py-3 text-left transition active:scale-[0.99]"
+                                    className="border-primary/15 from-brand-soft/70 hover:border-primary/40 group to-card flex w-full items-center gap-3 rounded-2xl border bg-gradient-to-r px-3 py-3 text-left transition hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99]"
                                 >
                                     <BankLogo code={destination.provider_code} label={destination.provider_label} />
 
@@ -467,7 +500,10 @@ function StepPick({
                                         </span>
                                     </span>
 
-                                    <span className="bg-primary text-primary-foreground flex size-8 shrink-0 items-center justify-center rounded-full">
+                                    {destination.is_default && (
+                                        <span className="rounded-full bg-lime-300/70 px-2 py-1 text-[9px] font-bold text-emerald-950">Utama</span>
+                                    )}
+                                    <span className="bg-primary text-primary-foreground flex size-8 shrink-0 items-center justify-center rounded-full transition group-hover:translate-x-0.5">
                                         <ChevronRight className="size-4" />
                                     </span>
                                 </button>
@@ -477,29 +513,47 @@ function StepPick({
                 </div>
             )}
 
-            <div className={cn('px-5 py-5', destinations.length > 0 && 'border-border mt-5 border-t')}>
-                <p className="text-muted-foreground text-[10px] font-bold tracking-[0.12em] uppercase">
-                    {destinations.length > 0 ? 'Tarik ke rekening lain' : 'Pilih bank tujuan'}
-                </p>
-
-                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <div className={cn('px-4 py-5 sm:px-5', destinations.length > 0 && 'mt-1')}>
+                <div className="flex items-center gap-2 px-1">
+                    <Building2 className="text-primary size-4" />
+                    <p className="text-xs font-bold tracking-tight">Transfer bank</p>
+                </div>
+                <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-5">
                     {banks.map((bank) => (
                         <button
                             key={bank.code}
                             type="button"
-                            onClick={() => onNewBank(bank)}
-                            className="border-border hover:border-primary/45 hover:bg-brand-soft/45 group flex min-w-0 items-center gap-3 rounded-2xl border px-3 py-2.5 text-left transition active:scale-[0.99]"
+                            onClick={() => onNewChannel(bank, 'BANK')}
+                            className="border-border hover:border-primary/40 hover:bg-brand-soft/55 group bg-card flex min-w-0 flex-col items-center gap-2 rounded-2xl border px-1.5 py-2.5 text-center transition hover:-translate-y-1 hover:shadow-md active:scale-95"
                         >
-                            <BankLogo code={bank.code} label={bank.label} size="sm" />
-                            <span className="min-w-0 flex-1 truncate text-xs font-semibold">{bank.label}</span>
-                            <ChevronRight className="text-muted-foreground group-hover:text-primary size-4 shrink-0 transition group-hover:translate-x-0.5" />
+                            <BankLogo code={bank.code} label={bank.label} size="sm" className="max-w-full border-0 shadow-sm ring-0" />
+                            <span className="w-full truncate text-[10px] font-semibold">{bank.label}</span>
                         </button>
                     ))}
                 </div>
 
-                <p className="text-muted-foreground mt-4 text-[10px] leading-relaxed">
-                    Rekening harus aktif dan menggunakan nama pemilik akun PATUNGAN.
-                </p>
+                <div className="mt-5 flex items-center gap-2 px-1">
+                    <WalletCards className="text-primary size-4" />
+                    <p className="text-xs font-bold tracking-tight">E-wallet</p>
+                    <span className="rounded-full bg-lime-200/70 px-2 py-0.5 text-[8px] font-bold tracking-wide text-emerald-900 uppercase">
+                        Cepat
+                    </span>
+                </div>
+                <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5">
+                    {wallets.map((wallet) => (
+                        <button
+                            key={wallet.code}
+                            type="button"
+                            onClick={() => onNewChannel(wallet, 'EWALLET')}
+                            className="border-border hover:border-primary/40 group from-card flex min-w-0 flex-col items-center gap-2 rounded-2xl border bg-gradient-to-b to-emerald-50/45 px-2 py-3 text-center transition hover:-translate-y-1 hover:shadow-md active:scale-95 dark:to-emerald-950/20"
+                        >
+                            <BankLogo code={wallet.code} label={wallet.label} size="sm" className="border-0 shadow-sm ring-0" />
+                            <span className="w-full truncate text-[10px] font-semibold">{wallet.label}</span>
+                        </button>
+                    ))}
+                </div>
+
+                <p className="text-muted-foreground mt-4 text-center text-[9px]">Tujuan harus atas nama kamu</p>
             </div>
         </div>
     );
@@ -523,7 +577,7 @@ function StepAccount({
     onBack,
     onContinue,
 }: {
-    channel: Channel;
+    channel: SelectedChannel;
     accountNumber: string;
     setAccountNumber: (value: string) => void;
     accountHolder: string;
@@ -539,32 +593,34 @@ function StepAccount({
     onBack: () => void;
     onContinue: () => void;
 }) {
+    const isWallet = channel.type === 'EWALLET';
+
     return (
         <div className="border-border bg-card overflow-hidden rounded-2xl border">
             <div className="border-border flex items-center gap-3 border-b px-5 py-4">
                 <button type="button" onClick={onBack} aria-label="Kembali" className="text-muted-foreground hover:text-foreground -ml-1 p-1">
                     <ArrowLeft className="size-4" />
                 </button>
-                <PanelHeading>Tambahkan rekening</PanelHeading>
+                <PanelHeading>{isWallet ? 'Tambahkan e-wallet' : 'Tambahkan rekening'}</PanelHeading>
             </div>
 
             <div className="border-border flex items-center gap-3 border-b px-5 py-4">
                 <BankLogo code={channel.code} label={channel.label} size="lg" />
                 <div className="min-w-0">
                     <p className="text-sm font-bold tracking-tight">{channel.label}</p>
-                    <p className="text-muted-foreground text-[11px]">Rekening atas nama kamu sendiri</p>
+                    <p className="text-muted-foreground text-[11px]">{isWallet ? 'Nomor aktif milik kamu' : 'Rekening atas nama kamu sendiri'}</p>
                 </div>
             </div>
 
             <div className="px-5 py-5">
                 <Label htmlFor="account_number" className="text-muted-foreground text-[11px] font-semibold tracking-[0.1em] uppercase">
-                    Nomor rekening
+                    {isWallet ? 'Nomor HP e-wallet' : 'Nomor rekening'}
                 </Label>
                 <Input
                     id="account_number"
                     inputMode="numeric"
                     autoComplete="off"
-                    placeholder="Ketik nomor rekening"
+                    placeholder={isWallet ? 'Contoh: 081234567890' : 'Ketik nomor rekening'}
                     value={accountNumber}
                     onChange={(event) => {
                         setAccountNumber(event.target.value.replace(/\D/g, ''));
@@ -584,7 +640,7 @@ function StepAccount({
                                 className="h-12 w-full rounded-xl text-sm font-semibold"
                             >
                                 {checking && <LoaderCircle className="size-4 animate-spin" />}
-                                {checking ? 'Mengecek ke bank...' : 'Verifikasi'}
+                                {checking ? 'Sedang mengecek...' : 'Verifikasi'}
                             </Button>
                         ) : (
                             <div
@@ -595,7 +651,9 @@ function StepAccount({
                                     (check.status === 'UNVERIFIED' || check.status === 'UNAVAILABLE') && 'border-border bg-surface',
                                 )}
                             >
-                                <p className="text-muted-foreground text-[10px] font-bold tracking-[0.14em] uppercase">Rekening tujuan</p>
+                                <p className="text-muted-foreground text-[10px] font-bold tracking-[0.14em] uppercase">
+                                    {isWallet ? 'Akun tujuan' : 'Rekening tujuan'}
+                                </p>
 
                                 {check.account_holder ? (
                                     <p className="mt-1.5 flex items-center gap-1.5 text-sm font-bold tracking-tight">
