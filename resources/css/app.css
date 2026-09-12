@@ -824,7 +824,25 @@
         display: none !important;
     }
 
+    @page {
+        size: A4;
+        margin: 12mm;
+    }
+
+    html,
     body {
         background: #fff;
+    }
+
+    body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .invoice-paper {
+        margin-top: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
     }
 }
