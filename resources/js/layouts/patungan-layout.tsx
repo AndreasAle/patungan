@@ -6,7 +6,21 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
-import { ArrowDownToLine, ChevronLeft, Home, LogOut, Plus, Receipt, Settings, ShieldCheck, User, Wallet, type LucideIcon } from 'lucide-react';
+import {
+    ArrowDownToLine,
+    ChevronLeft,
+    ChevronRight,
+    Home,
+    LogOut,
+    Plus,
+    Receipt,
+    Settings,
+    ShieldCheck,
+    Sparkles,
+    User,
+    Wallet,
+    type LucideIcon,
+} from 'lucide-react';
 import type { ReactNode } from 'react';
 
 interface NavLink {
@@ -111,20 +125,34 @@ export default function PatunganLayout({
                     - which is white. The column carries the dark background and
                     stands the full height of the frame; only its contents stick.
                 */}
-                <div className="bg-sidebar border-sidebar-border hidden shrink-0 border-r lg:block lg:w-60 lg:rounded-l-[28px] xl:rounded-l-[32px]">
-                    <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col px-3 py-5 lg:sticky lg:top-3 lg:flex lg:h-[calc(100vh-1.5rem)] xl:top-4 xl:h-[calc(100vh-2rem)]">
-                        <Link href={route('dashboard')} className="px-2">
+                <div className="border-sidebar-border relative hidden shrink-0 overflow-hidden border-r bg-[linear-gradient(165deg,#074a37_0%,#063e30_48%,#043326_100%)] lg:block lg:w-60 lg:rounded-l-[28px] xl:rounded-l-[32px]">
+                    <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute -top-20 -left-20 size-52 rounded-full bg-emerald-300/10 blur-3xl"
+                    />
+                    <span aria-hidden="true" className="pointer-events-none absolute top-36 -right-24 size-48 rounded-full bg-lime-300/5 blur-3xl" />
+
+                    <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col px-3.5 py-5 lg:sticky lg:top-3 lg:flex lg:h-[calc(100vh-1.5rem)] xl:top-4 xl:h-[calc(100vh-2rem)]">
+                        <Link href={route('dashboard')} className="relative px-2 py-1">
                             <AppLogo tone="onDeep" />
                         </Link>
 
-                        <Button asChild className="bg-lime text-lime-foreground hover:bg-lime/90 mt-6 h-11 rounded-xl text-sm font-semibold">
-                            <Link href={route('patungan.create')}>
-                                <Plus className="size-4" />
+                        <Button
+                            asChild
+                            className="bg-lime text-lime-foreground hover:bg-lime/95 group relative mt-6 h-12 overflow-hidden rounded-2xl border border-white/15 text-sm font-extrabold shadow-[0_14px_34px_-18px_rgba(190,242,55,.9)] transition hover:-translate-y-0.5"
+                        >
+                            <Link href={route('patungan.create')} className="gap-2.5">
+                                <span className="flex size-6 items-center justify-center rounded-full bg-emerald-950/10">
+                                    <Plus className="size-4 transition-transform group-hover:rotate-90" />
+                                </span>
                                 Buat Patungan
+                                <Sparkles className="ml-auto size-3.5 opacity-50" />
                             </Link>
                         </Button>
 
-                        <nav className="mt-6 flex flex-1 flex-col gap-1">
+                        <p className="mt-7 px-3 text-[9px] font-bold tracking-[0.18em] text-emerald-100/45 uppercase">Menu utama</p>
+
+                        <nav className="mt-2.5 flex flex-1 flex-col gap-1.5">
                             {primaryNav.map((link) => {
                                 const active = isActive(link, pathname);
 
@@ -133,44 +161,72 @@ export default function PatunganLayout({
                                         key={link.href}
                                         href={route(link.href)}
                                         className={cn(
-                                            'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition',
+                                            'group relative flex items-center gap-3 rounded-2xl px-2.5 py-2 text-sm font-semibold transition duration-200',
                                             active
-                                                ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                                                : 'text-sidebar-foreground hover:bg-sidebar-accent/50',
+                                                ? 'bg-white/10 text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,.04),0_8px_24px_-18px_rgba(0,0,0,.8)]'
+                                                : 'text-emerald-50/65 hover:bg-white/[0.06] hover:text-white',
                                         )}
                                     >
-                                        <link.icon className="size-[18px]" />
-                                        {link.label}
+                                        {active && <span className="bg-lime absolute top-2 bottom-2 left-0 w-0.5 rounded-full" />}
+                                        <span
+                                            className={cn(
+                                                'flex size-8 shrink-0 items-center justify-center rounded-xl transition',
+                                                active ? 'bg-lime/15 text-lime' : 'group-hover:text-lime bg-white/[0.04] text-emerald-100/70',
+                                            )}
+                                        >
+                                            <link.icon className="size-[17px]" strokeWidth={active ? 2.4 : 2} />
+                                        </span>
+                                        <span className="flex-1">{link.label}</span>
+                                        <ChevronRight
+                                            className={cn(
+                                                'size-3.5 transition',
+                                                active
+                                                    ? 'text-lime/80 translate-x-0 opacity-100'
+                                                    : '-translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-60',
+                                            )}
+                                        />
                                     </Link>
                                 );
                             })}
                         </nav>
 
-                        <div className="border-sidebar-border flex flex-col gap-1 border-t pt-3">
-                            {user?.is_admin && (
+                        <div className="border-t border-white/10 pt-3">
+                            <div className="mb-2 flex items-center gap-2.5 rounded-2xl bg-white/[0.05] px-2.5 py-2.5 ring-1 ring-white/[0.04]">
+                                <span className="bg-lime text-lime-foreground flex size-9 shrink-0 items-center justify-center rounded-xl text-xs font-black uppercase shadow-sm">
+                                    {user?.name?.trim().charAt(0) || 'P'}
+                                </span>
+                                <div className="min-w-0 flex-1">
+                                    <p className="truncate text-xs font-bold text-white">{user?.name ?? 'Pengguna'}</p>
+                                    <p className="mt-0.5 truncate text-[9px] text-emerald-100/50">Akun Patungan</p>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-1">
+                                {user?.is_admin && (
+                                    <Link
+                                        href={route('admin.dashboard')}
+                                        className="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-semibold text-emerald-50/65 transition hover:bg-white/[0.06] hover:text-white"
+                                    >
+                                        <ShieldCheck className="size-4" />
+                                        Admin
+                                    </Link>
+                                )}
                                 <Link
-                                    href={route('admin.dashboard')}
-                                    className="text-sidebar-foreground hover:bg-sidebar-accent/50 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition"
+                                    href={route('profile.index')}
+                                    className="flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-semibold text-emerald-50/65 transition hover:bg-white/[0.06] hover:text-white"
                                 >
-                                    <ShieldCheck className="size-[18px]" />
-                                    Admin
+                                    <Settings className="size-4" />
+                                    Pengaturan
                                 </Link>
-                            )}
-                            <Link
-                                href={route('profile.index')}
-                                className="text-sidebar-foreground hover:bg-sidebar-accent/50 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition"
-                            >
-                                <Settings className="size-[18px]" />
-                                Profil & pengaturan
-                            </Link>
-                            <button
-                                type="button"
-                                onClick={() => router.post(route('logout'))}
-                                className="text-sidebar-foreground hover:bg-sidebar-accent/50 flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition"
-                            >
-                                <LogOut className="size-[18px]" />
-                                Keluar
-                            </button>
+                                <button
+                                    type="button"
+                                    onClick={() => router.post(route('logout'))}
+                                    className="flex items-center gap-3 rounded-xl px-3 py-2 text-left text-xs font-semibold text-emerald-50/65 transition hover:bg-rose-400/10 hover:text-rose-200"
+                                >
+                                    <LogOut className="size-4" />
+                                    Keluar
+                                </button>
+                            </div>
                         </div>
                     </aside>
                 </div>
