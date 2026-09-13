@@ -47,6 +47,24 @@ class TransactionPageTest extends TestCase
         );
     }
 
+    public function test_transactions_can_be_filtered_without_changing_the_summary(): void
+    {
+        $user = User::factory()->create();
+
+        $this->entry($user, LedgerDirection::Credit, 100000, 'credit');
+        $this->entry($user, LedgerDirection::Debit, 25000, 'debit');
+
+        $this->actingAs($user)->get(route('transactions.index', ['direction' => 'credit']))->assertOk()->assertInertia(
+            fn (Assert $page) => $page
+                ->where('filter', 'credit')
+                ->where('summary.balance', 75000)
+                ->where('summary.incoming', 100000)
+                ->where('summary.outgoing', 25000)
+                ->where('entries.total', 1)
+                ->where('entries.data.0.direction', LedgerDirection::Credit->value)
+        );
+    }
+
     private function entry(User $user, LedgerDirection $direction, int $amount, string $reference): void
     {
         WalletLedger::query()->create([

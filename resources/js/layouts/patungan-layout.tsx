@@ -187,7 +187,7 @@ export default function PatunganLayout({
                             <div className={cn('mx-auto w-full', measure)}>{hero}</div>
                         </header>
                     ) : (
-                        <header className="surface-deep sticky top-0 z-30 flex h-14 items-center gap-2 px-4 lg:static lg:h-auto lg:bg-transparent lg:px-8 lg:pt-7 lg:pb-0">
+                        <header className="surface-deep sticky top-0 z-30 flex h-14 items-center gap-2 px-4 lg:hidden">
                             {back ? (
                                 <Link href={back} className="text-brand-deep-foreground/80 -ml-1.5 rounded-lg p-1.5 lg:hidden" aria-label="Kembali">
                                     <ChevronLeft className="size-5" />

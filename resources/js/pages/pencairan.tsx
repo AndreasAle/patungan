@@ -234,24 +234,22 @@ export default function Pencairan({ balance, destinations, settlements, channels
 
     return (
         <PatunganLayout
-            wide
             title="Pencairan"
             hero={
-                <div>
-                    <Eyebrow onDeep>Saldo tersedia</Eyebrow>
+                <div className="lg:flex lg:items-end lg:justify-between lg:gap-8">
+                    <div>
+                        <Eyebrow onDeep>Saldo tersedia</Eyebrow>
+                        <p className="display text-brand-deep-foreground mt-2 text-[30px] tabular-nums sm:text-4xl">{rupiah(balance.available)}</p>
+                    </div>
 
-                    <p className="display text-brand-deep-foreground mt-3 text-[29px] tabular-nums sm:text-[40px] lg:text-[44px]">
-                        {rupiah(balance.available)}
-                    </p>
-
-                    <dl className="divide-brand-deep-muted/25 border-brand-deep-muted/25 mt-5 flex divide-x border-t pt-4">
+                    <dl className="divide-brand-deep-muted/25 border-brand-deep-muted/25 mt-4 flex divide-x border-t pt-3 lg:mt-0 lg:border-t-0 lg:pt-0">
                         {[
                             ['Saldo pending', balance.pending],
                             ['Sudah dicairkan', balance.paid_out],
                         ].map(([label, amount], index) => (
-                            <div key={label as string} className={index === 0 ? 'pr-6' : 'pl-6'}>
+                            <div key={label as string} className={index === 0 ? 'pr-7' : 'pl-7'}>
                                 <dt className="text-brand-deep-muted text-[10px] font-semibold tracking-[0.14em] uppercase">{label}</dt>
-                                <dd className="text-brand-deep-foreground mt-1 text-sm font-bold tabular-nums">{rupiah(amount as number)}</dd>
+                                <dd className="text-brand-deep-foreground mt-1 text-base font-bold tabular-nums">{rupiah(amount as number)}</dd>
                             </div>
                         ))}
                     </dl>
@@ -260,7 +258,7 @@ export default function Pencairan({ balance, destinations, settlements, channels
         >
             <Head title="Pencairan" />
 
-            <div className="grid gap-6 lg:grid-cols-2 lg:gap-8">
+            <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(20rem,.9fr)] lg:gap-6">
                 <div className="min-w-0">
                     <WithdrawalProgress step={step} />
 
@@ -328,60 +326,62 @@ export default function Pencairan({ balance, destinations, settlements, channels
                     </div>
                 </div>
 
-                <PhoneVerificationCard phone={phone} coolingHours={payout.cooling_hours} />
+                <div className="min-w-0 space-y-4">
+                    <PhoneVerificationCard phone={phone} coolingHours={payout.cooling_hours} />
 
-                <section className="border-border bg-card min-w-0 overflow-hidden rounded-2xl border">
-                    <div className="border-border flex items-center justify-between gap-3 border-b px-5 py-4">
-                        <PanelHeading>Riwayat penarikan</PanelHeading>
-                        <Link
-                            href={route('payout.destinations')}
-                            className="text-primary group inline-flex shrink-0 items-center gap-1 text-xs font-semibold"
-                        >
-                            Kelola rekening
-                            <ArrowUpRight className="size-3.5 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                        </Link>
-                    </div>
+                    <section className="border-border bg-card min-w-0 overflow-hidden rounded-[1.5rem] border shadow-[0_18px_50px_-42px_rgba(5,74,52,.4)]">
+                        <div className="border-border flex items-center justify-between gap-3 border-b px-5 py-4">
+                            <PanelHeading>Riwayat penarikan</PanelHeading>
+                            <Link
+                                href={route('payout.destinations')}
+                                className="text-primary group inline-flex shrink-0 items-center gap-1 text-xs font-semibold"
+                            >
+                                Kelola rekening
+                                <ArrowUpRight className="size-3.5 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                            </Link>
+                        </div>
 
-                    {settlements.length === 0 ? (
-                        <p className="text-muted-foreground px-5 py-8 text-center text-xs">Belum ada penarikan.</p>
-                    ) : (
-                        <ul className="divide-border divide-y">
-                            {settlements.map((settlement) => (
-                                <li key={settlement.uuid} className="px-5 py-4">
-                                    <div className="flex items-start justify-between gap-3">
-                                        <div className="min-w-0">
-                                            <p className="text-muted-foreground font-mono text-[10px] tracking-wider">{settlement.reference}</p>
-                                            <p className="display text-foreground mt-1 text-base tabular-nums">{rupiah(settlement.net_amount)}</p>
-                                            <p className="text-muted-foreground mt-1 truncate font-mono text-[11px]">{settlement.destination}</p>
-                                        </div>
-                                        <StatusBadge status={settlement.status} label={settlement.status_label} />
-                                    </div>
-
-                                    <dl className="text-muted-foreground mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-[10px]">
-                                        <div className="flex justify-between gap-2">
-                                            <dt>Diminta</dt>
-                                            <dd className="tabular-nums">{formatDateTime(settlement.requested_at)}</dd>
-                                        </div>
-                                        {settlement.processed_at && (
-                                            <div className="flex justify-between gap-2">
-                                                <dt>Diproses</dt>
-                                                <dd className="tabular-nums">{formatDateTime(settlement.processed_at)}</dd>
+                        {settlements.length === 0 ? (
+                            <p className="text-muted-foreground px-5 py-8 text-center text-xs">Belum ada penarikan.</p>
+                        ) : (
+                            <ul className="divide-border divide-y">
+                                {settlements.map((settlement) => (
+                                    <li key={settlement.uuid} className="px-5 py-4">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0">
+                                                <p className="text-muted-foreground font-mono text-[10px] tracking-wider">{settlement.reference}</p>
+                                                <p className="display text-foreground mt-1 text-base tabular-nums">{rupiah(settlement.net_amount)}</p>
+                                                <p className="text-muted-foreground mt-1 truncate font-mono text-[11px]">{settlement.destination}</p>
                                             </div>
+                                            <StatusBadge status={settlement.status} label={settlement.status_label} />
+                                        </div>
+
+                                        <dl className="text-muted-foreground mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-[10px]">
+                                            <div className="flex justify-between gap-2">
+                                                <dt>Diminta</dt>
+                                                <dd className="tabular-nums">{formatDateTime(settlement.requested_at)}</dd>
+                                            </div>
+                                            {settlement.processed_at && (
+                                                <div className="flex justify-between gap-2">
+                                                    <dt>Diproses</dt>
+                                                    <dd className="tabular-nums">{formatDateTime(settlement.processed_at)}</dd>
+                                                </div>
+                                            )}
+                                        </dl>
+
+                                        {settlement.status === 'PENDING' && <ReviewReasons reasons={settlement.review_reasons} />}
+
+                                        {settlement.failure_reason && (
+                                            <p className="bg-destructive/10 text-destructive mt-2.5 rounded-lg px-3 py-2 text-[11px]">
+                                                {settlement.failure_reason}
+                                            </p>
                                         )}
-                                    </dl>
-
-                                    {settlement.status === 'PENDING' && <ReviewReasons reasons={settlement.review_reasons} />}
-
-                                    {settlement.failure_reason && (
-                                        <p className="bg-destructive/10 text-destructive mt-2.5 rounded-lg px-3 py-2 text-[11px]">
-                                            {settlement.failure_reason}
-                                        </p>
-                                    )}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </section>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </section>
+                </div>
             </div>
 
             <ConfirmDialog
@@ -472,6 +472,9 @@ function StepPick({
     onPick: (destination: Destination) => void;
     onNewChannel: (channel: Channel, type: DestinationType) => void;
 }) {
+    const [showAllBanks, setShowAllBanks] = useState(false);
+    const visibleBanks = showAllBanks ? banks : banks.slice(0, 5);
+
     return (
         <div className="border-border bg-card overflow-hidden rounded-[1.75rem] border shadow-[0_22px_60px_-44px_rgba(5,74,52,0.6)]">
             <div className="via-card relative isolate overflow-hidden bg-gradient-to-br from-emerald-50 to-lime-50/80 px-5 py-5 dark:from-emerald-950/35 dark:to-lime-950/20">
@@ -491,7 +494,7 @@ function StepPick({
 
             {destinations.length > 0 && (
                 <div className="px-4 pt-4 sm:px-5">
-                    <p className="text-muted-foreground px-1 text-[10px] font-bold tracking-[0.12em] uppercase">Terakhir dipakai</p>
+                    <p className="text-muted-foreground px-1 text-[10px] font-bold tracking-[0.12em] uppercase">Tujuan tersimpan</p>
                     <ul className="mt-3 space-y-2">
                         {destinations.map((destination) => (
                             <li key={destination.id}>
@@ -533,7 +536,7 @@ function StepPick({
                     <p className="text-xs font-bold tracking-tight">Transfer bank</p>
                 </div>
                 <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-5">
-                    {banks.map((bank) => (
+                    {visibleBanks.map((bank) => (
                         <button
                             key={bank.code}
                             type="button"
@@ -545,6 +548,15 @@ function StepPick({
                         </button>
                     ))}
                 </div>
+                {banks.length > 5 && (
+                    <button
+                        type="button"
+                        onClick={() => setShowAllBanks((visible) => !visible)}
+                        className="text-primary hover:bg-brand-soft mx-auto mt-3 flex rounded-full px-3 py-1.5 text-[10px] font-bold transition"
+                    >
+                        {showAllBanks ? 'Tampilkan lebih sedikit' : `Lihat ${banks.length - 5} bank lainnya`}
+                    </button>
+                )}
 
                 <div className="mt-5 flex items-center gap-2 px-1">
                     <WalletCards className="text-primary size-4" />

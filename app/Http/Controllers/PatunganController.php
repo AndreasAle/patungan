@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\PatunganCategory;
+use App\Enums\PatunganStatus;
 use App\Http\Requests\StorePatunganRequest;
 use App\Http\Requests\UpdatePatunganRequest;
 use App\Models\Patungan;
@@ -28,8 +29,19 @@ class PatunganController extends Controller
 
     public function index(Request $request): Response
     {
-        $patungans = Patungan::query()
-            ->where('organizer_id', $request->user()->id)
+        $filter = in_array($request->string('status')->toString(), ['active', 'finished'], true)
+            ? $request->string('status')->toString()
+            : 'all';
+
+        $base = Patungan::query()->where('organizer_id', $request->user()->id);
+
+        $patungans = (clone $base)
+            ->when($filter === 'active', fn ($query) => $query->where('status', PatunganStatus::Active->value))
+            ->when($filter === 'finished', fn ($query) => $query->whereIn('status', [
+                PatunganStatus::Completed->value,
+                PatunganStatus::Closed->value,
+                PatunganStatus::Cancelled->value,
+            ]))
             ->latest()
             ->paginate(15)
             ->withQueryString();
@@ -40,6 +52,16 @@ class PatunganController extends Controller
                 'current_page' => $patungans->currentPage(),
                 'last_page' => $patungans->lastPage(),
                 'total' => $patungans->total(),
+            ],
+            'filter' => $filter,
+            'counts' => [
+                'all' => (clone $base)->count(),
+                'active' => (clone $base)->where('status', PatunganStatus::Active->value)->count(),
+                'finished' => (clone $base)->whereIn('status', [
+                    PatunganStatus::Completed->value,
+                    PatunganStatus::Closed->value,
+                    PatunganStatus::Cancelled->value,
+                ])->count(),
             ],
         ]);
     }

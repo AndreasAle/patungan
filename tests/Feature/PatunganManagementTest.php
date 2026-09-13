@@ -3,10 +3,12 @@
 namespace Tests\Feature;
 
 use App\Enums\PatunganCategory;
+use App\Enums\PatunganStatus;
 use App\Enums\SplitType;
 use App\Models\Patungan;
 use App\Services\PaymentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\PatunganFixtures;
 use Tests\TestCase;
 
@@ -201,6 +203,24 @@ class PatunganManagementTest extends TestCase
     public function test_guests_cannot_reach_the_organizer_dashboard(): void
     {
         $this->get(route('dashboard'))->assertRedirect(route('login'));
+    }
+
+    public function test_organizer_can_filter_active_and_finished_patungans(): void
+    {
+        $organizer = $this->organizer();
+        Patungan::factory()->for($organizer, 'organizer')->create(['status' => PatunganStatus::Active]);
+        Patungan::factory()->for($organizer, 'organizer')->closed()->create();
+        Patungan::factory()->create();
+
+        $this->actingAs($organizer)->get(route('patungan.index', ['status' => 'finished']))->assertOk()->assertInertia(
+            fn (Assert $page) => $page
+                ->where('filter', 'finished')
+                ->where('counts.all', 2)
+                ->where('counts.active', 1)
+                ->where('counts.finished', 1)
+                ->where('patungans.total', 1)
+                ->where('patungans.data.0.status', PatunganStatus::Closed->value)
+        );
     }
 
     public function test_admin_routes_reject_a_regular_user(): void

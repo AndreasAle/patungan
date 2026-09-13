@@ -16,8 +16,14 @@ class TransactionController extends Controller
     public function __invoke(Request $request): Response
     {
         $user = $request->user();
+        $filter = in_array($request->string('direction')->toString(), ['credit', 'debit'], true)
+            ? $request->string('direction')->toString()
+            : 'all';
+
         $entries = WalletLedger::query()
             ->where('user_id', $user->id)
+            ->when($filter === 'credit', fn ($query) => $query->where('direction', LedgerDirection::Credit->value))
+            ->when($filter === 'debit', fn ($query) => $query->where('direction', LedgerDirection::Debit->value))
             ->with(['patungan:id,uuid,title'])
             ->latest('id')
             ->paginate(25)
@@ -35,6 +41,7 @@ class TransactionController extends Controller
                 'incoming' => (int) ($totals[LedgerDirection::Credit->value] ?? 0),
                 'outgoing' => (int) ($totals[LedgerDirection::Debit->value] ?? 0),
             ],
+            'filter' => $filter,
             'entries' => [
                 'data' => collect($entries->items())->map(fn (WalletLedger $entry) => [
                     'uuid' => $entry->uuid,
