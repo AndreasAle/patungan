@@ -125,7 +125,7 @@ export default function PatunganLayout({
                     - which is white. The column carries the dark background and
                     stands the full height of the frame; only its contents stick.
                 */}
-                <div className="border-sidebar-border relative hidden shrink-0 overflow-hidden border-r bg-[linear-gradient(165deg,#074a37_0%,#063e30_48%,#043326_100%)] lg:block lg:w-60 lg:rounded-l-[28px] xl:rounded-l-[32px]">
+                <div className="border-sidebar-border relative hidden shrink-0 border-r bg-[linear-gradient(165deg,#074a37_0%,#063e30_48%,#043326_100%)] lg:block lg:w-60 lg:rounded-l-[28px] xl:rounded-l-[32px]">
                     <span
                         aria-hidden="true"
                         className="pointer-events-none absolute -top-20 -left-20 size-52 rounded-full bg-emerald-300/10 blur-3xl"
